@@ -41,14 +41,18 @@ class Robot:
         contents = f.read().split('\n')
         output = []
         attributeAdded = False
+        defAdded = False
+        defFound = False
 
         for line in contents:
             splitted = line.split(' ')
 
             if splitted[0] == motorName:
+                if splitted[1] == "def" and isDefault:
+                    defFound = True
                 # if it's default and should replace
                 if(splitted[1] == "def" and isDefault and shouldReplace):
-                    attributeAdded = True
+                    defAdded = True
                     output.append(' '.join(
                         [motorName, "def", str(rotationValue)]
                     ))
@@ -62,10 +66,12 @@ class Robot:
             else:
                 output.append(line)
 
-        if not attributeAdded and isDefault and shouldReplace:
+        if not defAdded and isDefault and shouldReplace:
             output.append(' '.join([motorName, "def", str(rotationValue)]))
         elif not attributeAdded and not isDefault and shouldReplace:
             output.append(' '.join([motorName, str(rotationValue)]))
+        elif not defAdded and isDefault and defFound:
+            output.append(' '.join([motorName, "def", str(rotationValue)]))
 
         # put pointer to 0 position
         f.seek(0)
