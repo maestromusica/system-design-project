@@ -87,7 +87,7 @@ class Robot:
     def moveAngle(self, motorName, moveToAngle):
         newAngle = self.__calculateAngle(motorName, moveToAngle)
         self.__addNewRotation(motorName, moveToAngle)
-        print(newAngle)
+        return newAngle
 
     def __calculateAngle(self, motorName, moveToAngle):
         f = open(self.__fileName, 'r')
