@@ -1,6 +1,0 @@
-
-grabMotor def 0
-angleMotor def 0
-rotateMotor def 0
-grabMotor 90
-rotateMotor 180

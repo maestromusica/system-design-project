@@ -1,5 +1,6 @@
 import time
 
+
 def assertAll(*sensors):
     """ Asserts all sensors / motors are connected.
 
@@ -7,12 +8,11 @@ def assertAll(*sensors):
     *sensors -- variable list of arguments of sensors / motors
     """
     for sensor in sensors:
-        assert sensor.connected == True, \
-        "{0} at {1} is not connected".format(
-            sensor.__class__.__name__,
-            sensor.address()
-        )
-    return
+        assert sensor.connected, \
+            "{0} at {1} is not connected".format(
+                sensor.__class__.__name__,
+                sensor.address()
+            )
 
 
 def waitFor(sensor, waitForNext=True):
