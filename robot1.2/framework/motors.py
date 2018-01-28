@@ -1,5 +1,4 @@
 import ev3dev.ev3 as ev3
-# from utils.types import MotorTypes
 
 
 class SynchronisedMotor(ev3.Motor):
