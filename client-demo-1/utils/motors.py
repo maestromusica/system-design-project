@@ -15,7 +15,7 @@ def assertAll(*sensors):
             )
 
 
-def waitFor(motor, waitForNext=True):
+def waitFor(motor):
     """ Waits for motor / sensor to stop running.
     If waitForNext is False, after the motor stops, it doesn't wait for 0.5 sec
 
@@ -28,15 +28,13 @@ def waitFor(motor, waitForNext=True):
     time.sleep(0.1)
     while "running" in motor.state:
         time.sleep(0.1)
-    if waitForNext:
-        time.sleep(0.5)
 
-def waitForStalled(motor, waitForNext=True):
+
+def waitForStalled(motor):
     time.sleep(0.1)
     while "running" in motor.state and "stalled" not in motor.state:
         time.sleep(0.1)
-    if waitForNext:
-        time.sleep(0.5)
+
 
 def resetAll(*motors):
     """Makes all the sensors go back to the starting position,

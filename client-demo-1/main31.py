@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-from motors2 import *
+from motors31 import *
 
 upTurn = True
 downTurn = False

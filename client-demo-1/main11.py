@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from motors1 import *
+from motors11 import *
 
 shouldGrab = True
 shouldRelease = False
