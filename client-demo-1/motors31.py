@@ -4,14 +4,23 @@ from utils.motors import *
 
 xax1 = ev3.LargeMotor(ev3.OUTPUT_A)
 xax2 = ev3.LargeMotor(ev3.OUTPUT_D)
-touchUp = ev3.TouchSensor(ev3.INPUT_1)
-touchDown = ev3.TouchSensor(ev3.INPUT_4)
+touchSensor = ev3.TouchSensor(ev3.INPUT_1)
 
 # def moveA(pos, speed=400):
 #     a.run_to_abs_pos(position_sp=pos, speed_sp=speed, stop_action='hold')
 #
 # def moveB(pos, speed=400):
 #     b.run_to_abs_pos(position_sp=pos, speed_sp=speed, stop_action='hold')
+
+def resetXAxis():
+    pos = 0
+    while True:
+        if touchSensor.is_pressed == 1:
+            xax1.stop()
+            xax2.stop()
+            break
+        pos += 100
+        moveX(pos,600)
 
 def moveX(pos, speed):
     moveAbsolute(xax1, pos, speed)
