@@ -18,6 +18,8 @@ def resetXAxis():
         if touchSensor.is_pressed == 1:
             xax1.stop()
             xax2.stop()
+            xax1.reset()
+            xax2.reset()
             break
         pos += 100
         moveX(pos,600)
