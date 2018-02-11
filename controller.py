@@ -9,6 +9,7 @@ controller = Controller()
 def onConnect(client, userdata, flags, rc):
     print("Controller listening to messages")
     client.subscribe(Topics.REQUEST_DATA_BOXES)
+    client.subscribe(Topics.REQUEST_DATA_NEXT)
     client.subscribe(Topics.START_CONTROLLER)
     client.subscribe(Topics.STOP_CONTROLLER)
 
@@ -26,6 +27,11 @@ def onMessage(client, userdata, msg):
         controller.stop()
         print("topic name: ", Topics.STOP_CONTROLLER)
         print("controller stopped")
+    elif msg.topic == Topics.REQUEST_DATA_NEXT:
+        nextAction = controller.nextAction()
+        client.publish(Topics.RECIEVE_DATA_NEXT, json.dumps(nextAction))
+        print("topic name: ", Topics.RECIEVE_DATA_NEXT)
+        print("next action sent")
 
 client = mqtt.Client()
 client.connect("127.0.0.1", 1883, 60)

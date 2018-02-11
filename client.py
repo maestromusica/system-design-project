@@ -17,9 +17,12 @@ class ControllerPrompt(Cmd):
 
     def _on_connect(self, client, userdata, flag, rc):
         self.client.subscribe(Topics.RECIEVE_DATA_BOXES)
+        self.client.subscribe(Topics.RECIEVE_DATA_NEXT)
 
     def _on_message(self, client, userdata, msg):
         if msg.topic == Topics.RECIEVE_DATA_BOXES:
+            print(msg.payload.decode())
+        elif msg.topic == Topics.RECIEVE_DATA_NEXT:
             print(msg.payload.decode())
 
     def do_start(self, args):
@@ -37,10 +40,14 @@ class ControllerPrompt(Cmd):
     def do_print(self, args):
         if len(args) == 0:
             print("What do you want to print?")
-        else:
-            entity = args[0]
+        elif args == "boxes":
             self.client.publish(Topics.REQUEST_DATA_BOXES)
-            time.sleep(2)
+            time.sleep(1)
+        elif args == "next":
+            self.client.publish(Topics.REQUEST_DATA_NEXT)
+            time.sleep(1)
+        else:
+            print(args)
 
     def do_quit(self, args):
         """Quits the program."""
