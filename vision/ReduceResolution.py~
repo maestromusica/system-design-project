@@ -1,0 +1,18 @@
+import cv2
+import numpy as np
+
+file = 'objects.jpg'
+
+# reading file
+
+img = cv2.imread(file)
+
+# Scaling down image to reduce resolution.
+
+for _ in xrange(2):
+    img = cv2.pyrDown(img)
+
+# Saving image as 'objects_reduced.jpg'
+
+cv2.imwrite('objects_reduced1.jpg',img)
+
