@@ -19,21 +19,27 @@ def main(argv):
                 cot.run(img,'demo.pkl')
             except Exception as err:
                 print("Error: {}".format(err))
-    cv2.destroyAllWindows()
+        cv2.destroyAllWindows()
     
     filename = Calibrator.main()
     if filename is None:
-	filename = 'demo_final.pkl'
+	filename = 'crane1.pkl'
+
     cap = cv2.VideoCapture(0)
+    compute = False
     while True:
         _, frame = cap.read()
-        processed_frame, masks = cot.process_frame(frame,filename)
-        for i,m in enumerate(masks):
-            cv2.imshow('mask'+str(i),m)
+        if compute:
+            processed_frame = cot.process_frame(frame,filename)
+            cv2.imshow('processed_frame',processed_frame)
+            compute = False
         cv2.imshow('frame',frame)
-        k = cv2.waitKey(1)
+        k = cv2.waitKey(10)
         if k == 32:
             break
+        elif k == ord('c'):
+            compute = True
+        
         
     cv2.destroyAllWindows()
 

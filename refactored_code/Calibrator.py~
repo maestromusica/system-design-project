@@ -19,8 +19,8 @@ import cPickle as pickle
 
 global trackbars, colormodes, displaymodes
 trackbars = False
-colormodes = np.array(['red','yellow','green','blue'])
-displaymodes = np.array(['frame','blur','hsv','mask','res'])
+colormodes = np.array(['red','yellow','green','blue','purple'])
+displaymodes = np.array(['frame','gamma','hsv','mask','res'])
 
 # functions
 
@@ -29,6 +29,7 @@ def nothing(x):
 
 def createParameters():
     params = {}
+    params['gamma'] = 0
     params['H_min'] = 179
     params['H_max'] = 179
     params['S_min'] = 255
@@ -47,13 +48,15 @@ def createTrackbars(params,name='HSV'):
     global trackbars
     trackbars = True
     for k in sorted(params.keys()):
-        cv2.createTrackbar(k,name,0,params[k],nothing)
+        if params[k] is not 0:
+            cv2.createTrackbar(k,name,0,params[k],nothing)
         
 def readTrackbars(params,name='HSV'):
     global trackbars
     if trackbars == True:
         for k in params.keys():
-            params[k] = cv2.getTrackbarPos(k,name)
+            if k != 'gamma':
+                params[k] = cv2.getTrackbarPos(k,name)
     else:
         print('Trackbars not created. First create Trackbars.')
             
@@ -92,7 +95,7 @@ def checkParams(params):
         return False, incomplete
 
 def dumpConfiguration(params,filename):
-    if filename[-4] is not '.pkl':
+    if filename[-4:]!='.pkl':
         filename = filename+'.pkl'
     f = open(filename,'w')
     pickle.dump(params,f)
@@ -103,15 +106,22 @@ def dumpConfiguration(params,filename):
     print(params)
     
 
-def display(colormode,mode,images):
+def display(colormode,mode,images,gamma):
     cv2.putText(images[mode],colormode,(5,20),cv2.FONT_HERSHEY_COMPLEX,1,\
                     (200,200,200),2)
     cv2.putText(images[mode],displaymodes[mode],(500,20),cv2.FONT_HERSHEY_COMPLEX,1,\
                     (200,200,200),2)
+    cv2.putText(images[mode],str(gamma),(250,20),cv2.FONT_HERSHEY_COMPLEX,1,\
+                    (200,200,200),2)
     cv2.imshow('calibrate',images[mode])
-    
+
+def gamma_correct(img,gamma):
+    img = img/255.0
+    img = cv2.pow(img,gamma)
+    return np.uint8(img*255)
+
 def main():
-    
+    print(gamma_correct)
     # Flag for return
     flag = False
     # Varibale to represent current colour mode:
@@ -141,10 +151,11 @@ def main():
         blur = frame.copy()
         for _ in xrange(params['blur']):
             blur = cv2.bilateralFilter(blur,9,75,75)
-        
+
+        gamma = gamma_correct(blur,params['gamma'])
         
         # converting to hsv for filtering.
-        hsv = cv2.cvtColor(blur,cv2.COLOR_BGR2HSV)
+        hsv = cv2.cvtColor(gamma,cv2.COLOR_BGR2HSV)
 
         # creating ranges
         lower = np.array([params['H_min'],params['S_min'],params['V_min']])
@@ -159,8 +170,9 @@ def main():
         # result
         res = cv2.bitwise_and(frame,frame,mask=mask)
 
+        images = [frame,gamma,hsv,mask,res]
         # displaying images
-        display(colorMode,displayMode,[frame,blur,hsv,mask,res])
+        display(colorMode,displayMode,images,params['gamma'])
         
         # Adding text to frame to represent current filtering mode.
         k = cv2.waitKey(1)
@@ -194,6 +206,14 @@ def main():
                 displayMode = 0
             else:
                 displayMode += 1
+        elif k == ord('p'):
+            params['gamma'] += 0.1
+        elif k == ord('o'):
+            params['gamma'] -= 0.1
+        elif k == ord('q'):
+            filename = str(raw_input('Enter filename: '))
+            cv2.imwrite(filename,images[displayMode])
+            
     cv2.destroyAllWindows()
     cap.release()
     if flag:

@@ -1,0 +1,7 @@
+{'blue': {'Erode': 0, 'H_max': 124, 'Dilate': 0, 'H_min': 85, 'S_max': 247, 'S_min': 203, 'V_max': 255, 'V_min': 190, 'blur': 3, 'open:1 / 
+close:0': 0, 'gamma': 4.000000000000002}, 'purple': {'Erode': 0, 'H_max': 144, 'Dilate': 0, 'H_min': 117, 'S_max': 255, 'S_min': 0, 'V_max'
+: 255, 'V_min': 48, 'blur': 3, 'open:1 / close:0': 0, 'gamma': 4.000000000000002}, 'green': {'Erode': 0, 'H_max': 102, 'Dilate': 0, 'H_min'
+: 68, 'S_max': 118, 'S_min': 36, 'V_max': 65, 'V_min': 20, 'blur': 3, 'open:1 / close:0': 0, 'gamma': 2.8000000000000007}, 'yellow': {'Erod
+e': 0, 'H_max': 71, 'Dilate': 0, 'H_min': 22, 'S_max': 255, 'S_min': 0, 'V_max': 255, 'V_min': 190, 'blur': 3, 'open:1 / close:0': 0, 'gamm
+a': 4.000000000000002}, 'red': {'Erode': 0, 'H_max': 4, 'Dilate': 0, 'H_min': 0, 'S_max': 255, 'S_min': 239, 'V_max': 255, 'V_min': 190, 'b
+lur': 3, 'open:1 / close:0': 0, 'gamma': 4.000000000000002}} 

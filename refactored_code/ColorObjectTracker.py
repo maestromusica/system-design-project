@@ -6,8 +6,8 @@ import sys
 import cPickle as pickle
 
 def max_area_contour(mask):
-    _,contours,_ = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-    max_area = 150
+    _,contours,_ = cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    max_area = 1500
     select = []
     for cnt in contours:
         area = cv2.contourArea(cnt)
@@ -44,15 +44,17 @@ def fit_ellipse(mask):
         ellipses.append(cv2.fitEllipse(cnt))
     return ellipses
 
-def getColorMasks(img,pkl):
+def gamma_correct(img,gamma):
+    img = img/255.0
+    img = cv2.pow(img,gamma)
+    return np.uint8(img*255)
 
-    # getting values from file instead
-    f = open(str(pkl))
-    params = pickle.load(f)
-    f.close()
+
+def getColorMasks(img,params):
+
     masks = []
     kernel = np.ones((5,5))
-    
+    kernel_ell = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
     ##red green yellow blue, prolly need to fix that.
     for colour in ['red','green','yellow','blue']:
         values = params[colour]
@@ -60,7 +62,6 @@ def getColorMasks(img,pkl):
         dilate = values['Dilate']
         low = np.array([values['H_min'],values['S_min'],values['V_min']])
         high = np.array([values['H_max'],values['S_max'],values['V_max']])
-
         blur = values['blur']
 
         # Applying Blur:
@@ -68,13 +69,15 @@ def getColorMasks(img,pkl):
         for _ in xrange(5): 
             img_blur = cv2.bilateralFilter(img_blur,9,75,75)
 
+        gamma = gamma_correct(img_blur,values['gamma'])
         # Converting to HSV for color filtering.
-        hsv = cv2.cvtColor(img_blur,cv2.COLOR_BGR2HSV)
+        hsv = cv2.cvtColor(gamma,cv2.COLOR_BGR2HSV)
 
         #mask is in range
         mask = cv2.inRange(hsv,low,high)
         #erode and dilate
         mask = Calibrator.open_close(mask,kernel,params)
+        mask = cv2.dilate(mask,kernel_ell,iterations=5)
         #append to masks
         masks.append(mask)
        
@@ -86,8 +89,18 @@ def arrangeCorners(corners):
     This function is important for correct estimation of pose of the boxes.
     '''
     return sorted(corners, key= lambda x:(x[0],x[1]))
-
-def findGoodFeaturesToTrack(img, box):
+    '''
+    distances = np.zeros(4)
+    opposites = np.zeros(4)
+    for i,c in enumerate(corners):
+        for j,b in enumerate(corners):
+            distances[j] = np.linalg.norm(c-b)
+        idx = np.where(distances == distances.max())
+        opposites[i] = corners[idx]
+    print corners
+    print opposites 
+   '''
+def findGoodFeaturesToTrack(img,box):
     centroid = (0,0)
     gray = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
     corners = cv2.goodFeaturesToTrack(gray,20,0.03,10)
@@ -95,7 +108,7 @@ def findGoodFeaturesToTrack(img, box):
         corners = corners.flatten().reshape(-1,2)
     else:
         print "Nothing in Corners."
-        return img, centroid
+        return corners, centroid
 
     # defining Termination Criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.01)
@@ -103,7 +116,7 @@ def findGoodFeaturesToTrack(img, box):
         corners = cv2.cornerSubPix(gray,corners,(5,5),(-1,-1),criteria)
     except Exception as err:
         print "SubPix Error again"
-        return img, centroid
+        return corners, centroid
     corners = findNearestPoints(box,corners)
     
     if len(corners) == 4:
@@ -111,16 +124,9 @@ def findGoodFeaturesToTrack(img, box):
         corners = arrangeCorners(corners)
 
         centroid = np.sum(corners,axis=0)/4
-        for i in corners:
-            x,y = i.ravel()
-            cv2.circle(img,(x,y),2,[255,0,0],-1)
-        cv2.circle(img,tuple(centroid),2,[255,0,0],-1)
-        #print("Centroid X-Coordinate: %.2f and Y-Coordinate: %.2f" % (centroid[0], centroid[1]))
-        cv2.line(img,tuple(corners[0]),tuple(corners[3]),[255,255,0],1)
-        cv2.line(img,tuple(corners[1]),tuple(corners[2]),[255,255,0],1)
     else:
         print("Not Enough Corners: {}".format(corners))
-    return img, centroid
+    return corners, centroid
 
 def findNearestPoints(box, corners):
     best_corners = box.copy()
@@ -136,8 +142,12 @@ def findNearestPoints(box, corners):
 
 def process_frame(img, pkl,seg='minRect'):
 
+    f = open(pkl,'r')
+    params = pickle.load(f)
+    f.close()
+    
     # Getting masks for each color
-    masks = getColorMasks(img,pkl)
+    masks = getColorMasks(img,params)
 
     # Extracting objects from mask using seg style
     objects = []
@@ -173,22 +183,30 @@ def process_frame(img, pkl,seg='minRect'):
                 
         elif seg == 'minRect':
             for (box,rect) in obj:
-                maxx, maxy = np.max(box, axis=0)
-                minx, miny = np.min(box, axis=0)
-                roi = img[miny:maxy,minx:maxx]
-                img[miny:maxy,minx:maxx], centroid = findGoodFeaturesToTrack(roi,box-[minx,miny])
+                roi = cv2.bitwise_and(img,img,mask = masks[i])
+                cv2.imshow(names[i],roi)
+                cv2.waitKey(2)
+                corners , centroid = findGoodFeaturesToTrack(roi,box)
                 centroid=np.array(centroid)
-                centroid+=[minx,miny]
-                img = cv2.drawContours(img,[box],0,colors[i],2)
-                print("MinRect :: Centroid: {}, Width,Height: {}, Rotation Angle: {}".format(rect[0],rect[1],rect[2]))
-                print("Good Features :: Centroid: {}".format(centroid))
+                for z in corners:
+                    x,y = z.ravel()
+                    cv2.circle(img,(x,y),3,[0,0,255],-1)
+                    cv2.circle(img,tuple(centroid),2,[0,0,255],-1)
+                    #print("Centroid X-Coordinate: %.2f and Y-Coordinate: %.2f" % (centroid[0], centroid[1]))
+                    cv2.line(img,tuple(corners[0]),tuple(corners[3]),[0,0,255],1)
+                    cv2.line(img,tuple(corners[1]),tuple(corners[2]),[0,0,255],1)
+
+                img = cv2.drawContours(img,[box],0,colors[i],1)
+                print box
+                #print("MinRect :: Centroid: {}, Width,Height: {}, Rotation Angle: {}".format(rect[0],rect[1],rect[2]))
+                #print("Good Features :: Cenroid: {}".format(centroid))
                 #return rect, centroid #returning the rect features and good feature centroid for future use to send to ev3 or something
-       
+                
         elif seg == 'ellipse':
             for ellipse in obj:
                 img = cv2.ellipse(img,ellipse,colors[i],2)
                 
-    return img, masks
+    return img#, masks
 
 def main(argv):
     if len(argv) < 4 | len(argv) > 4:

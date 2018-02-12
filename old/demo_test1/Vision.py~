@@ -1,0 +1,138 @@
+import cv2
+import numpy as np
+
+class MaskGenerator:
+    '''
+    class to extract masks from an image given initialisation parameters.
+    The initilisation parameters are a dictionary from Calibrator.py class.
+    '''
+    def __init__(self,params,colour):
+        self.colour = colour
+        self.params = params
+        self.low = np.array([params['H_min'],params['S_min'],params['V_min']])
+        self.high = np.array([params['H_max'],params['S_max'],params['V_max']])
+        self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
+
+    def setParam(self,att_name,val):
+        if att_name in self.params.keys():
+            self.params[att_name] = val
+            return True
+        else:
+            print('Error: {} is not a parameter.'.format(att_name))
+            return False
+        
+    def getParam(self,att_name):
+        if att_name in self.params.keys():
+            return self.params[att_name]
+        else:
+            print('Error: {} is not a parameter.'.format(att_name))
+            return None
+
+    def gamma_correct(img,gamma):
+        img = img/255.0
+        img = cv2.pow(img,gamma)
+        return np.uint8(img*255)
+
+    def openOrClose(mask,kernel=self.kernel):
+        if params[params.keys()[-1]] == 1:
+            mask = cv2.erode(mask,iterations = params['Erode'],kernel = kernel)
+            mask = cv2.dilate(mask,iterations = params['Dilate'],kernel = kernel)
+        elif params[params.keys()[-1]] == 0:
+            mask = cv2.dilate(mask,iterations = params['Dilate'],kernel = kernel)
+            mask = cv2.erode(mask,iterations = params['Erode'],kernel = kernel)
+        return mask
+        
+    def extractMask(self,frame):
+        '''
+        Method to Extract Mask from the params.
+        
+        Returns a binary image of same size as frame
+        '''
+
+        # creating a copy of frame to process.
+        frame_blurred = frame.copy()
+
+        # Applying blurring for params['blur'] iterations.
+        for _ in xrange(self.params['blur']):
+            frame_blurred = cv2.bilateralFilter(frame_blurred,9,75,75)
+
+        # Applying Gamma Correction.
+        gammaCorrectedFrame = gammaCorrect(frame_blurred,params['gamma'])
+
+        # Converting to HSV colour Space
+        hsv = cv2.cvtColor(gammaCorrectedFrame,cv2.COLOR_BGR2HSV)
+
+        # Filtering using set parameters
+        mask = cv2.inRange(hsv,self.low,self.high)
+
+        # Applying Morphological Operations
+        mask = openOrClose(mask)
+
+        return mask
+
+''' Creating Class for Contour Extraction and Segmentation of Boxes. '''
+
+class ContourExtractor:
+    '''Class to extract Contours and fit a shape depending on the segmentation param'''
+    def __init__(self,seg = 'minRect'):
+        self.seg = seg
+
+    def max_area_contour(self,mask):
+
+        # using cv2.RETR_EXTERNAL because this only returns the outer most contours in
+        # a heirarchy of contours. (Solves box within a box problem)
+        
+        _,contours,_ = cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        max_area = 1500
+        select = []
+        for cnt in contours:
+            area = cv2.contourArea(cnt)
+            if area > max_area:
+                select.append(cnt)
+        return select
+
+    def extractBoundingRect(mask):
+        contours = max_area_contour(mask)
+        dims = []    
+        for cnt in contours:
+            # finding enclosing rectangle
+            x,y,w,h = cv2.boundingRect(cnt)
+            dims.append((x,y,w,h))
+        return dims
+
+    def extractMinAreaRect(mask):
+        contours = max_area_contour(mask)
+        boxes = []
+        for cnt in contours:
+            # finding minimum area rect
+            rect = cv2.minAreaRect(cnt)
+            w,h = np.array(rect[1])
+            h += 5; w+=5;
+            box = cv2.boxPoints((rect[0],(w,h),rect[2]))
+            box = np.int0(box)
+            boxes.append((box,rect))
+        return boxes
+
+    def fit_ellipse(mask):
+        contours = max_area_contour(mask)
+        ellipses = []
+        for cnt in contours:
+            ellipses.append(cv2.fitEllipse(cnt))
+        return ellipses
+
+    def segmentation(self,mask):
+        '''
+        Method returns a list of Box Candidates.
+        Each Candidate has corners, centroid,
+        '''
+        
+        if seg == 'ellipse':
+             = fit_ellipse(m)
+            boxes.append(obj)
+        elif seg == 'boundRect':
+            obj = extractBoundingRect(m)
+            boxes.append(obj)
+        elif seg == 'minRect':
+            obj = extractMinAreaRect(m)
+            boxes.append(obj)
+        
