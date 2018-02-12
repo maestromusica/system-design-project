@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import ColorObjectTracker as cot
-from Vision import BoxExtractor
+from base import BoxExtractor
 import Calibrator
 
 
