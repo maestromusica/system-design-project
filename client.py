@@ -34,8 +34,26 @@ class ControllerPrompt(Cmd):
             self.client.publish(Topics.START_CONTROLLER)
 
     def do_stop(self, args):
-        print("Stopping the controller")
-        self.client.publish(Topics.STOP_CONTROLLER)
+        if len(args) == 0:
+            print("Stopping the controller")
+            self.client.publish(Topics.STOP_CONTROLLER)
+        elif args == "robot" or args == "ev3":
+            print("Stopping the EV3 robots. They can be resumed")
+            self.client.publish(Topics.EV3_STOP)
+
+    def do_brake(self, args):
+        if len(args) == 0:
+            print("Force stopping the program")
+        elif args == "robot" or args == "ev3":
+            print("Braking the EV3 programs.")
+            self.client.publish(Topics.EV3_FORCE_STOP)
+
+    def do_resume(self, args):
+        if len(args) == 0:
+            print("Resume what?")
+        elif args == "robot" or args == "ev3":
+            print("Resuming program execution on the robot")
+            self.client.publish(Topics.EV3_RESUME)
 
     def do_print(self, args):
         if len(args) == 0:
