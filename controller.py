@@ -25,6 +25,7 @@ def onRequestNextEV3Action(client, userdata, msg, controller):
         client.publish(nextAction["action"], json.dumps(nextAction["payload"]))
         print("> Next action sent")
     except ActionQueueLockedException:
+        print("> Can't send next action cuz the queue is locked!")
         controller.pendingAction = True
 
 
