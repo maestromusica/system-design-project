@@ -9,17 +9,17 @@ def nothing(x):
     pass
 
 def main():
-    
+
     filename = Calibrator.main()
     if filename is None:
-	filename = 'precision.pkl'
-        
+        filename = 'precision.pkl'
+
     cap = cv2.VideoCapture(0)
     bx = BoxExtractor(filename)
 
     while True:
        _ , frame = cap.read()
-       
+
        cv2.imshow('frame',frame)
        res, boxes = bx.processImage(frame)
        cv2.imshow('result',res)
