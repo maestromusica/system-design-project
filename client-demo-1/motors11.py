@@ -18,7 +18,7 @@ def resetYAxis():
             yax2.reset()
             break
         pos -= 100
-        moveY(pos,300)
+        moveY(pos,200)
 
 
 def moveY(pos, speed):

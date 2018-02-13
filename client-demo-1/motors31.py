@@ -21,8 +21,8 @@ def resetXAxis():
             xax1.reset()
             xax2.reset()
             break
-        pos += 100
-        moveX(pos,600)
+        pos -= 100
+        moveX(pos,300)
 
 def moveX(pos, speed):
     moveAbsolute(xax1, pos, speed)
