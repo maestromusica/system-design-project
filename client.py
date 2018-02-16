@@ -6,9 +6,9 @@ import json
 from message_types import Topics
 
 
-class ControllerPrompt(Cmd):
+class ClientPrompt(Cmd):
     def __init__(self, client):
-        super(ControllerPrompt, self).__init__()
+        super(ClientPrompt, self).__init__()
 
         self.client = client
         self.client.connect("127.0.0.1", 1883, 60)
@@ -24,6 +24,39 @@ class ControllerPrompt(Cmd):
             print(msg.payload.decode())
         elif msg.topic == Topics.RECIEVE_DATA_NEXT:
             print(msg.payload.decode())
+
+    def do_moveX(self, args):
+        if args == "start":
+            print("Not implemented")
+            return
+        else:
+            try:
+                absPos = int(args)
+                self.client.publish(Topics.CONTROLLER_MOVE_X, absPos)
+            except TypeError:
+                print("Can move to either a float or \"start\"")
+
+    def do_moveY(self, args):
+        if args == "start":
+            print("Not implemented")
+            return
+        else:
+            try:
+                absPos = int(args)
+                self.client.publish(Topics.CONTROLLER_MOVE_Y, absPos)
+            except TypeError:
+                print("Can move to either a float or to \"start\"")
+
+    def do_moveZ(self, args):
+        if args == "start":
+            print("Not implemented")
+            return
+        else:
+            try:
+                absPos = int(args)
+                self.client.publish(Topics.CONTROLLER_MOVE_Z, absPos)
+            except TypeError:
+                print("Can move to either a float or to \"start\"")
 
     def do_start(self, args):
         """Starts the system and polls for an image"""
@@ -77,7 +110,7 @@ class ControllerPrompt(Cmd):
 if __name__ == "__main__":
     client = mqtt.Client()
 
-    prompt = ControllerPrompt(client)
+    prompt = ClientPrompt(client)
 
     prompt.client.loop_start()
 

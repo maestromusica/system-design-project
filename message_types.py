@@ -16,6 +16,13 @@ class Topics:
     STOP_CONTROLLER = createTopicString("action/controller/stop")
     # QUIT_CONTROLLER = createTopicString("action/controller/quit")
 
+    # the client sends these and the controller forwards them
+    CONTROLLER_MOVE_X = createTopicString("action/controller/move/x")
+    CONTROLLER_MOVE_Y = createTopicString("action/controller/move/y")
+    CONTROLLER_MOVE_Z = createTopicString("action/controller/move/z")
+    CONTROLLER_GRAB = createTopicString("action/controller/move/grab")
+    CONTROLLER_RELEASE = createTopicString("action/controller/move/release")
+
     EV3_STOP = createTopicString("action/ev3/stop")
     EV3_RESUME = createTopicString("action/ev3/resume")
     EV3_FORCE_STOP = createTopicString("action/ev3/fstop")
