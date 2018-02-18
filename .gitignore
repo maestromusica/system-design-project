@@ -103,3 +103,11 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# no damn clue what they are but they don't see
+# to be the kind of files you want in a repository
+Calibrator
+cot
+cv2
+np
+   
