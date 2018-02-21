@@ -7,8 +7,8 @@ def onEV3Action(client, userdata, msg):
     print("> Topic is: ", msg.topic)
     print("> Payload is: ", msg.payload.decode())
     time.sleep(1)
-    print("> Asked for a new action")
-    client.publish(Topics.EV3_REQUEST_NEXT)
+    print("> Action completed")
+    client.publish(Topics.EV3_ACTION_COMPLETED)
 
 def onEV3Stop(client, userdata, msg):
     print("> EV3 stop not implemented")
@@ -31,6 +31,8 @@ subscribedTopics = {
     Topics.EV3_MOVE_Z: onEV3Action,
     Topics.EV3_MOVE_GRAB: onEV3Action,
     Topics.EV3_MOVE_RELEASE: onEV3Action,
+    Topics.EV3_RESET_X: onEV3Action,
+    Topics.EV3_RESET_Y: onEV3Action,
     Topics.EV3_STOP: onEV3Stop,
     Topics.EV3_RESUME: onEV3Resume,
     Topics.EV3_FORCE_STOP: onEV3ForceStop,
@@ -48,7 +50,6 @@ def onMessage(client, userdata, msg):
         print("Topic not found")
 
 client = mqtt.Client()
-# client.connect("169.254.100.209", 1883, 60)
 client.connect("127.0.0.1", 1883, 60)
 client.on_message = onMessage
 client.on_connect = onConnect

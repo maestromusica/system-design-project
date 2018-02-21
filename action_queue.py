@@ -21,6 +21,5 @@ class ActionQueue(Queue):
             return super(ActionQueue, self).get()
 
 
-
 class ActionQueueLockedException(Exception):
     pass

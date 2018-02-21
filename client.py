@@ -16,14 +16,10 @@ class ClientPrompt(Cmd):
         self.client.on_message = self._on_message
 
     def _on_connect(self, client, userdata, flag, rc):
-        self.client.subscribe(Topics.RECIEVE_DATA_BOXES)
-        self.client.subscribe(Topics.RECIEVE_DATA_NEXT)
+        pass
 
     def _on_message(self, client, userdata, msg):
-        if msg.topic == Topics.RECIEVE_DATA_BOXES:
-            print(msg.payload.decode())
-        elif msg.topic == Topics.RECIEVE_DATA_NEXT:
-            print(msg.payload.decode())
+        pass
 
     def do_moveX(self, args):
         if args == "start":
@@ -47,6 +43,9 @@ class ClientPrompt(Cmd):
             except TypeError:
                 print("Can move to either a float or to \"start\"")
 
+    def do_resetX(self, args):
+        self.client.publish(Topics.CONTROLLER_RESET_X)
+
     def do_moveZ(self, args):
         if args == "start":
             print("Not implemented")
@@ -57,6 +56,9 @@ class ClientPrompt(Cmd):
                 self.client.publish(Topics.CONTROLLER_MOVE_Z, absPos)
             except TypeError:
                 print("Can move to either a float or to \"start\"")
+
+    def do_resetY(self, args):
+        self.client.publish(Topics.CONTROLLER_RESET_Y)
 
     def do_start(self, args):
         """Starts the system and polls for an image"""
@@ -87,18 +89,6 @@ class ClientPrompt(Cmd):
         elif args == "robot" or args == "ev3":
             print("Resuming program execution on the robot")
             self.client.publish(Topics.EV3_RESUME)
-
-    def do_print(self, args):
-        if len(args) == 0:
-            print("What do you want to print?")
-        elif args == "boxes":
-            self.client.publish(Topics.REQUEST_DATA_BOXES)
-            time.sleep(1)
-        elif args == "next":
-            self.client.publish(Topics.REQUEST_DATA_NEXT)
-            time.sleep(1)
-        else:
-            print(args)
 
     def do_quit(self, args):
         """Quits the program."""
