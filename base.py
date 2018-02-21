@@ -25,7 +25,7 @@ class MaskGenerator:
         else:
             print('Error: {} is not a parameter.'.format(att_name))
             return False
-        
+
     def getParam(self,att_name):
         if att_name in self.params.keys():
             return self.params[att_name]
@@ -38,7 +38,7 @@ class MaskGenerator:
         img = img/255.0
         img = cv2.pow(img,gamma)
         return np.uint8(img*255)
-    
+
     def openOrClose(self,mask,kernel):
         isopen = self.params[self.params.keys()[-1]]
         if isopen == 1:
@@ -48,11 +48,11 @@ class MaskGenerator:
             mask = cv2.dilate(mask,iterations = params['Dilate'],kernel = kernel)
             mask = cv2.erode(mask,iterations = params['Erode'],kernel = kernel)
         return mask
-        
+
     def extractMask(self,frame):
         '''
         Method to Extract Mask from the params.
-        
+
         Returns a binary image of same size as frame
         '''
 
@@ -65,7 +65,7 @@ class MaskGenerator:
 
         # Applying Gamma Correction.
         gammaCorrectedFrame = MaskGenerator.gammaCorrect(frame_blurred,self.params['gamma'])
-        
+
         # Converting to HSV colour Space
         hsv = cv2.cvtColor(gammaCorrectedFrame,cv2.COLOR_BGR2HSV)
 
@@ -81,7 +81,7 @@ class MaskGenerator:
 
 class ContourExtractor:
     '''Class to extract Contours and fit a shape depending on the segmentation param'''
-    
+
     def __init__(self,seg = 'minRect'):
         # Validating Segmentation Param
         if(seg == 'minRect' or seg == 'boundRect' or seg == 'ellispe'):
@@ -95,7 +95,7 @@ class ContourExtractor:
         # using cv2.RETR_EXTERNAL because this only returns the outer most contours in
         # a heirarchy of contours. (Solves box within a box problem)
         _,contours,_ = cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        max_area = 1500
+        max_area = 100
         select = []
         for cnt in contours:
             area = cv2.contourArea(cnt)
@@ -105,9 +105,9 @@ class ContourExtractor:
 
     @staticmethod
     def extractBoundingRect(mask):
-        
+
         contours = ContourExtractor.max_area_contour(mask)
-        dims = []    
+        dims = []
         for cnt in contours:
             # finding enclosing rectangle
             x,y,w,h = cv2.boundingRect(cnt)
@@ -140,16 +140,16 @@ class ContourExtractor:
         '''
         Method returns a list of Box Candidates.
         Each Candidate has corners, centroid,
-        '''        
+        '''
         if self.seg == 'ellipse':
             return ContourExtractor.fit_ellipse(mask)
-            
+
         elif self.seg == 'boundRect':
             return ContourExtractor.extractBoundingRect(mask)
-        
+
         elif self.seg == 'minRect':
             return ContourExtractor.extractMinAreaRect(mask)
-            
+
 '''
 Creating Class to detect corners in the region of Candidate Boxes.
 '''
@@ -165,8 +165,8 @@ class CornersDetector:
         This function is important for correct estimation of pose of the boxes.
         '''
         return sorted(corners, key= lambda x:(x[0],x[1]))
-        
-        
+
+
     def findGoodFeaturesToTrack(self,img,box):
         # Converting to grayscale for cornerdetection
         gray = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
@@ -181,10 +181,10 @@ class CornersDetector:
             # Refining Corners at Subpixel Level
             criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.01)
             corners = cv2.cornerSubPix(gray,corners,(5,5),(-1,-1),criteria)
-            
+
             # finding candidate Corners from all the corners detected
             corners = self.findNearestPoints(box,corners)
-        
+
             if len(corners) == 4:
                 # rearranging Corners:
                 corners = self.arrangeCorners(corners)
@@ -192,11 +192,11 @@ class CornersDetector:
             else:
                 print("Not Enough Corners: {}".format(corners))
             return corners, centroid
-        
+
         else:
             print "No corners found."
             return None,None
-        
+
     def findNearestPoints(self,box, corners):
         '''
         This method finds four candidate Corners which are nearest to
@@ -250,7 +250,7 @@ class Drawer:
                         (200,200,200),1)
         elif colour == 'yellow':
             cv2.putText(frame,colour + ' : {}'.format(val),(140,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
-                        (200,200,200),1)    
+                        (200,200,200),1)
         elif colour == 'green':
             cv2.putText(frame,colour + ' : {}'.format(val),(260,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
@@ -278,7 +278,7 @@ class Box:
         detail['colour'] = self.colour
         detail_json = json.dumps(detail)
         return detail_json
-    
+
     def __str__(self):
         print('Box:: [colour: {} | centroid : {} ]'.format(self.centroid,self.colour))
 
@@ -287,7 +287,7 @@ class BoxExtractor:
     '''The Primary class that the controller will talk with. '''
     def __init__(self,paramfile,seg='minRect',quality=0.5):
 
-        
+
         params = self.readParams(paramfile)
         self.colours = params.keys()
         self.boxes = {}
@@ -312,8 +312,8 @@ class BoxExtractor:
         params = pickle.load(f)
         f.close()
         return params
-                
-        
+
+
     def processImage(self, frame):
         draw = frame.copy()
         for c in self.colours:
@@ -330,19 +330,19 @@ class BoxExtractor:
                     boxes.append(Box(centroid,corners,c,rect[2]).getDetails())
                 self.boxes[c] = boxes
                 draw = self.drawer.putText(draw,c,len(boxes))
-            else:
-                print('No Boxes')
+            #else:
+                #print('No Boxes')
 
         return draw, self.boxes
-    
+
 def main(argv):
-    param = argv[1] 
+    param = argv[1]
     cap = cv2.VideoCapture(0)
     bx = BoxExtractor(param)
 
     while True:
        _ , frame = cap.read()
-       
+
        cv2.imshow('frame',frame)
        res, boxes = bx.processImage(frame)
        cv2.imshow('result',res)
@@ -355,12 +355,3 @@ def main(argv):
 
 if __name__ == '__main__':
     main(sys.argv)
-                
-                
-                
-                
-        
-        
-        
-        
-    
