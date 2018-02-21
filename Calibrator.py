@@ -8,8 +8,14 @@ During the program use the following buttons:
         't' to toggle colour mode.[red,yellow,green,blue] (Top left)
         'c' to save the current configuration for the colour mode.
         's' to dump the saved configurations into a pickle file.
+        'p' to increase gamma correction(TOP CENTER)
+        'o' to decrease gamma correction(TOP CENTER)
+        'b' to return color_conf dictionary and exit.(Added for Integration on request of @ruth)
+        'q' to take a screenshot of current display image and save it to a file.
         '[space]' to exit.
+        
 '''
+
 from __future__ import print_function
 import cv2
 import numpy as np
@@ -196,7 +202,10 @@ def main():
                 print('Color Configuration incomplete.')
                 print('Please complete configuration for following colors: {}'\
                       .format(incomplete))
-           
+        
+        elif k == ord('b):
+            return color_conf
+
         elif k == ord('<'):
             if displayMode == 0:
                 displayMode = 4
