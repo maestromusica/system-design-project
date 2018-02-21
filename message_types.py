@@ -7,8 +7,13 @@ def createTopicString(args):
 
 class Topics:
     START_CONTROLLER = createTopicString("action/controller/start")
-    STOP_CONTROLLER = createTopicString("action/controller/stop")
+    # acts upon the ev3s (and the controller execution thread)
+    STOP_CONTROLLER = createTopicString("action/controller/stop/ev3")
+    RESUME_CONTROLLER = createTopicString("action/controller/resume/ev3")
+    PAUSE_CONTROLLER = createTopicString("action/controller/pause/ev3")
+    SWITCH_CONTROLLER_EXEC = createTopicString("action/controller/switch/exec")
     # QUIT_CONTROLLER = createTopicString("action/controller/quit")
+    CONTROLLER_PRINT_STATES = createTopicString("action/controller/print/states")
 
     # the client sends these and the controller forwards them
     CONTROLLER_MOVE_X = createTopicString("action/controller/move/x")
@@ -22,7 +27,7 @@ class Topics:
     # ev3 lifecycle related
     EV3_STOP = createTopicString("action/ev3/stop")
     EV3_RESUME = createTopicString("action/ev3/resume")
-    EV3_FORCE_STOP = createTopicString("action/ev3/fstop")
+    EV3_PAUSE = createTopicString("action/ev3/fstop")
 
     # ev3 action related
     EV3_ACTION_COMPLETED = createTopicString("inform/ev3/action/completed")

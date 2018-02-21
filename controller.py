@@ -30,6 +30,14 @@ def onStartController(client, userdata, msg, controller):
 def onStopController(client, userdata, msg, controller):
     print("> Not implemented")
 
+def onSwitchExecutionThread(client, userdata, msg, controller):
+    tag = msg.payload.decode()
+    switched = controller.changeExecutionQueue(tag)
+    if switched:
+        print("> Execution thread switched to {0}".format(tag))
+    else:
+        print("> Execution thread not switched to {0}".format(tag))
+
 def forwardAction(action):
     def curriedForwardedAction(client, userdata, msg, controller):
         controller.changeExecutionQueue(controllerTag)
@@ -44,61 +52,113 @@ def forwardAction(action):
     return curriedForwardedAction
 
 def onEV3ActionCompleted(client, userdata, msg, controller):
-    controller.unlockCurrentExecutionQueue()
-    print("> EV3 Action Completed")
-    currentExecutionQueue = controller.currentExecutionQueue
-    if not controller.actionQueues[currentExecutionQueue].empty():
-        client.publish(Topics.EV3_REQUEST_NEXT)
-    else:
-        print("> No actions left in the {0} queue".format(currentExecutionQueue))
+    """The ev3 listeners is informed that ev3 has completed an action
+    This will look in the state of the current execution thread and accordingly
+    respond to this message
+
+    States:
+    - ["RUNNING", "WAITING", "PENDING"] => an action should be sent next
+    and waiting should be removed from the states
+    - ["RUNNING", "WAITING"] => waiting should be removed from the states
+    - ["RUNNING", "LOCKED", "WAITING", "PENDING or not PENDING"] =>
+    nothing should be performed here. the execution thread is stopped
+    """
+    currentExecThread = controller.currentExecutionThread()
+    controller.removeFirstAction()
+    if currentExecThread is None:
+        print(">>> No execution thread found in the controller!")
+        return
+    if currentExecThread.waiting():
+        currentExecThread.state.waiting = False
+    if currentExecThread.locked():
+        print(">>> Execution thread is locked. Actions can't be performed")
+        return
+    if currentExecThread.pending():
+        if not currentExecThread.empty():
+            client.publish(Topics.EV3_REQUEST_NEXT)
+        else:
+            print("> No actions left in the execution queue")
+    # controller.unlockCurrentExecutionQueue()
+    # print("> EV3 Action Completed")
+    # currentExecutionQueue = controller.currentExecutionQueue
+    # if not controller.actionQueues[currentExecutionQueue].empty():
+    #     client.publish(Topics.EV3_REQUEST_NEXT)
+    # else:
+    #     print("> No actions left in the {0} queue".format(currentExecutionQueue))
 
 def onRequestNextEV3Action(client, userdata, msg, controller):
-    # this is recieved from the ev3 machine and it will output the next action
-    try:
-        nextAction = controller.nextAction()
-        if nextAction is None:
-            executionQueue = controller.currentExecutionQueue
-            print("> No actions left in the {0} queue".format(executionQueue))
-            return
+    """Sends the next action to the ev3's.
+    It sends only if the state is RUNNING, and if the thread is waiting
+    or locked it won't send any.
 
-        controller.lockCurrentExecutionQueue()
-        client11.publish(nextAction["action"], json.dumps(nextAction["payload"]))
-        # client31.publish(nextAction["action"], json.dumps(nextAction["payload"]))
-        print("> Next action sent")
-    except ActionQueueLockedException:
-        print("> Can't send next action cuz the queue is locked!")
-        controller.pendingAction = True
-
+    States:
+    - ["RUNNING", "WAITING"] => no action to be sent. thread still waiting for
+    the action to stop
+    - ["RUNNING", not "LOCKED"] => action can be sent
+    - ["LOCKED", *] => no action. current exec thread is locked
+    """
+    currentExecThread = controller.currentExecutionThread()
+    if currentExecThread.locked():
+        print("> Current execution thread is locked")
+        return
+    if currentExecThread.waiting():
+        print("> Action is not finished on EV3. Can't perform any actions!")
+        return
+    if currentExecThread.running():
+        if not currentExecThread.empty():
+            nextAction = controller.nextAction()
+            # controller.lockCurrentExecutionThread()
+            client11.publish(
+                nextAction["action"],
+                json.dumps(nextAction["payload"]))
+            # client31.publish(
+                # nextAction["action"],
+                # json.dumps(nextAction["payload"]))
+            print("> Next action sent to ev3")
+        else:
+            print("> No actions in execution thread!")
 
 def onEV3Stop(client, userdata, msg, controller):
-    # TODO: refactor this code!
-    controller.lockQueue()
-    print("> Action queue locked. This should stop ev3 execution")
+    """This will stop execution on the ev3, and the current action performing
+    will not finish!. It will stop in the current position. It only acts on the
+    current execution thread
+    """
+    currentExecThread = controller.currentExecutionThread()
+    currentExecThread.lock()
+    currentExecThread.state.waiting = False
+    client11.publish(Topics.EV3_STOP)
+    #client31.publish(Topics.EV3_STOP)
+    print("> Action queue locked. Ev3s are STOPPED")
 
 def onEV3Resume(client, userdata, msg, controller):
-    # TODO: refactor this code!
-    if controller.pendingAction:
+    """This will resume the execution of the current execution thread.
+    """
+    client11.publish(Topics.EV3_RESUME)
+    #client31.publish(Topics.EV3_RESUME)
+    currentExecThread = controller.currentExecutionThread()
+    currentExecThread.unlock()
+    print("> Execution thread unlocked and ready to resume")
+    if currentExecThread.pending():
         client11.publish(Topics.EV3_REQUEST_NEXT)
-    controller.unlockQueue()
-    print("> Action queue is now unlocked")
 
-def onEV3ForceStop(client, userdata, msg, controller):
-    # TODO: refactor this code!
-    # TODO: define the behaviour of the controller in this case
-    # print("> Force stopping the EV3")
+def onEV3Pause(client, userdata, msg, controller):
+    currentExecThread = controller.currentExecutionThread()
+    currentExecThread.lock()
+    client11.publish(Topics.EV3_PAUSE)
+    #client31.publish(Topics.EV3_PAUSE)
+    print("> Action queue is locked and ev3s are PAUSED")
     return
 
-def onRequestDataBoxes(client, userdata, msg, controller):
-    boxes = json.dumps(controller.getBoxCoordinates())
-    client.publish(Topics.RECIEVE_DATA_BOXES, boxes)
-    print("topic name: ", Topics.REQUEST_DATA_BOXES)
-    print("box coordinates calculated")
+def onPrintStates(client, userdata, msg, controller):
+    print("> These are the current execution threads: ")
+    for tag in controller.actionQueues:
+        print("{0} => {1}".format(tag, controller.actionQueues[tag].state))
 
 controller = Controller()
 subscribedTopics = {
     # controller related
     Topics.START_CONTROLLER: onStartController,
-    Topics.STOP_CONTROLLER: onStopController,
+    Topics.SWITCH_CONTROLLER_EXEC: onSwitchExecutionThread,
     # the controller will only forwards to ev3
     Topics.CONTROLLER_MOVE_X: forwardAction(Topics.EV3_MOVE_X),
     Topics.CONTROLLER_MOVE_Y: forwardAction(Topics.EV3_MOVE_Y),
@@ -106,9 +166,11 @@ subscribedTopics = {
     Topics.CONTROLLER_RESET_X: forwardAction(Topics.EV3_RESET_X),
     Topics.CONTROLLER_RESET_Y: forwardAction(Topics.EV3_RESET_Y),
     # ev3 related
-    Topics.EV3_STOP: onEV3Stop,
-    Topics.EV3_RESUME: onEV3Resume,
-    Topics.EV3_FORCE_STOP: onEV3ForceStop,
+    Topics.STOP_CONTROLLER: onEV3Stop,
+    Topics.PAUSE_CONTROLLER: onEV3Pause,
+    Topics.RESUME_CONTROLLER: onEV3Resume,
+    # client-controller related
+    Topics.CONTROLLER_PRINT_STATES: onPrintStates,
 }
 
 def onConnect(client, userdata, flags, rc):

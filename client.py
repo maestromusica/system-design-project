@@ -70,25 +70,31 @@ class ClientPrompt(Cmd):
 
     def do_stop(self, args):
         if len(args) == 0:
-            print("Stopping the controller")
+            print("Stopping the execution thread (and the robot)")
             self.client.publish(Topics.STOP_CONTROLLER)
-        elif args == "robot" or args == "ev3":
-            print("Stopping the EV3 robots. They can be resumed")
-            self.client.publish(Topics.EV3_STOP)
 
-    def do_brake(self, args):
+    def do_pause(self, args):
         if len(args) == 0:
-            print("Force stopping the program")
-        elif args == "robot" or args == "ev3":
-            print("Braking the EV3 programs.")
-            self.client.publish(Topics.EV3_FORCE_STOP)
+            print("Stopping the execution thread (and the robot)")
+            self.client.publish(Topics.PAUSE_CONTROLLER)
 
     def do_resume(self, args):
         if len(args) == 0:
-            print("Resume what?")
-        elif args == "robot" or args == "ev3":
-            print("Resuming program execution on the robot")
-            self.client.publish(Topics.EV3_RESUME)
+            print("Resuming execution thread (and the robot)")
+            self.client.publish(Topics.RESUME_CONTROLLER)
+
+    def do_switch(self, args):
+        if len(args) == 0:
+            print("Must supply an execution thread tag")
+            return
+        else:
+            print("Switching to execution thread: {0}".format(args))
+            self.client.publish(Topics.SWITCH_CONTROLLER_EXEC, args)
+
+    def do_print(self, args):
+        if args == "states":
+            print("Printing the states of the execution threads")
+            self.client.publish(Topics.CONTROLLER_PRINT_STATES)
 
     def do_quit(self, args):
         """Quits the program."""

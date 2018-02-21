@@ -5,8 +5,8 @@ class Controller:
         # will keep the action queues
         # (either from vision or from the controller)
         self.actionQueues = {}
-        # keeps information about the current execution aciton queue
-        self.currentExecutionQueue = None
+        # keeps information about the current execution thread
+        self.currentExecThreadTag = None
 
     def addActionQueue(self, tag, actionQueue):
         if tag in self.actionQueues:
@@ -17,22 +17,44 @@ class Controller:
         self.actionQueues[tag] = actionQueue
 
     def changeExecutionQueue(self, tag):
-        if tag not in self.actionQueues.keys():
+        if tag not in self.actionQueues:
             print("please give a valid tag")
-            return
-        self.currentExecutionQueue = tag
+            return False
+        self.currentExecThreadTag = tag
+        self.actionQueues[tag].putOnExecutionThread()
 
-    def lockCurrentExecutionQueue(self):
-        tag = self.currentExecutionQueue
+        for _tag in self.actionQueues:
+            if not _tag == tag:
+                self.actionQueues[_tag].removeFromExecutionThread()
+
+        return True
+
+    def lockCurrentExecutionThread(self):
+        tag = self.currentExecThreadTag
         self.actionQueues[tag].lock()
 
-    def unlockCurrentExecutionQueue(self):
-        tag = self.currentExecutionQueue
+    def unlockCurrentExecutionThread(self):
+        tag = self.currentExecThreadTag
         self.actionQueues[tag].unlock()
 
     def nextAction(self):
-        tag = self.currentExecutionQueue
+        tag = self.currentExecThreadTag
         if self.actionQueues[tag].empty():
             return None
         else:
-            return self.actionQueues[tag].get()
+            return self.actionQueues[tag].queue[0]
+
+    def removeFirstAction(self):
+        tag = self.currentExecThreadTag
+        if self.actionQueues[tag].empty():
+            # should return an error
+            return
+        else:
+            self.actionQueues[tag].removeFirstElement()
+            return
+
+    def currentExecutionThread(self):
+        if self.currentExecThreadTag is None:
+            return None
+        elif self.currentExecThreadTag in self.actionQueues:
+            return self.actionQueues[self.currentExecThreadTag]

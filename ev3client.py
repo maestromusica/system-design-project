@@ -3,11 +3,13 @@ import paho.mqtt.client as mqtt
 from message_types import Topics
 import time
 
+state = "RUNNING"
+
 def onEV3Action(client, userdata, msg):
     print("> Topic is: ", msg.topic)
     print("> Payload is: ", msg.payload.decode())
-    time.sleep(1)
     print("> Action completed")
+    time.sleep(1)
     client.publish(Topics.EV3_ACTION_COMPLETED)
 
 def onEV3Stop(client, userdata, msg):
@@ -16,14 +18,8 @@ def onEV3Stop(client, userdata, msg):
 def onEV3Resume(client, userdata, msg):
     print("> EV3 resume not implemented")
 
-def onEV3ForceStop(client, userdata, msg):
-    print("> it should stop all the motors at all cost")
-    # Important Note: if doing waitFor(motor) when running the motors
-    # and we want to implement this function, then we have to take care
-    # in the waitFor function for this message!
-    print("> Stopping and exiting the program")
-    client.loop_stop()
-    raise SystemExit
+def onEV3Pause(client, userdata, msg):
+    print("> EV3 Pause not implemented")
 
 subscribedTopics = {
     Topics.EV3_MOVE_X: onEV3Action,
@@ -35,7 +31,7 @@ subscribedTopics = {
     Topics.EV3_RESET_Y: onEV3Action,
     Topics.EV3_STOP: onEV3Stop,
     Topics.EV3_RESUME: onEV3Resume,
-    Topics.EV3_FORCE_STOP: onEV3ForceStop,
+    Topics.EV3_PAUSE: onEV3Pause
 }
 
 def onConnect(client, userdata, flags, rc):
