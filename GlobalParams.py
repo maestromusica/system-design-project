@@ -10,14 +10,16 @@ maskVals :: {'colourname':{'Erode':int,'Dilate':int,'H_min':int,'H_max':int,
 camParams :: {'optmtx':[[float]],'mtx':[[float]],'distcoeffs':[]}
 '''
 
-maskVals = 'demo'
-camParams = 'camera_intrinsic_params'
-workspace = {'topleft':([200,20],[0,0]),'bottomleft':([420,30],[200,0]),'topright':([150,470],[0,500]),'topleft':([415,475],[200,500])}
+mask = 'picklerick.pkl'
+cam = 'camera_intrinsic_params.pkl'
+work = {'topleft':([200,20],[0,0]),'bottomleft':([420,30],[200,0]),'topright':([150,470],[0,500]),'topleft':([415,475],[200,500])}
     
 
 def getMaskVals(filename):
     if filename is not None:
         maskVals = filename
+    else:
+        maskVals = mask
     f = open(maskVals)
     maskVals = pkl.load(f)
     f.close()
@@ -26,6 +28,8 @@ def getMaskVals(filename):
 def getCamParams(filename):
     if filename is not None:
         camParams = filename
+    else:
+        camParams = cam
     f = open(camParams)
     camParams = pkl.load(f)
     f.close()
@@ -36,6 +40,8 @@ def getWorkSpace(filename):
         f = open(filename)
         workspace = pkl.load(f)
         f.close()
+    else:
+        workspace = work
     return workspace
 
 
