@@ -111,3 +111,5 @@ cot
 cv2
 np
    
+# vim swap files
+*.swp

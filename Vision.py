@@ -32,7 +32,6 @@ method: save() :: saves data to a pickle file
 class Vision(object):
 
     def __init__(self,cam=None,wkspc=None,maskv=None):
-
         #get values for parameters
         self.camParams = gp.getCamParams(cam)
         self.workspace = gp.getWorkSpace(wkspc)
@@ -48,7 +47,7 @@ class Vision(object):
         image, boxes = self.boxExtractor.processImage(img)
         
         #unpack boxes into info we want to return
-        return unpacked_boxes
+        return image, boxes
 
     def calibrateCamera(self):
         cam = Gods.CalibrateCamera()

@@ -334,7 +334,7 @@ class BoxExtractor(object):
         self.cornersDetector = CornersDetector(quality=quality)
         self.drawer = Drawer()
 
-    '''
+    
 
     def readParams(self,filename):
         f = open(filename,'r')
@@ -349,7 +349,7 @@ class BoxExtractor(object):
         f.close()
         return params
 
-    '''
+    
 
     def processImage(self, frame):
         draw = frame.copy()
@@ -365,7 +365,7 @@ class BoxExtractor(object):
                     corners,centroid = self.cornersDetector.detectCorners(changed_image,mask,box)
                     draw = self.drawer.drawBox(draw,corners,centroid,'r')
                     draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'b')
-                    boxes.append(Box(centroid,corners,c,rect[2]))
+                    boxes.append(Box(centroid,corners,c,rect[2]).getDetails())
                 self.boxes[c] = boxes
                 draw = self.drawer.putText(draw,c,len(boxes))
             #else:

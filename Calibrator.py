@@ -203,7 +203,7 @@ def main():
                 print('Please complete configuration for following colors: {}'\
                       .format(incomplete))
         
-        elif k == ord('b):
+        elif k == ord('b'):
             return color_conf
 
         elif k == ord('<'):

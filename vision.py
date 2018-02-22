@@ -12,7 +12,7 @@ def main():
     
     filename = Calibrator.main()
     if filename is None:
-	filename = 'precision.pkl'
+	    filename = 'precision.pkl'
         
     cap = cv2.VideoCapture(0)
     bx = BoxExtractor(filename)
