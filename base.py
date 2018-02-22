@@ -4,7 +4,7 @@ import cPickle as pickle
 import sys
 import json
 
-class MaskGenerator:
+class MaskGenerator(object):
     '''
     class to extract masks from an image given initialisation parameters.
     The initilisation parameters are a dictionary from Calibrator.py class.
@@ -79,7 +79,7 @@ class MaskGenerator:
 
 ''' Creating Class for Contour Extraction and Segmentation of Boxes. '''
 
-class ContourExtractor:
+class ContourExtractor(object):
     '''Class to extract Contours and fit a shape depending on the segmentation param'''
 
     def __init__(self,seg = 'minRect'):
@@ -154,9 +154,9 @@ class ContourExtractor:
 Creating Class to detect corners in the region of Candidate Boxes.
 '''
 
-class CornersDetector:
+class CornersDetector(object):
     def __init__(self,quality = 0.03):
-        self.quality = 0.03
+        self.quality = quality
         self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
 
     def arrangeCorners(self,corners):
@@ -228,7 +228,7 @@ class CornersDetector:
             print('CornersDetector::detectCorners() : No Corners Found.')
             return None, None
 
-class Drawer:
+class Drawer(object):
     ''' Class to draw boxes on input frame '''
     def __init__(self):
         self.colors = {'r':[0,0,255],'g':[0,255,0],'b':[255,0,0]}
@@ -261,7 +261,42 @@ class Drawer:
             cv2.putText(frame,colour + ' : {}'.format(val),(460,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         return frame
-class Box:
+
+class PerspectiveTransform(object):
+    '''
+    Class to change perspective of the input image to an image that restricts itself to \
+    the workspace of the robot.
+    '''
+    def __init__(self,camParams,workspace):
+
+        self.optimal_mtx = camParams['optmtx']
+        self.camera_mtx = camParams['mtx']
+        self.distcoeffs = camParams['distcoeffs']
+        pts1 = []
+        pts2 = []
+        for k in workspace.keys():
+            pts1.append(workspace[k][0])
+            pts2.append(worksapce[k][1])
+        self.original_points = np.float32(pts1)
+        self.transformed_points = np.float32(pts2)
+
+    def transform(self,frame):
+        corrected_img = cv2.undistort(src=frame, cameraMatrix=mtx, distCoeffs=distcoeffs, newCameraMatrix=optimalmtx)
+        #perspective transform of the boxes
+        #find the points by the corners (find the corners of the work area) in the corrected image
+
+        #pts1 = np.float32([[200,20],[420,30],[150,470],[415,475]])
+        #to an img the size of the work area millimetres or possibly centimetres
+        #depends on accuracy of hardware, how close we can get to exactly coords
+        #pts2 = np.float32([[0,0],[200,0],[0,500],[200,500]])
+        #this is the matrix we need to transform points with M.dot(vector)
+        #point = [100, 100, 1] -- last coordinate is homogeneous coord 1
+        #x, y, z = M.dot(point)
+        M = cv2.getPerspectiveTransform(self.original_points,self.transformed_points)
+
+        return cv2.warpPerspective(corrected_img,M,(200,500))
+
+class Box(object):
     '''
     Class to create objects of detected boxes.
     '''
@@ -283,22 +318,23 @@ class Box:
         print('Box:: [colour: {} | centroid : {} ]'.format(self.centroid,self.colour))
 
 
-class BoxExtractor:
+class BoxExtractor(object):
     '''The Primary class that the controller will talk with. '''
-    def __init__(self,paramfile,seg='minRect',quality=0.5):
+    def __init__(self,maskParam,camParam,workspace,seg='minRect',quality=0.5):
 
-
-        params = self.readParams(paramfile)
-        self.colours = params.keys()
+        self.changePerspective = PerspectiveTransform(camParam,workspace)
+        self.colours = maskParam.keys()
         self.boxes = {}
         # Creating Mask Generator Objects for each Colour.
         self.maskGenerators = {}
         for c in self.colours:
-            self.maskGenerators[c] = MaskGenerator(params[c],c)
-
+            self.maskGenerators[c] = MaskGenerator(maskParam[c],c)
+            
         self.contourExtractor = ContourExtractor(seg)
         self.cornersDetector = CornersDetector(quality=quality)
         self.drawer = Drawer()
+
+    '''
 
     def readParams(self,filename):
         f = open(filename,'r')
@@ -313,21 +349,23 @@ class BoxExtractor:
         f.close()
         return params
 
+    '''
 
     def processImage(self, frame):
         draw = frame.copy()
+        changed_image = self.changePerspective.transform(frame)
         for c in self.colours:
             boxes= []
-            mask = self.maskGenerators[c].extractMask(frame)
-            cv2.imshow('mask-{}'.format(c),mask)
-            cv2.waitKey(10)
+            mask = self.maskGenerators[c].extractMask(changed_image)
+            #cv2.imshow('mask-{}'.format(c),mask)
+            #cv2.waitKey(10)
             contours = self.contourExtractor.segmentation(mask)
             if len(contours) > 0:
                 for box,rect in contours:
-                    corners,centroid = self.cornersDetector.detectCorners(frame,mask,box)
+                    corners,centroid = self.cornersDetector.detectCorners(changed_image,mask,box)
                     draw = self.drawer.drawBox(draw,corners,centroid,'r')
                     draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'b')
-                    boxes.append(Box(centroid,corners,c,rect[2]).getDetails())
+                    boxes.append(Box(centroid,corners,c,rect[2]))
                 self.boxes[c] = boxes
                 draw = self.drawer.putText(draw,c,len(boxes))
             #else:
