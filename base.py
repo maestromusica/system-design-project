@@ -294,6 +294,8 @@ class PerspectiveTransform(object):
         #this is the matrix we need to transform points with M.dot(vector)
         #point = [100, 100, 1] -- last coordinate is homogeneous coord 1
         #x, y, z = M.dot(point)
+        print (self.original_points)
+        print (self.transformed_points)
         M = cv2.getPerspectiveTransform(self.original_points,self.transformed_points)
 
         return cv2.warpPerspective(frame,M,(200,500))

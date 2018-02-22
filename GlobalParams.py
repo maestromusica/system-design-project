@@ -12,7 +12,7 @@ camParams :: {'optmtx':[[float]],'mtx':[[float]],'distcoeffs':[]}
 
 mask = 'picklerick.pkl'
 cam = 'camera_intrinsic_params.pkl'
-work = {'topleft':([200,20],[0,0]),'bottomleft':([420,30],[200,0]),'topright':([150,470],[0,500]),'topleft':([415,475],[200,500])}
+work = {'topleft':([200,20],[0,0]),'bottomleft':([420,30],[200,0]),'topright':([150,470],[0,500]),'bottomright':([415,475],[200,500])}
     
 
 def getMaskVals(filename):
