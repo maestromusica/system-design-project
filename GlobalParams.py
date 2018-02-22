@@ -41,7 +41,7 @@ def getWorkSpace(filename):
         workspace = pkl.load(f)
         f.close()
     else:
-        workspace = work
+        workspace = work.copy()
     return workspace
 
 

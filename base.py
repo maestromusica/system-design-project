@@ -269,19 +269,21 @@ class PerspectiveTransform(object):
     '''
     def __init__(self,camParams,workspace):
 
-        self.optimal_mtx = camParams['optmtx']
-        self.camera_mtx = camParams['mtx']
-        self.distcoeffs = camParams['distcoeffs']
+        #self.optimal_mtx = camParams['optmtx']
+        #self.camera_mtx = camParams['mtx']
+        #self.distcoeffs = camParams['distcoeffs']
+        
         pts1 = []
         pts2 = []
         for k in workspace.keys():
+            print k
             pts1.append(workspace[k][0])
-            pts2.append(worksapce[k][1])
+            pts2.append(workspace[k][1])
         self.original_points = np.float32(pts1)
         self.transformed_points = np.float32(pts2)
 
     def transform(self,frame):
-        corrected_img = cv2.undistort(src=frame, cameraMatrix=mtx, distCoeffs=distcoeffs, newCameraMatrix=optimalmtx)
+        #corrected_img = cv2.undistort(src=frame, cameraMatrix=mtx, distCoeffs=distcoeffs, newCameraMatrix=optimalmtx)
         #perspective transform of the boxes
         #find the points by the corners (find the corners of the work area) in the corrected image
 
@@ -294,7 +296,7 @@ class PerspectiveTransform(object):
         #x, y, z = M.dot(point)
         M = cv2.getPerspectiveTransform(self.original_points,self.transformed_points)
 
-        return cv2.warpPerspective(corrected_img,M,(200,500))
+        return cv2.warpPerspective(frame,M,(200,500))
 
 class Box(object):
     '''

@@ -37,12 +37,12 @@ class Vision(object):
         self.workspace = gp.getWorkSpace(wkspc)
         self.maskVals = gp.getMaskVals(maskv)
         self.cap = VideoCapture(0)
-        self.boxExtractor = BoxExtractor(self.camParams,self.workspace,self.maskVals)
+        self.boxExtractor = BoxExtractor(self.maskVals,self.camParams,self.workspace)
 
     def go(self):
         
         #take a picture
-        img = self.cap.read()
+        _ ,img = self.cap.read()
         #process the image and return boxes
         image, boxes = self.boxExtractor.processImage(img)
         #unpack boxes into info we want to return

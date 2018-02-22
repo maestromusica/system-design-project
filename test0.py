@@ -12,7 +12,7 @@ class Adaptor(object):
     def __init__(self):
         self.vision = Vision()
         
-    def do_stuff():
+    def do_stuff(self):
         while True:
            image, boxes = self.vision.go()
 
