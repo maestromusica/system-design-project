@@ -4,52 +4,50 @@ import cPickle as pkl
 workspace is hard coded here for now but possible to work on making a pickle file and a class where it finds the corners automatically to account for the camera moving about and stuff.
 the mask values and camera parameters are read from pickle files. they should have the format like follows:
 
-maskVals :: {'colourname':{'Erode':int,'Dilate':int,'H_min':int,'H_max':int,
-             'S_min':int,'S_max':int,'V_min':int,'V_max':int,'blur':int}}
+maskVals :: {'colourname':{'Erode':int,'Dilate':int,'OC':int,'High':array([r,g,b]),'Low':array([r,g,b]),'Blur':int,'Gamma':float,}}
 
 camParams :: {'optmtx':[[float]],'mtx':[[float]],'distcoeffs':[]}
 '''
+class GlobalParams(object):
 
-mask = 'picklerick.pkl'
-cam = 'camera_intrinsic_params.pkl'
-work = {'topleft':([200,20],[0,0]),'bottomleft':([420,30],[200,0]),'topright':([150,470],[0,500]),'bottomright':([415,475],[200,500])}
-    
+    def __init__(self):
+        #should this be picklerick or demo?
+        self.mask = 'demo'
+        self.cam = 'camera_intrinsic_params'
+        self.boardSize = (9,6)
+        #coords go [col,row] ffs
+        self.workspace = {'topleft':([200,35],[0,0]),'bottomleft':([143,436],[0,500]),'topright':([416,38],[200,0]),'bottomright':([402,460],[200,500])}
 
-def getMaskVals(filename):
-    if filename is not None:
-        maskVals = filename
-    else:
-        maskVals = mask
-    f = open(maskVals)
-    maskVals = pkl.load(f)
-    f.close()
-    return maskVals
-
-def getCamParams(filename):
-    if filename is not None:
-        camParams = filename
-    else:
-        camParams = cam
-    f = open(camParams)
-    camParams = pkl.load(f)
-    f.close()
-    return camParams
-
-def getWorkSpace(filename):
-    if filename is not None:
-        f = open(filename)
-        workspace = pkl.load(f)
+    def getMaskVals(self,filename=None):
+        if filename is not None:
+            self.mask = filename
+        f = open(self.mask)
+        maskVals = pkl.load(f)
         f.close()
-    else:
-        workspace = work.copy()
-    return workspace
+        return maskVals
 
+    def getCamParams(self,filename=None):
+        if filename is not None:
+            self.cam = filename
+        f = open(self.cam)
+        camParams = pkl.load(f)
+        f.close()
+        return camParams
 
-''' some stuff to work on for extending maybe maybe not, we'll see
-def setMaskVals()
+    def getWorkSpace(self,filename=None):
+        if filename is not None:
+            f = open(filename)
+            self.workspace = pkl.load(f)
+            f.close()
+        return self.workspace
 
-def setCamParams()
+    def getBoardSize(self):
+        return self.boardSize
+    ''' some stuff to work on for extending maybe maybe not, we'll see
+    def setMaskVals()
 
-def setWorkSpace()
-<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-'''
+    def setCamParams()
+
+    def setWorkSpace()
+    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    '''

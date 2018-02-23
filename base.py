@@ -12,8 +12,8 @@ class MaskGenerator(object):
     def __init__(self,params,colour):
         self.colour = colour
         self.params = params
-        self.low = np.array([params['H_min'],params['S_min'],params['V_min']])
-        self.high = np.array([params['H_max'],params['S_max'],params['V_max']])
+        self.low = np.array(params['Low'])
+        self.high = np.array(params['High'])
         self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
         print('Created MaskGenerator object for {} colour.'.format(colour))
         print('\t Parameters : {}'.format(self.params))
@@ -60,11 +60,11 @@ class MaskGenerator(object):
         frame_blurred = frame.copy()
 
         # Applying blurring for params['blur'] iterations.
-        for _ in xrange(self.params['blur']):
+        for _ in xrange(self.params['Blur']):
             frame_blurred = cv2.bilateralFilter(frame_blurred,9,75,75)
 
         # Applying Gamma Correction.
-        gammaCorrectedFrame = MaskGenerator.gammaCorrect(frame_blurred,self.params['gamma'])
+        gammaCorrectedFrame = MaskGenerator.gammaCorrect(frame_blurred,self.params['Gamma'])
 
         # Converting to HSV colour Space
         hsv = cv2.cvtColor(gammaCorrectedFrame,cv2.COLOR_BGR2HSV)
@@ -262,59 +262,29 @@ class Drawer(object):
                         (200,200,200),1)
         return frame
 
-class PerspectiveTransform(object):
-    '''
-    Class to change perspective of the input image to an image that restricts itself to \
-    the workspace of the robot.
-    '''
-    def __init__(self,camParams,workspace):
 
-        #self.optimal_mtx = camParams['optmtx']
-        #self.camera_mtx = camParams['mtx']
-        #self.distcoeffs = camParams['distcoeffs']
-        
-        pts1 = []
-        pts2 = []
-        for k in workspace.keys():
-            print k
-            pts1.append(workspace[k][0])
-            pts2.append(workspace[k][1])
-        self.original_points = np.float32(pts1)
-        self.transformed_points = np.float32(pts2)
 
-    def transform(self,frame):
-        #corrected_img = cv2.undistort(src=frame, cameraMatrix=mtx, distCoeffs=distcoeffs, newCameraMatrix=optimalmtx)
-        #perspective transform of the boxes
-        #find the points by the corners (find the corners of the work area) in the corrected image
-
-        #pts1 = np.float32([[200,20],[420,30],[150,470],[415,475]])
-        #to an img the size of the work area millimetres or possibly centimetres
-        #depends on accuracy of hardware, how close we can get to exactly coords
-        #pts2 = np.float32([[0,0],[200,0],[0,500],[200,500]])
-        #this is the matrix we need to transform points with M.dot(vector)
-        #point = [100, 100, 1] -- last coordinate is homogeneous coord 1
-        #x, y, z = M.dot(point)
-        print (self.original_points)
-        print (self.transformed_points)
-        M = cv2.getPerspectiveTransform(self.original_points,self.transformed_points)
-
-        return cv2.warpPerspective(frame,M,(200,500))
-
+##class for box objects
 class Box(object):
     '''
     Class to create objects of detected boxes.
     '''
 
-    def __init__(self,(cx,cy),corners,colour,orientation):
-        self.centroid = (cx,cy)
-        self.corners = corners
+    def __init__(self,(cx,cy),length,width,colour,rotation):
+        self.centroid = (cx*3,cy*3)
+        self.length = length
+        self.width = width
         self.colour = colour
-        self.orientation = orientation
+        self.rotation = rotation
+
 
     def getDetails(self):
         detail = {}
         detail['centroid'] = self.centroid
         detail['colour'] = self.colour
+	detail['length'] = self.length
+	detail['width'] = self.width
+	detail['rotation'] = self.rotation
         detail_json = json.dumps(detail)
         return detail_json
 
@@ -338,22 +308,7 @@ class BoxExtractor(object):
         self.cornersDetector = CornersDetector(quality=quality)
         self.drawer = Drawer()
 
-    
 
-    def readParams(self,filename):
-        f = open(filename,'r')
-        while(f is None or filename == 'q'):
-            print('BoxExtractor::readParams: {} does not exist.'.format(filename))
-            filename = raw_input('Enter Filename(`q` to exit) : ')
-            if filename == 'q':
-                print('Exiting..')
-                raise SystemExit
-            f = open(filename,'r')
-        params = pickle.load(f)
-        f.close()
-        return params
-
-    
 
     def processImage(self, frame):
         draw = frame.copy()
@@ -369,7 +324,7 @@ class BoxExtractor(object):
                     corners,centroid = self.cornersDetector.detectCorners(changed_image,mask,box)
                     draw = self.drawer.drawBox(draw,corners,centroid,'r')
                     draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'b')
-                    boxes.append(Box(centroid,corners,c,rect[2]).getDetails())
+                    boxes.append(Box(centroid,corners,c,rect[2]))
                 self.boxes[c] = boxes
                 draw = self.drawer.putText(draw,c,len(boxes))
             #else:

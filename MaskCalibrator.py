@@ -1,25 +1,19 @@
-#!/usr/bin/env python
+import cv2
+import numpy as np
 
 '''
 USAGE : ./Calibrate.py
 
 During the program use the following buttons:
-        '<' or '>' to toggle between display modes:[frame,hsv,mask,res](Top right).
-        't' to toggle colour mode.[red,yellow,green,blue] (Top left)
-        'c' to save the current configuration for the colour mode.
-        's' to dump the saved configurations into a pickle file.
+        '<' or '>' to toggle between display modes:[frame,gamma,hsv,mask,res](Top right).
+        't' to toggle colour mode.[red,yellow,green,blue,purple] (Top left)
+        'c' to set the current values for the colour mode.
         'p' to increase gamma correction(TOP CENTER)
         'o' to decrease gamma correction(TOP CENTER)
-        'b' to return color_conf dictionary and exit.(Added for Integration on request of @ruth)
-        'q' to take a screenshot of current display image and save it to a file.
-        '[space]' to exit.
+        's' to exit saving configuration values
+        '[space]' to exit without saving
         
 '''
-
-from __future__ import print_function
-import cv2
-import numpy as np
-import cPickle as pickle
 
 # Declaring Global variables
 
@@ -35,7 +29,7 @@ def nothing(x):
 
 def createParameters():
     params = {}
-    params['gamma'] = 0
+    params['Gamma'] = 0
     params['H_min'] = 179
     params['H_max'] = 179
     params['S_min'] = 255
@@ -45,7 +39,7 @@ def createParameters():
     params['Erode'] = 5
     params['Dilate'] = 5
     params['open:1 / close:0'] = 1
-    params['blur'] = 5
+    params['Blur'] = 5
 
     return params
 
@@ -61,7 +55,7 @@ def readTrackbars(params,name='HSV'):
     global trackbars
     if trackbars == True:
         for k in params.keys():
-            if k != 'gamma':
+            if k != 'Gamma':
                 params[k] = cv2.getTrackbarPos(k,name)
     else:
         print('Trackbars not created. First create Trackbars.')
@@ -89,8 +83,6 @@ def toggleMode(mode):
     elif mode == 'purple':
         mode = 'red'
     return mode
-
-#def toggleDisplayMode(mode)
     
 
 def checkParams(params):
@@ -101,17 +93,6 @@ def checkParams(params):
         bools = np.array([i in params.keys() for i in colormodes])
         incomplete = colormodes[np.where(bools == False)]
         return False, incomplete
-
-def dumpConfiguration(params,filename):
-    if filename[-4:]!='.pkl':
-        filename = filename+'.pkl'
-    f = open(filename,'w')
-    pickle.dump(params,f)
-    f.close()
-    print('Color_configuration saved to file : {}'.format(filename))
-    print('use `params = pickle.load(file)` to access contents.')
-    print('Contents:')
-    print(params)
     
 
 def display(colormode,mode,images,gamma):
@@ -128,8 +109,13 @@ def gamma_correct(img,gamma):
     img = cv2.pow(img,gamma)
     return np.uint8(img*255)
 
-def main():
-    print(gamma_correct)
+def createConf(params):
+    low = np.array([params['H_min'],params['S_min'],params['V_min']])
+    high = np.array([params['H_max'],params['S_max'],params['V_max']])
+    conf = {'Gamma':params['Gamma'],'Erode':params['Erode'],'Dilate':params['Dilate'],'OC':params['open:1 / close:0'],'Blur':params['Blur'],'Low':low,'High':high}
+    return conf
+
+def run():
     # Flag for return
     flag = False
     # Varibale to represent current colour mode:
@@ -157,10 +143,10 @@ def main():
         params = readTrackbars(params)
 
         blur = frame.copy()
-        for _ in xrange(params['blur']):
+        for _ in xrange(params['Blur']):
             blur = cv2.bilateralFilter(blur,9,75,75)
 
-        gamma = gamma_correct(blur,params['gamma'])
+        gamma = gamma_correct(blur,params['Gamma'])
         
         # converting to hsv for filtering.
         hsv = cv2.cvtColor(gamma,cv2.COLOR_BGR2HSV)
@@ -180,57 +166,45 @@ def main():
 
         images = [frame,gamma,hsv,mask,res]
         # displaying images
-        display(colorMode,displayMode,images,params['gamma'])
+        display(colorMode,displayMode,images,params['Gamma'])
         
         # Adding text to frame to represent current filtering mode.
         k = cv2.waitKey(1)
-        if k == ord(' '):
-            break
-        elif k == ord('t'):
-            colorMode = toggleMode(colorMode)
-        elif k == ord('c'):
-            color_conf[colorMode] = params.copy()
-            print(color_conf)
-        elif k == ord('s'):
-            ret, incomplete = checkParams(color_conf)
-            if ret:
-                filename = raw_input('Enter name for the configuration file: ')
-                dumpConfiguration(color_conf,filename)
-		flag = True
-                break
-            else:
-                print('Color Configuration incomplete.')
-                print('Please complete configuration for following colors: {}'\
-                      .format(incomplete))
-        
-        elif k == ord('b):
-            return color_conf
 
-        elif k == ord('<'):
+
+        if k == ord('<'):
             if displayMode == 0:
                 displayMode = 4
             else:
                 displayMode -= 1
-
         elif k == ord('>'):
             if displayMode == 4:
                 displayMode = 0
             else:
                 displayMode += 1
+
+        elif k == ord('t'):
+            colorMode = toggleMode(colorMode)
+        elif k == ord('c'):
+            color_conf[colorMode] = createConf(params)
         elif k == ord('p'):
-            params['gamma'] += 0.1
+            params['Gamma'] += 0.1
         elif k == ord('o'):
-            params['gamma'] -= 0.1
-        elif k == ord('q'):
-            filename = str(raw_input('Enter filename: '))
-            cv2.imwrite(filename,images[displayMode])
-            
-    cv2.destroyAllWindows()
-    cap.release()
-    if flag:
-        return filename
-    else:
-        return None 
-if __name__ == '__main__':
-    print(__doc__)
-    main()
+            params['Gamma'] -= 0.1
+
+        elif k == ord('s'):
+            ret, incomplete = checkParams(color_conf)
+            if ret:
+                cap.release()
+                cv2.destroyAllWindows()
+                return color_conf
+            else:
+                print('Color Configuration incomplete.')
+                print('Please complete configuration for following colors: {}'\
+                      .format(incomplete))
+        elif k == 32:
+            cap.release()
+            cv2.destroyAllWindows()
+            return None
+
+
