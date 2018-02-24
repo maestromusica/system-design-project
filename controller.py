@@ -201,7 +201,6 @@ def onMessage(client, userdata, msg):
     else:
         print("Topic {0} is not subscribed".format(msg.topic))
 
-# TODO: replace with JSON
 client11.connect(config["ips"]["INF_11"], 1883, 60)
 client31.connect(config["ips"]["INF_31"], 1883, 60)
 controllerClient.connect(config["ips"]["CONTROLLER"], 1883, 60)
