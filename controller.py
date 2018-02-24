@@ -5,7 +5,8 @@ from _controller import Controller
 from message_types import Topics
 from action_queue import ActionQueue, ActionQueueLockedException
 from box_helper import mockBoxes
-from config import mqttIps
+
+config = json.load(open("config.json"))
 
 controllerClient = mqtt.Client()
 client11 = mqtt.Client()
@@ -201,9 +202,9 @@ def onMessage(client, userdata, msg):
         print("Topic {0} is not subscribed".format(msg.topic))
 
 # TODO: replace with JSON
-client11.connect(mqttIps.EV3_11, 1883, 60)
-client31.connect(mqttIps.EV3_31, 1883, 60)
-controllerClient.connect(mqttIps.CONTROLLER, 1883, 60)
+client11.connect(config["ips"]["INF_11"], 1883, 60)
+client31.connect(config["ips"]["INF_31"], 1883, 60)
+controllerClient.connect(config["ips"]["CONTROLLER"], 1883, 60)
 
 def onEV3Connect(client, userdata, flags, rc):
     client.subscribe(Topics.EV3_REQUEST_NEXT)
