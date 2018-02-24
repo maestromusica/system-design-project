@@ -57,6 +57,26 @@ class ClientPrompt(Cmd):
             except TypeError:
                 print("Can move to either a float or to \"start\"")
 
+    def do_grab(self, args):
+        if len(args) == 0:
+            print("Please specify a position")
+            return
+        try:
+            absPos = int(args)
+            self.client.publish(Topics.CONTROLLER_GRAB, absPos)
+        except TypeError:
+            print("Can only move to float / int")
+
+    def do_release(self, args):
+        if len(args) == 0:
+            print("Please specify a position")
+            return
+        try:
+            absPos = int(args)
+            self.client.publish(Topics.CONTROLLER_RELEASE, absPos)
+        except TypeError:
+            print("Can only move to float / int")
+
     def do_resetY(self, args):
         self.client.publish(Topics.CONTROLLER_RESET_Y)
 
@@ -95,6 +115,13 @@ class ClientPrompt(Cmd):
         if args == "states":
             print("Printing the states of the execution threads")
             self.client.publish(Topics.CONTROLLER_PRINT_STATES)
+
+    def do_delete(self, args):
+        if args == "first":
+            print("> Will delete first action in the current exec thread")
+            self.client.publish(Topics.CONTROLLER_DELETE_FIRST)
+        else:
+            print("> Delete what?")
 
     def do_quit(self, args):
         """Quits the program."""

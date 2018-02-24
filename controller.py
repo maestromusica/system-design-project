@@ -9,7 +9,7 @@ from config import mqttIps
 
 controllerClient = mqtt.Client()
 client11 = mqtt.Client()
-# client31 = mqtt.Client()
+client31 = mqtt.Client()
 
 visionTag = "vision"
 controllerTag = "controller"
@@ -17,7 +17,7 @@ controllerTag = "controller"
 def onStartController(client, userdata, msg, controller):
     visionActionQueue = ActionQueue()
     controllerActionQueue = ActionQueue()
-    mockBoxes(visionActionQueue)
+    # mockBoxes(visionActionQueue)
 
     controller.addActionQueue(visionTag, visionActionQueue)
     controller.addActionQueue(controllerTag, controllerActionQueue)
@@ -26,9 +26,6 @@ def onStartController(client, userdata, msg, controller):
     client11.publish(Topics.EV3_REQUEST_NEXT)
     print("> Controller started...")
     print("> EV3 next action published. EV3's should start working")
-
-def onStopController(client, userdata, msg, controller):
-    print("> Not implemented")
 
 def onSwitchExecutionThread(client, userdata, msg, controller):
     tag = msg.payload.decode()
@@ -46,8 +43,8 @@ def forwardAction(action):
             "action": action,
             "payload": payload
         })
-        client.publish(Topics.EV3_REQUEST_NEXT)
-        print("Next action added to the queue")
+        client11.publish(Topics.EV3_REQUEST_NEXT)
+        print("> Next action added to the queue")
 
     return curriedForwardedAction
 
@@ -69,6 +66,7 @@ def onEV3ActionCompleted(client, userdata, msg, controller):
         print(">>> No execution thread found in the controller!")
         return
     if currentExecThread.waiting():
+        print(">>> Thread was waiting")
         currentExecThread.state.waiting = False
     if currentExecThread.locked():
         print(">>> Execution thread is locked. Actions can't be performed")
@@ -110,10 +108,11 @@ def onRequestNextEV3Action(client, userdata, msg, controller):
             # controller.lockCurrentExecutionThread()
             client11.publish(
                 nextAction["action"],
-                json.dumps(nextAction["payload"]))
-            # client31.publish(
-                # nextAction["action"],
-                # json.dumps(nextAction["payload"]))
+                nextAction["payload"])
+            client31.publish(
+                nextAction["action"],
+                nextAction["payload"])
+            currentExecThread.state.waiting = True
             print("> Next action sent to ev3")
         else:
             print("> No actions in execution thread!")
@@ -127,14 +126,14 @@ def onEV3Stop(client, userdata, msg, controller):
     currentExecThread.lock()
     currentExecThread.state.waiting = False
     client11.publish(Topics.EV3_STOP)
-    #client31.publish(Topics.EV3_STOP)
+    client31.publish(Topics.EV3_STOP)
     print("> Action queue locked. Ev3s are STOPPED")
 
 def onEV3Resume(client, userdata, msg, controller):
     """This will resume the execution of the current execution thread.
     """
     client11.publish(Topics.EV3_RESUME)
-    #client31.publish(Topics.EV3_RESUME)
+    client31.publish(Topics.EV3_RESUME)
     currentExecThread = controller.currentExecutionThread()
     currentExecThread.unlock()
     print("> Execution thread unlocked and ready to resume")
@@ -145,24 +144,41 @@ def onEV3Pause(client, userdata, msg, controller):
     currentExecThread = controller.currentExecutionThread()
     currentExecThread.lock()
     client11.publish(Topics.EV3_PAUSE)
-    #client31.publish(Topics.EV3_PAUSE)
+    client31.publish(Topics.EV3_PAUSE)
     print("> Action queue is locked and ev3s are PAUSED")
     return
 
 def onPrintStates(client, userdata, msg, controller):
     print("> These are the current execution threads: ")
     for tag in controller.actionQueues:
-        print("{0} => {1}".format(tag, controller.actionQueues[tag].state))
+        print("{0} => {1} with actions:".format(
+            tag,
+            controller.actionQueues[tag].state),
+            controller.actionQueues[tag])
+
+def onDeleteFirstAction(client, userdata, msg, controller):
+    currentExecThread = controller.currentExecutionThread()
+    if not currentExecThread.state.locked:
+        print("> Current execution thread must be locked!")
+        print("> First action was NOT deleted.")
+        return
+    else:
+        # call on controller because it checks if the action is empty!
+        controller.removeFirstAction()
+        print("> First action WAS deleted.")
 
 controller = Controller()
 subscribedTopics = {
     # controller related
     Topics.START_CONTROLLER: onStartController,
     Topics.SWITCH_CONTROLLER_EXEC: onSwitchExecutionThread,
+    Topics.CONTROLLER_DELETE_FIRST: onDeleteFirstAction,
     # the controller will only forwards to ev3
     Topics.CONTROLLER_MOVE_X: forwardAction(Topics.EV3_MOVE_X),
     Topics.CONTROLLER_MOVE_Y: forwardAction(Topics.EV3_MOVE_Y),
     Topics.CONTROLLER_MOVE_Z: forwardAction(Topics.EV3_MOVE_Z),
+    Topics.CONTROLLER_GRAB: forwardAction(Topics.EV3_MOVE_GRAB),
+    Topics.CONTROLLER_RELEASE: forwardAction(Topics.EV3_MOVE_RELEASE),
     Topics.CONTROLLER_RESET_X: forwardAction(Topics.EV3_RESET_X),
     Topics.CONTROLLER_RESET_Y: forwardAction(Topics.EV3_RESET_Y),
     # ev3 related
@@ -184,9 +200,9 @@ def onMessage(client, userdata, msg):
     else:
         print("Topic {0} is not subscribed".format(msg.topic))
 
-# TODO: replace with file readings
+# TODO: replace with JSON
 client11.connect(mqttIps.EV3_11, 1883, 60)
-# client31.connect(mqttIps.EV3_31, 1883, 60)
+client31.connect(mqttIps.EV3_31, 1883, 60)
 controllerClient.connect(mqttIps.CONTROLLER, 1883, 60)
 
 def onEV3Connect(client, userdata, flags, rc):
@@ -200,13 +216,13 @@ def onEV3Message(client, userdata, msg):
         onEV3ActionCompleted(client, userdata, msg, controller)
 
 client11.on_connect = onEV3Connect
-# client31.on_connect = onEV3Connect
+client31.on_connect = onEV3Connect
 client11.on_message = onEV3Message
-# client31.on_message = onEV3Message
+client31.on_message = onEV3Message
 
 controllerClient.on_connect = onConnect
 controllerClient.on_message = onMessage
 
 client11.loop_start()
-# client31.loop_start()
+client31.loop_start()
 controllerClient.loop_forever()

@@ -1,12 +1,13 @@
 # TODO: instead of using hardcoded versioning, maybe we could import this from
 # a config
-version = "v0.0.1"
+version = "v0.1.0"
 
 def createTopicString(args):
     return "/".join(["api", version, args])
 
 class Topics:
     START_CONTROLLER = createTopicString("action/controller/start")
+    CONTROLLER_DELETE_FIRST = createTopicString("action/controller/delete/exec/first")
     # acts upon the ev3s (and the controller execution thread)
     STOP_CONTROLLER = createTopicString("action/controller/stop/ev3")
     RESUME_CONTROLLER = createTopicString("action/controller/resume/ev3")
@@ -27,7 +28,7 @@ class Topics:
     # ev3 lifecycle related
     EV3_STOP = createTopicString("action/ev3/stop")
     EV3_RESUME = createTopicString("action/ev3/resume")
-    EV3_PAUSE = createTopicString("action/ev3/fstop")
+    EV3_PAUSE = createTopicString("action/ev3/pause")
 
     # ev3 action related
     EV3_ACTION_COMPLETED = createTopicString("inform/ev3/action/completed")

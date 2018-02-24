@@ -57,7 +57,12 @@ class ActionQueue(Queue):
             return super(ActionQueue, self).get()
 
     def removeFirstElement(self):
+        # call get from super class because this removes
+        # the first element regardless if the queue is locked or not!
         super(ActionQueue, self).get()
+
+    def __str__(self):
+        return self.queue.__str__()
 
 
 class ActionQueueState():
