@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
-import Fairies as fs
+import MaskCalibrator as mc
+import CameraCalibration as cc
+#import Fairies as fs
 
 '''
 
@@ -26,23 +28,24 @@ method: calibrateMaskVals() :: NO INPUT
 class CalibrateCamera(object):
 
     def __init__(self):
-
+        pass
+    
     def calibrate(self):
     #runs the camera calibrator
-        return params
+        return cc.calibrateCamera()
 
 class CalibrateMaskVals(object):
 
     def __init__(self):
-
+        pass
     def calibrate(self):
     #runs the mask value calibrator
-        return params
+        return mc.main()
 
 class ProcessImage(object):
 
     def __init__(self,camParams,workspace,maskVals):
-
+        pass
     #returns dict of boxes {colorName:[boxObject]}
     def process(self, img):
         return boxes

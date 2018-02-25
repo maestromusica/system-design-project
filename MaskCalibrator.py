@@ -129,7 +129,7 @@ def gamma_correct(img,gamma):
     return np.uint8(img*255)
 
 def main():
-    print(gamma_correct)
+
     # Flag for return
     flag = False
     # Varibale to represent current colour mode:
@@ -203,7 +203,7 @@ def main():
                 print('Please complete configuration for following colors: {}'\
                       .format(incomplete))
         
-        elif k == ord('b):
+        elif k == ord('b'):
             return color_conf
 
         elif k == ord('<'):

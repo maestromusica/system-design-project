@@ -96,7 +96,7 @@ def getCamera(imgs, boardSize):
 
 def calibrateCamera(boardSize):
 
-    runChess(boardSize)
+    #runChess(boardSize)
 
     # getting file names
     files = glob('Images/f*.png')

@@ -42,11 +42,11 @@ class MaskGenerator(object):
     def openOrClose(self,mask,kernel):
         isopen = self.params[self.params.keys()[-1]]
         if isopen == 1:
-            mask = cv2.erode(mask,iterations = params['Erode'],kernel = kernel)
-            mask = cv2.dilate(mask,iterations = params['Dilate'],kernel = kernel)
+            mask = cv2.erode(mask,iterations = self.params['Erode'],kernel = kernel)
+            mask = cv2.dilate(mask,iterations = self.params['Dilate'],kernel = kernel)
         elif isopen == 0:
-            mask = cv2.dilate(mask,iterations = params['Dilate'],kernel = kernel)
-            mask = cv2.erode(mask,iterations = params['Erode'],kernel = kernel)
+            mask = cv2.dilate(mask,iterations = self.params['Dilate'],kernel = kernel)
+            mask = cv2.erode(mask,iterations = self.params['Erode'],kernel = kernel)
         return mask
 
     def extractMask(self,frame):
@@ -95,7 +95,7 @@ class ContourExtractor(object):
         # using cv2.RETR_EXTERNAL because this only returns the outer most contours in
         # a heirarchy of contours. (Solves box within a box problem)
         _,contours,_ = cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        max_area = 100
+        max_area = 2000
         select = []
         for cnt in contours:
             area = cv2.contourArea(cnt)
@@ -122,8 +122,9 @@ class ContourExtractor(object):
             # finding minimum area rect
             rect = cv2.minAreaRect(cnt)
             w,h = np.array(rect[1])
-            h += 5; w+=5;
-            box = cv2.boxPoints((rect[0],(w,h),rect[2]))
+            #h += 5; w+=5;
+            #box = cv2.boxPoints((rect[0],(w,h),rect[2]))
+            box = cv2.boxPoints(rect)
             box = np.int0(box)
             boxes.append((box,rect))
         return boxes
@@ -237,7 +238,7 @@ class Drawer(object):
         for z in corners:
             x,y = z.ravel()
             cv2.circle(frame,(x,y),3,[0,0,255],-1)
-            cv2.circle(frame,tuple(np.array(centroids,np.uint8)),2,[0,0,255],-1)
+        cv2.circle(frame,tuple(np.int0(centroids)),2,[255,0,0],-1)
             #print("Centroid X-Coordinate: %.2f and Y-Coordinate: %.2f" % (centroid[0], centroid[1]))
             #cv2.line(frame,tuple(corners[0]),tuple(corners[3]),[0,0,255],1)
             #cv2.line(frame,tuple(corners[1]),tuple(corners[2]),[0,0,255],1)
@@ -269,9 +270,9 @@ class PerspectiveTransform(object):
     '''
     def __init__(self,camParams,workspace):
 
-        #self.optimal_mtx = camParams['optmtx']
-        #self.camera_mtx = camParams['mtx']
-        #self.distcoeffs = camParams['distcoeffs']
+        self.optimal_mtx = camParams['optmtx']
+        self.camera_mtx = camParams['mtx']
+        self.distcoeffs = camParams['distcoeffs']
         
         pts1 = []
         pts2 = []
@@ -281,9 +282,10 @@ class PerspectiveTransform(object):
             pts2.append(workspace[k][1])
         self.original_points = np.float32(pts1)
         self.transformed_points = np.float32(pts2)
-
+        print(self.original_points)
+        print(self.transformed_points)
     def transform(self,frame):
-        #corrected_img = cv2.undistort(src=frame, cameraMatrix=mtx, distCoeffs=distcoeffs, newCameraMatrix=optimalmtx)
+        corrected_img = cv2.undistort(src=frame, cameraMatrix=self.camera_mtx, distCoeffs=self.distcoeffs, newCameraMatrix=self.optimal_mtx)
         #perspective transform of the boxes
         #find the points by the corners (find the corners of the work area) in the corrected image
 
@@ -296,7 +298,7 @@ class PerspectiveTransform(object):
         #x, y, z = M.dot(point)
         M = cv2.getPerspectiveTransform(self.original_points,self.transformed_points)
 
-        return cv2.warpPerspective(frame,M,(200,500))
+        return cv2.warpPerspective(corrected_img,M,(400,850))
 
 class Box(object):
     '''
@@ -354,20 +356,19 @@ class BoxExtractor(object):
     
 
     def processImage(self, frame):
-        draw = frame.copy()
         changed_image = self.changePerspective.transform(frame)
+        draw = changed_image.copy()
         for c in self.colours:
             boxes= []
             mask = self.maskGenerators[c].extractMask(changed_image)
-            #cv2.imshow('mask-{}'.format(c),mask)
-            #cv2.waitKey(10)
+            cv2.imshow('mask-{}'.format(c),mask)
             contours = self.contourExtractor.segmentation(mask)
             if len(contours) > 0:
                 for box,rect in contours:
                     corners,centroid = self.cornersDetector.detectCorners(changed_image,mask,box)
-                    draw = self.drawer.drawBox(draw,corners,centroid,'r')
+                    #draw = self.drawer.drawBox(draw,corners,centroid,'r')
                     draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'b')
-                    boxes.append(Box(centroid,corners,c,rect[2]).getDetails())
+                    boxes.append(Box(rect[0],box,c,rect[2]))
                 self.boxes[c] = boxes
                 draw = self.drawer.putText(draw,c,len(boxes))
             #else:

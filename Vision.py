@@ -1,6 +1,7 @@
-from cv2 import VideoCapture
+import cv2
 from base import BoxExtractor
 import GlobalParams as gp
+import Gods
 import cPickle as pkl
 
 '''this file is the public facing agent of the vision system. no other bits of the vision system should be called by outside forces.
@@ -36,14 +37,18 @@ class Vision(object):
         self.camParams = gp.getCamParams(cam)
         self.workspace = gp.getWorkSpace(wkspc)
         self.maskVals = gp.getMaskVals(maskv)
-        self.cap = VideoCapture(0)
+        self.cap = cv2.VideoCapture(0)
         self.boxExtractor = BoxExtractor(self.maskVals,self.camParams,self.workspace)
+
 
     def go(self):
         
         #take a picture
         _ ,img = self.cap.read()
         #process the image and return boxes
+        img = cv2.flip(img,1)
+        cv2.imshow('img',img)
+        cv2.waitKey(1)
         image, boxes = self.boxExtractor.processImage(img)
         #unpack boxes into info we want to return
         return image, boxes
@@ -52,13 +57,13 @@ class Vision(object):
         cam = Gods.CalibrateCamera()
         data = cam.calibrate()
         filename = raw_input('Enter name for the configuration file: ')
-        save(filename,data)
+        self.save(filename,data)
 
     def calibrateMaskVals(self):
         maskvals = Gods.CalibrateMaskVals()
         data = maskvals.calibrate()
         filename = raw_input('Enter name for the configuration file: ')
-        save(filename,data)
+        self.save(filename,data)
 
     def save(self, filename, data):
         f = open(filename,'w')
