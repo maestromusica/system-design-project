@@ -12,8 +12,11 @@ class MaskGenerator(object):
     def __init__(self,params,colour):
         self.colour = colour
         self.params = params
+        #self.low = np.array(params['Low'])
+        #self.high = np.array(params['High'])
         self.low = np.array([params['H_min'],params['S_min'],params['V_min']])
         self.high = np.array([params['H_max'],params['S_max'],params['V_max']])
+    
         self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
         print('Created MaskGenerator object for {} colour.'.format(colour))
         print('\t Parameters : {}'.format(self.params))
@@ -233,7 +236,7 @@ class Drawer(object):
     ''' Class to draw boxes on input frame '''
     def __init__(self):
         self.colors = {'r':[0,0,255],'g':[0,255,0],'b':[255,0,0]}
-
+    
     def drawBox(self,frame,corners,centroids,color='r'):
         for z in corners:
             x,y = z.ravel()
@@ -299,22 +302,28 @@ class PerspectiveTransform(object):
         M = cv2.getPerspectiveTransform(self.original_points,self.transformed_points)
 
         return cv2.warpPerspective(corrected_img,M,(400,850))
-
+    
+##class for box objects
 class Box(object):
     '''
     Class to create objects of detected boxes.
     '''
 
-    def __init__(self,(cx,cy),corners,colour,orientation):
+    def __init__(self,(cx,cy),length,width,colour,rotation):
         self.centroid = (cx,cy)
-        self.corners = corners
+        self.length = length
+        self.width = width
         self.colour = colour
-        self.orientation = orientation
+        self.rotation = rotation
+
 
     def getDetails(self):
         detail = {}
         detail['centroid'] = self.centroid
         detail['colour'] = self.colour
+	detail['length'] = self.length
+	detail['width'] = self.width
+	detail['rotation'] = self.rotation
         detail_json = json.dumps(detail)
         return detail_json
 
@@ -338,22 +347,7 @@ class BoxExtractor(object):
         self.cornersDetector = CornersDetector(quality=quality)
         self.drawer = Drawer()
 
-    
 
-    def readParams(self,filename):
-        f = open(filename,'r')
-        while(f is None or filename == 'q'):
-            print('BoxExtractor::readParams: {} does not exist.'.format(filename))
-            filename = raw_input('Enter Filename(`q` to exit) : ')
-            if filename == 'q':
-                print('Exiting..')
-                raise SystemExit
-            f = open(filename,'r')
-        params = pickle.load(f)
-        f.close()
-        return params
-
-    
 
     def processImage(self, frame):
         changed_image = self.changePerspective.transform(frame)

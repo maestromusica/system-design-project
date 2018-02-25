@@ -1,8 +1,7 @@
 import cv2
 from base import BoxExtractor
-import GlobalParams as gp
 import Gods
-import cPickle as pkl
+from GlobalParams import GlobalParams
 
 '''this file is the public facing agent of the vision system. no other bits of the vision system should be called by outside forces.
 
@@ -33,39 +32,48 @@ method: save() :: saves data to a pickle file
 class Vision(object):
 
     def __init__(self,cam=None,wkspc=None,maskv=None):
+
+        gp = GlobalParams()
         #get values for parameters
         self.camParams = gp.getCamParams(cam)
         self.workspace = gp.getWorkSpace(wkspc)
         self.maskVals = gp.getMaskVals(maskv)
         self.cap = cv2.VideoCapture(0)
-        self.boxExtractor = BoxExtractor(self.maskVals,self.camParams,self.workspace)
+        self.processor = Gods.ImageProcessor(self.camParams,self.workspace,self.maskVals)
+        self.camcal = Gods.CamCalibrator(gp.boardSize)
+        self.maskcal = Gods.MaskValueCalibrator()
 
 
     def go(self):
-        
-        #take a picture
-        _ ,img = self.cap.read()
-        #process the image and return boxes
+        ret, img = self.cap.read()
         img = cv2.flip(img,1)
         cv2.imshow('img',img)
         cv2.waitKey(1)
-        image, boxes = self.boxExtractor.processImage(img)
-        #unpack boxes into info we want to return
-        return image, boxes
+        bimg, boxes = self.processor.process(img)
+        return bimg, boxes        
 
     def calibrateCamera(self):
-        cam = Gods.CalibrateCamera()
-        data = cam.calibrate()
-        filename = raw_input('Enter name for the configuration file: ')
-        self.save(filename,data)
+        data = self.camcal.calibrate()
+        if data is not None:
+            self.save(data)
+            if self.usenow():
+                self.camParams = data
 
     def calibrateMaskVals(self):
-        maskvals = Gods.CalibrateMaskVals()
-        data = maskvals.calibrate()
-        filename = raw_input('Enter name for the configuration file: ')
-        self.save(filename,data)
+        data = self.maskcal.calibrate()
+        if data is not None:
+            self.save(data)
+            if self.usenow():
+                self.maskVals = data
 
-    def save(self, filename, data):
+    def save(self, data):
+        filename = raw_input('Enter name for the configuration file: ')
         f = open(filename,'w')
         pkl.dump(data,f)
         f.close()
+        
+    def usenow(self):
+        yn = raw_input('Would you like to use these settings now? [Y/n]')
+        if yn.lower() == 'n':
+            return False
+        else: return True
