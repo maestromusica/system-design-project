@@ -65,6 +65,12 @@ def onResume(client, userdata, msg):
 def onPause(client, userdata, msg):
     pass
 
+def onPrint(client, userdata, msg):
+    client.publish(Topics.CONTROLLER_PRINT, "yax1: {0}".format(yax1.position_sp))
+    client.publish(Topics.CONTROLLER_PRINT, "yax2: {0}".format(yax2.position_sp))
+    client.publish(Topics.CONTROLLER_PRINT, "zax: {0}".format(zax.position_sp))
+    client.publish(Topics.CONTROLLER_PRINT, "grabber: {0}".format(grabber.position_sp))
+
 subscribedTopics = {
     Topics.EV3_MOVE_Y: onMoveY,
     Topics.EV3_MOVE_Z: onMoveZ,
@@ -73,7 +79,8 @@ subscribedTopics = {
     Topics.EV3_STOP: onStop,
     Topics.EV3_RESUME: onResume,
     Topics.EV3_PAUSE: onPause,
-    Topics.EV3_RESET_Y: onResetY
+    Topics.EV3_RESET_Y: onResetY,
+    Topics.EV3_PRINT_POS: onPrint
 }
 
 def onConnect(client, userdata, flags, rc):

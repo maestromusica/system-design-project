@@ -16,17 +16,26 @@ visionTag = "vision"
 controllerTag = "controller"
 
 def onStartController(client, userdata, msg, controller):
-    visionActionQueue = ActionQueue()
+    visionActionQueue = ActionQueue(pending=False)
     controllerActionQueue = ActionQueue()
-    # mockBoxes(visionActionQueue)
 
     controller.addActionQueue(visionTag, visionActionQueue)
     controller.addActionQueue(controllerTag, controllerActionQueue)
     controller.changeExecutionQueue(visionTag)
 
-    client11.publish(Topics.EV3_REQUEST_NEXT)
     print("> Controller started...")
-    print("> EV3 next action published. EV3's should start working")
+
+def onProcess(client, userdata, msg, controller):
+    controller.changeExecutionQueue(visionTag)
+    visionActionQueue = controller.actionQueues[visionTag]
+    mockBoxes(visionActionQueue)
+
+    currentExecThread = controller.currentExecutionThread()
+    if currentExecThread.state.pending:
+        client11.publish(Topics.EV3_REQUEST_NEXT)
+        print("> EV3 next action published. EV3's should start working")
+    else:
+        print("> Boxes added!")
 
 def onSwitchExecutionThread(client, userdata, msg, controller):
     tag = msg.payload.decode()
@@ -35,6 +44,38 @@ def onSwitchExecutionThread(client, userdata, msg, controller):
         print("> Execution thread switched to {0}".format(tag))
     else:
         print("> Execution thread not switched to {0}".format(tag))
+
+def onSwitchToPending(client, userdata, msg, controller):
+    tag = msg.payload.decode()
+    execThread = None
+    if tag == "":
+        execThread = controller.currentExecutionThread()
+    else:
+        execThread = controller.actionQueues[tag]
+
+    if execThread.state.waiting:
+        print("Execution thread is waiting for an action to finish.")
+        print("Please stop the execution thread and then switch to pending!")
+        return
+
+    execThread.state.pending = True
+    print("Execution thread was switched to pending")
+
+def onSwitchToNotPending(client, userdata, msg, controller):
+    tag = msg.payload.decode()
+    execThread = None
+    if tag == "":
+        execThread = controller.currentExecutionThread()
+    else:
+        execThread = controller.actionQueues[tag]
+
+    if execThread.state.waiting:
+        print("Execution thread is waiting for an action to finish.")
+        print("Please stop the execution thread and then switch to not pending!")
+        return
+
+    execThread.state.pending = False
+    print("Execution thread was switched to pending")
 
 def forwardAction(action):
     def curriedForwardedAction(client, userdata, msg, controller):
@@ -106,13 +147,8 @@ def onRequestNextEV3Action(client, userdata, msg, controller):
     if currentExecThread.running():
         if not currentExecThread.empty():
             nextAction = controller.nextAction()
-            # controller.lockCurrentExecutionThread()
-            client11.publish(
-                nextAction["action"],
-                nextAction["payload"])
-            client31.publish(
-                nextAction["action"],
-                nextAction["payload"])
+            client11.publish(nextAction["action"], nextAction["payload"])
+            client31.publish(nextAction["action"], nextAction["payload"])
             currentExecThread.state.waiting = True
             print("> Next action sent to ev3")
         else:
@@ -157,23 +193,69 @@ def onPrintStates(client, userdata, msg, controller):
             controller.actionQueues[tag].state),
             controller.actionQueues[tag])
 
-def onDeleteFirstAction(client, userdata, msg, controller):
+def onPrintPositions(client, userdata, msg, controller):
+    print("> These are the current positions: ")
+    client11.publish(Topics.EV3_PRINT_POS)
+    client31.publish(Topics.EV3_PRINT_POS)
+
+def onDelete(client, userdata, msg, controller):
     currentExecThread = controller.currentExecutionThread()
+    payload = msg.payload.decode()
+    pos = None
+
     if not currentExecThread.state.locked:
         print("> Current execution thread must be locked!")
-        print("> First action was NOT deleted.")
+        print("> Action was NOT deleted.")
+        return
+
+    if payload == "first":
+        pos = 0
+    elif payload == "last":
+        pos = len(currentExecThread) - 1
+    elif payload == "all":
+        for i in range(len(currentExecThread)):
+            currentExecThread.remove(0)
+        print("> Deleted all actions in the queue")
         return
     else:
-        # call on controller because it checks if the action is empty!
-        controller.removeFirstAction()
-        print("> First action WAS deleted.")
+        # asusmed it's an integer
+        pos = int(payload)
+
+    if pos >= 0 and pos < len(currentExecThread):
+        removed = currentExecThread.remove(pos)
+        if removed == None:
+            print("> Action was not deleted!")
+        else:
+            print("> Action WAS deleted.")
+    else:
+        print("Positional argument is not within queue boundary")
+        return
+
+def onNext(client, userdata, msg, controller):
+    currentExecThread = controller.currentExecutionThread()
+    if currentExecThread.state.pending:
+        print("> Current exec thread is already pending")
+        print("> Next action is not implemented for pending threads")
+        return
+    if currentExecThread.state.waiting:
+        print("> Can't send next action because thread is waiting!")
+        return
+    if currentExecThread.state.locked:
+        print("> Current exec thread is locked!")
+        return
+    client11.publish(Topics.EV3_REQUEST_NEXT)
+    print("> Next action should be sent to ev3.")
 
 controller = Controller()
 subscribedTopics = {
     # controller related
     Topics.START_CONTROLLER: onStartController,
+    Topics.PROCESS_CONTROLLER: onProcess,
     Topics.SWITCH_CONTROLLER_EXEC: onSwitchExecutionThread,
-    Topics.CONTROLLER_DELETE_FIRST: onDeleteFirstAction,
+    Topics.CONTROLLER_DELETE: onDelete,
+    Topics.SWITCH_EXEC_PENDING: onSwitchToPending,
+    Topics.SWITCH_EXEC_NOT_PENDING: onSwitchToNotPending,
+    Topics.CONTROLLER_NEXT_ACTION: onNext,
     # the controller will only forwards to ev3
     Topics.CONTROLLER_MOVE_X: forwardAction(Topics.EV3_MOVE_X),
     Topics.CONTROLLER_MOVE_Y: forwardAction(Topics.EV3_MOVE_Y),
@@ -188,6 +270,7 @@ subscribedTopics = {
     Topics.RESUME_CONTROLLER: onEV3Resume,
     # client-controller related
     Topics.CONTROLLER_PRINT_STATES: onPrintStates,
+    Topics.CONTROLLER_PRINT_POS: onPrintPositions
 }
 
 def onConnect(client, userdata, flags, rc):
@@ -205,15 +288,21 @@ client11.connect(config["ips"]["INF_11"], 1883, 60)
 client31.connect(config["ips"]["INF_31"], 1883, 60)
 controllerClient.connect(config["ips"]["CONTROLLER"], 1883, 60)
 
+def onPrint(client, userdata, msg, controller):
+    print(msg.payload.decode())
+
 def onEV3Connect(client, userdata, flags, rc):
     client.subscribe(Topics.EV3_REQUEST_NEXT)
     client.subscribe(Topics.EV3_ACTION_COMPLETED)
+    client.subscribe(Topics.CONTROLLER_PRINT)
 
 def onEV3Message(client, userdata, msg):
     if msg.topic == Topics.EV3_REQUEST_NEXT:
         onRequestNextEV3Action(client, userdata, msg, controller)
     elif msg.topic == Topics.EV3_ACTION_COMPLETED:
         onEV3ActionCompleted(client, userdata, msg, controller)
+    elif msg.topic == Topics.CONTROLLER_PRINT:
+        onPrint(client, userdata, msg, controller)
 
 client11.on_connect = onEV3Connect
 client31.on_connect = onEV3Connect

@@ -36,7 +36,7 @@ def mockBoxes(actionQueue):
         })
         actionQueue.put({
             "action": Topics.EV3_MOVE_GRAB,
-            "payload": {}
+            "payload": None
         })
         actionQueue.put({
             "action": Topics.EV3_MOVE_X,
@@ -48,5 +48,5 @@ def mockBoxes(actionQueue):
         })
         actionQueue.put({
             "action": Topics.EV3_MOVE_RELEASE,
-            "payload": {}
+            "payload": None
         })

@@ -29,7 +29,7 @@ class ClientPrompt(Cmd):
             try:
                 absPos = int(args)
                 self.client.publish(Topics.CONTROLLER_MOVE_X, absPos)
-            except TypeError:
+            except:
                 print("Can move to either a float or \"start\"")
 
     def do_moveY(self, args):
@@ -40,7 +40,7 @@ class ClientPrompt(Cmd):
             try:
                 absPos = int(args)
                 self.client.publish(Topics.CONTROLLER_MOVE_Y, absPos)
-            except TypeError:
+            except:
                 print("Can move to either a float or to \"start\"")
 
     def do_resetX(self, args):
@@ -54,7 +54,7 @@ class ClientPrompt(Cmd):
             try:
                 absPos = int(args)
                 self.client.publish(Topics.CONTROLLER_MOVE_Z, absPos)
-            except TypeError:
+            except:
                 print("Can move to either a float or to \"start\"")
 
     def do_grab(self, args):
@@ -64,7 +64,7 @@ class ClientPrompt(Cmd):
         try:
             absPos = int(args)
             self.client.publish(Topics.CONTROLLER_GRAB, absPos)
-        except TypeError:
+        except:
             print("Can only move to float / int")
 
     def do_release(self, args):
@@ -74,7 +74,7 @@ class ClientPrompt(Cmd):
         try:
             absPos = int(args)
             self.client.publish(Topics.CONTROLLER_RELEASE, absPos)
-        except TypeError:
+        except:
             print("Can only move to float / int")
 
     def do_resetY(self, args):
@@ -87,6 +87,10 @@ class ClientPrompt(Cmd):
         else:
             print("Starting the controller...")
             self.client.publish(Topics.START_CONTROLLER)
+
+    def do_process(self, args):
+        print("Processing the image!")
+        self.client.publish(Topics.PROCESS_CONTROLLER)
 
     def do_stop(self, args):
         if len(args) == 0:
@@ -111,17 +115,41 @@ class ClientPrompt(Cmd):
             print("Switching to execution thread: {0}".format(args))
             self.client.publish(Topics.SWITCH_CONTROLLER_EXEC, args)
 
+    def do_pending(self, args):
+        if len(args) == 0:
+            print("Will switch to pending the current exec thread")
+            self.client.publish(Topics.SWITCH_EXEC_PENDING, "")
+        else:
+            print("Thread {0} will switch to pending".format(args))
+            self.client.publish(Topics.SWITCH_EXEC_PENDING, args)
+
+    def do_npending(self, args):
+        if len(args) == 0:
+            print("Will switch to not pending the current exec thread")
+            self.client.publish(Topics.SWITCH_EXEC_NOT_PENDING, "")
+            return
+        else:
+            print("Thread {0} will switch to not pending".format(args))
+            self.client.publish(Topics.SWITCH_EXEC_NOT_PENDING, args)
+
+    def do_next(self, args):
+        self.client.publish(Topics.CONTROLLER_NEXT_ACTION)
+        print("Next action should start any time")
+
     def do_print(self, args):
         if args == "states":
             print("Printing the states of the execution threads")
             self.client.publish(Topics.CONTROLLER_PRINT_STATES)
+        elif args == "pos" or args == "positions" or args == "position":
+            print("Printing the states of the motor positions")
+            self.client.publish(Topics.CONTROLLER_PRINT_POS)
 
     def do_delete(self, args):
-        if args == "first":
-            print("> Will delete first action in the current exec thread")
-            self.client.publish(Topics.CONTROLLER_DELETE_FIRST)
-        else:
+        if len(args) == 0:
             print("> Delete what?")
+        else:
+            print("> Delete action sent to controller")
+            self.client.publish(Topics.CONTROLLER_DELETE, args)
 
     def do_quit(self, args):
         """Quits the program."""
