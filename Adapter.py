@@ -32,14 +32,10 @@ class Adaptor(object):
         return pickPoints
             
     def do_stuff(self):
-        while True:
            image, boxes = self.vision.go()
            cv2.imshow('frame',image)
            pickPoints = self.getPickPoints(boxes)
-           print(pickPoints)
-           if cv2.waitKey(10) and 0xFF == 32:
-               break
-        cv2.destroyAllWindows()
+           return pickPoints
 
 adaptor = Adaptor()
 adaptor.do_stuff()
