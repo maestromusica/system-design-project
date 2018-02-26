@@ -59,10 +59,10 @@ subscribedTopics = {
 }
 
 def onConnect(client, userdata, flags, rc):
-    print("EV_31 Client connected!")
-    print("======== SortX ========")
     for topic in subscribedTopics.keys():
         client.subscribe(topic)
+    print("EV_31 Client connected!")
+    print("======== SortX ========")
 
 def onMessage(client, userdata, msg):
     print("Action Executed: ", msg.topic)

@@ -4,7 +4,7 @@ import paho.mqtt.client as mqtt
 from _controller import Controller
 from message_types import Topics
 from action_queue import ActionQueue, ActionQueueLockedException
-from box_helper import mockBoxes
+from box_helper import mockBoxes, quantitative1
 
 config = json.load(open("config.json"))
 
@@ -28,7 +28,7 @@ def onStartController(client, userdata, msg, controller):
 def onProcess(client, userdata, msg, controller):
     controller.changeExecutionQueue(visionTag)
     visionActionQueue = controller.actionQueues[visionTag]
-    mockBoxes(visionActionQueue)
+    quantitative1(visionActionQueue)
 
     currentExecThread = controller.currentExecutionThread()
     if currentExecThread.state.pending:
@@ -85,7 +85,9 @@ def forwardAction(action):
             "action": action,
             "payload": payload
         })
-        client11.publish(Topics.EV3_REQUEST_NEXT)
+        currentExecThread = controller.currentExecutionThread()
+        if currentExecThread.state.pending:
+            client11.publish(Topics.EV3_REQUEST_NEXT)
         print("> Next action added to the queue")
 
     return curriedForwardedAction
@@ -264,6 +266,7 @@ subscribedTopics = {
     Topics.CONTROLLER_RELEASE: forwardAction(Topics.EV3_MOVE_RELEASE),
     Topics.CONTROLLER_RESET_X: forwardAction(Topics.EV3_RESET_X),
     Topics.CONTROLLER_RESET_Y: forwardAction(Topics.EV3_RESET_Y),
+    Topics.CONTROLLER_RESET_Z: forwardAction(Topics.EV3_RESET_Z),
     # ev3 related
     Topics.STOP_CONTROLLER: onEV3Stop,
     Topics.PAUSE_CONTROLLER: onEV3Pause,

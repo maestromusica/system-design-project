@@ -15,6 +15,10 @@ def onResetY(client, userdata, msg):
     resetYAxis() # reset axis doesn't need stop function
     client.publish(Topics.EV3_ACTION_COMPLETED)
 
+def onResetZ(client, userdata, msg):
+    resetZAxis()
+    client.publish(Topics.EV3_ACTION_COMPLETED)
+
 def onMoveY(client, userdata, msg):
     global flag
 
@@ -80,14 +84,15 @@ subscribedTopics = {
     Topics.EV3_RESUME: onResume,
     Topics.EV3_PAUSE: onPause,
     Topics.EV3_RESET_Y: onResetY,
+    Topics.EV3_RESET_Z: onResetZ,
     Topics.EV3_PRINT_POS: onPrint
 }
 
 def onConnect(client, userdata, flags, rc):
-    print("EV3_11 Client connected!")
-    print("======== SortX ========")
     for topic in subscribedTopics.keys():
         client.subscribe(topic)
+    print("EV3_11 Client connected!")
+    print("======== SortX ========")
 
 def onMessage(client, userdata, msg):
     print("Action Executed: ", msg.topic)

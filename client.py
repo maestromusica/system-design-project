@@ -80,6 +80,9 @@ class ClientPrompt(Cmd):
     def do_resetY(self, args):
         self.client.publish(Topics.CONTROLLER_RESET_Y)
 
+    def do_resetZ(self, args):
+        self.client.publish(Topics.CONTROLLER_RESET_Z)
+
     def do_start(self, args):
         """Starts the system and polls for an image"""
         if len(args) > 0:
