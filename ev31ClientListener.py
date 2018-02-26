@@ -45,19 +45,24 @@ def onResume(client, userdata, msg):
 def onPause(client, userdata, msg):
     pass
 
+def onPrint(client, userdata, msg):
+    client.publish(Topics.CONTROLLER_PRINT, "xax1: {0}".format(xax1.position_sp))
+    client.publish(Topics.CONTROLLER_PRINT, "xax2: {0}".format(xax2.position_sp))
+
 subscribedTopics = {
     Topics.EV3_MOVE_X: onMoveX,
     Topics.EV3_STOP: onStop,
     Topics.EV3_RESUME: onResume,
     Topics.EV3_PAUSE: onPause,
-    Topics.EV3_RESET_X: onResetX
+    Topics.EV3_RESET_X: onResetX,
+    Topics.EV3_PRINT_POS: onPrint
 }
 
 def onConnect(client, userdata, flags, rc):
-    print("EV_31 Client connected!")
-    print("======== SortX ========")
     for topic in subscribedTopics.keys():
         client.subscribe(topic)
+    print("EV_31 Client connected!")
+    print("======== SortX ========")
 
 def onMessage(client, userdata, msg):
     print("Action Executed: ", msg.topic)

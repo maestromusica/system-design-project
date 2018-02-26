@@ -21,6 +21,10 @@ def onEV3Resume(client, userdata, msg):
 def onEV3Pause(client, userdata, msg):
     print("> EV3 Pause not implemented")
 
+def onPrint(client, userdata, msg):
+    print("xax1: 900")
+    client.publish(Topics.CONTROLLER_PRINT, "xax1: 900")
+
 subscribedTopics = {
     Topics.EV3_MOVE_X: onEV3Action,
     Topics.EV3_MOVE_Y: onEV3Action,
@@ -31,7 +35,8 @@ subscribedTopics = {
     Topics.EV3_RESET_Y: onEV3Action,
     Topics.EV3_STOP: onEV3Stop,
     Topics.EV3_RESUME: onEV3Resume,
-    Topics.EV3_PAUSE: onEV3Pause
+    Topics.EV3_PAUSE: onEV3Pause,
+    Topics.EV3_PRINT_POS: onPrint
 }
 
 def onConnect(client, userdata, flags, rc):

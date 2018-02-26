@@ -19,11 +19,15 @@ class ActionQueue(Queue):
     the next action is sent immediately
     - CONTINUOUS: the next action is only sent if "next" is pressed on the client
     """
-    def __init__(self):
+    def __init__(self, running=False, locked=False, pending=True, waiting=False):
         super(ActionQueue, self).__init__()
         # init the state dictionary (could be just an array)
         # but it is simpler in the future to store it as a dict
-        self.state = ActionQueueState()
+        self.state = ActionQueueState(
+            running=running,
+            locked=locked,
+            waiting=waiting,
+            pending=pending)
 
 
     def locked(self):
@@ -61,8 +65,35 @@ class ActionQueue(Queue):
         # the first element regardless if the queue is locked or not!
         super(ActionQueue, self).get()
 
+    def remove(self, position):
+        if position < 0 or position >= self.__len__():
+            return None
+        else:
+            i = 0
+            elementsBefore = Queue()
+            # remove elements before position
+            while i < position:
+                el = super(ActionQueue, self).get()
+                elementsBefore.put(el)
+                i += 1
+            super(ActionQueue, self).get()
+            # remove elements after position
+            while self.__len__() > 0:
+                el = super(ActionQueue, self).get()
+                elementsBefore.put(el)
+            # add elements back in the queue
+            # the queue, by now, should be empty
+            while len(elementsBefore.queue) > 0:
+                el = elementsBefore.get()
+                super(ActionQueue, self).put(el)
+
+            return True
+
     def __str__(self):
         return self.queue.__str__()
+
+    def __len__(self):
+        return self.queue.__len__()
 
 
 class ActionQueueState():
@@ -74,11 +105,11 @@ class ActionQueueState():
     # PENDING = "PENDING"
     # # action queue waits for ev3 to finish current action
     # WAITING = "WAITING"
-    def __init__(self):
-        self.running = False
-        self.locked = False
-        self.waiting = False
-        self.pending = True
+    def __init__(self, running, locked, waiting, pending):
+        self.running = running
+        self.locked = locked
+        self.waiting = waiting
+        self.pending = pending
 
     def __str__(self):
         str = "["
