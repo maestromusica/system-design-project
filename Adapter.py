@@ -18,24 +18,26 @@ class Adaptor(object):
         return modelX,modelY
 
     def AdaptPoints(self, centroid):
-        print(centroid)
         y = self.AdapterY.predict(centroid[0])
         x = self.AdapterX.predict(centroid[1]) - 100
         return (x,y)
 
     def getPickPoints(self,boxes):
-        pickPoints = []
+        picks = {}
         for b in boxes.keys():
             box = boxes[b]
+            pickPoints = []
             for bo in box:
                 pickPoints.append(self.AdaptPoints(bo.centroid))
-        return pickPoints
+            picks[b] = pickPoints
+            
+        return picks
             
     def do_stuff(self):
            image, boxes = self.vision.go()
            cv2.imshow('frame',image)
            pickPoints = self.getPickPoints(boxes)
-           return pickPoints
+           return image, pickPoints
 
-adaptor = Adaptor()
-adaptor.do_stuff()
+#adaptor = Adaptor()
+#adaptor.do_stuff()

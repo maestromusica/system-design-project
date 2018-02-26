@@ -2,7 +2,7 @@ import cv2
 from base import BoxExtractor
 import Gods
 from GlobalParams import GlobalParams
-
+import cPickle as pkl
 '''this file is the public facing agent of the vision system. no other bits of the vision system should be called by outside forces.
 
 method: go() :: OPTIONAL INPUT as follows
@@ -38,7 +38,7 @@ class Vision(object):
         self.camParams = gp.getCamParams(cam)
         self.workspace = gp.getWorkSpace(wkspc)
         self.maskVals = gp.getMaskVals(maskv)
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(1)
         self.processor = Gods.ImageProcessor(self.camParams,self.workspace,self.maskVals)
         self.camcal = Gods.CamCalibrator(gp.boardSize)
         self.maskcal = Gods.MaskValueCalibrator()

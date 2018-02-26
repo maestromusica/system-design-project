@@ -198,7 +198,7 @@ class CornersDetector(object):
             return corners, centroid
 
         else:
-            print "No corners found."
+            print("No corners found.")
             return None,None
 
     def findNearestPoints(self,box, corners):
@@ -280,7 +280,7 @@ class PerspectiveTransform(object):
         pts1 = []
         pts2 = []
         for k in workspace.keys():
-            print k
+            print(k)
             pts1.append(workspace[k][0])
             pts2.append(workspace[k][1])
         self.original_points = np.float32(pts1)
@@ -309,8 +309,8 @@ class Box(object):
     Class to create objects of detected boxes.
     '''
 
-    def __init__(self,(cx,cy),length,width,colour,rotation):
-        self.centroid = (cx,cy)
+    def __init__(self,centroid,length,width,colour,rotation):
+        self.centroid = centroid
         self.length = length
         self.width = width
         self.colour = colour
@@ -321,9 +321,9 @@ class Box(object):
         detail = {}
         detail['centroid'] = self.centroid
         detail['colour'] = self.colour
-	detail['length'] = self.length
-	detail['width'] = self.width
-	detail['rotation'] = self.rotation
+        detail['length'] = self.length
+        detail['width'] = self.width
+        detail['rotation'] = self.rotation
         detail_json = json.dumps(detail)
         return detail_json
 

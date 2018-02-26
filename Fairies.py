@@ -61,7 +61,7 @@ class boxFinder(object):
             if len(contours) > 0:
                 for box, rect in contours:
                     corners, centroid = self.cornersDetector.detectCorners(img, m, box)
-                    draw = self.drawer.drawBox(img,corners,centroid,'r')
+                    #draw = self.drawer.drawBox(img,corners,centroid,'r')
                     draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'b')
                     boxes.append(Box(rect[0], rect[1][1],rect[1][0],k,rect[2]))
                 self.boxDict.update({k:boxes})

@@ -20,6 +20,8 @@ from __future__ import print_function
 import cv2
 import numpy as np
 import cPickle as pickle
+from Fairies import wsFinder
+from GlobalParams import GlobalParams
 
 # Declaring Global variables
 
@@ -42,10 +44,10 @@ def createParameters():
     params['S_max'] = 255
     params['V_min'] = 255
     params['V_max'] = 255
-    params['Erode'] = 5
-    params['Dilate'] = 5
+    params['Erode'] = 10
+    params['Dilate'] = 10
     params['open:1 / close:0'] = 1
-    params['blur'] = 5
+    params['blur'] = 10
 
     return params
 
@@ -129,7 +131,10 @@ def gamma_correct(img,gamma):
     return np.uint8(img*255)
 
 def main():
-    print(gamma_correct)
+    
+    gp = GlobalParams()
+    pt = wsFinder(gp.getCamParams(None),gp.getWorkSpace(None))
+    
     # Flag for return
     flag = False
     # Varibale to represent current colour mode:
@@ -144,21 +149,21 @@ def main():
     createTrackbars(params)
     
     # creatin camera object
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
 
     # Creating kernel element for erosion/dilation
-    kernel = np.ones((5,5))
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
     
     # Infinte Processing Loop
     while True:
         ret, frame = cap.read()
-
+        frame = pt.find(cv2.flip(frame,1))
         # updating values
         params = readTrackbars(params)
 
         blur = frame.copy()
         for _ in xrange(params['blur']):
-            blur = cv2.bilateralFilter(blur,9,75,75)
+            blur = cv2.bilateralFilter(blur,3,50,50)
 
         gamma = gamma_correct(blur,params['gamma'])
         
@@ -174,7 +179,8 @@ def main():
 
         # Applying erosion and dilation
         mask = open_close(mask,kernel,params)
-
+        #mask = cv2.erode(mask,iterations = params['Erode'],kernel = kernel)
+        #mask = cv2.dilate(mask,iterations = params['Dilate'],kernel = kernel)
         # result
         res = cv2.bitwise_and(frame,frame,mask=mask)
 

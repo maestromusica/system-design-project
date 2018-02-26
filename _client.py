@@ -6,9 +6,9 @@ import json
 from message_types import Topics
 
 
-class ClientPrompt(Cmd):
+class ClientPrompt():
     def __init__(self, client):
-        super(ClientPrompt, self).__init__()
+        #super(ClientPrompt, self).__init__()
 
         self.client = client
         self.client.connect("127.0.0.1", 1883, 60)
@@ -22,45 +22,49 @@ class ClientPrompt(Cmd):
         pass
 
     def do_moveX(self, args):
-        if args == "start":
+        '''if args == "start":
             print("Not implemented")
             return
         else:
-            try:
-                absPos = int(args)
-                self.client.publish(Topics.CONTROLLER_MOVE_X, absPos)
-            except TypeError:
-                print("Can move to either a float or \"start\"")
+        '''
+        try:
+            absPos = int(args)
+            self.client.publish(Topics.CONTROLLER_MOVE_X, absPos)
+        except TypeError:
+            print("Can move to either a float or \"start\"")
 
     def do_moveY(self, args):
-        if args == "start":
+        '''if args == "start":
             print("Not implemented")
             return
         else:
-            try:
-                absPos = int(args)
-                self.client.publish(Topics.CONTROLLER_MOVE_Y, absPos)
-            except TypeError:
-                print("Can move to either a float or to \"start\"")
+        '''
+        try:
+            absPos = int(args)
+            self.client.publish(Topics.CONTROLLER_MOVE_Y, absPos)
+        except TypeError:
+            print("Can move to either a float or to \"start\"")
 
-    def do_resetX(self, args):
+    def do_resetX(self):
         self.client.publish(Topics.CONTROLLER_RESET_X)
 
-    def do_moveZ(self, args):
-        if args == "start":
+    def do_moveZ(self,args):
+        '''if args == "start":
             print("Not implemented")
             return
         else:
-            try:
-                absPos = int(args)
-                self.client.publish(Topics.CONTROLLER_MOVE_Z, absPos)
-            except TypeError:
-                print("Can move to either a float or to \"start\"")
+        '''
+        try:
+            absPos = int(args)
+            self.client.publish(Topics.CONTROLLER_MOVE_Z, absPos)
+        except TypeError:
+            print("Can move to either a float or to \"start\"")
 
     def do_grab(self, args):
-        if len(args) == 0:
+        '''if len(args) == 0:
             print("Please specify a position")
             return
+        '''
         try:
             absPos = int(args)
             self.client.publish(Topics.CONTROLLER_GRAB, absPos)
@@ -77,29 +81,29 @@ class ClientPrompt(Cmd):
         except TypeError:
             print("Can only move to float / int")
 
-    def do_resetY(self, args):
+    def do_resetY(self):
         self.client.publish(Topics.CONTROLLER_RESET_Y)
 
-    def do_start(self, args):
+    def do_start(self):
         """Starts the system and polls for an image"""
-        if len(args) > 0:
-            print("Start doesn't allow arguments!")
-        else:
-            print("Starting the controller...")
-            self.client.publish(Topics.START_CONTROLLER)
+        #if len(args) > 0:
+        #    print("Start doesn't allow arguments!")
+        #else:
+        print("Starting the controller...")
+        self.client.publish(Topics.START_CONTROLLER)
 
-    def do_stop(self, args):
-        if len(args) == 0:
-            print("Stopping the execution thread (and the robot)")
-            self.client.publish(Topics.STOP_CONTROLLER)
+    def do_stop(self):
+        #if len(args) == 0:
+        print("Stopping the execution thread (and the robot)")
+        self.client.publish(Topics.STOP_CONTROLLER)
 
     def do_pause(self, args):
         if len(args) == 0:
             print("Stopping the execution thread (and the robot)")
             self.client.publish(Topics.PAUSE_CONTROLLER)
 
-    def do_resume(self, args):
-        if len(args) == 0:
+    def do_resume(self):
+            #if len(args) == 0:
             print("Resuming execution thread (and the robot)")
             self.client.publish(Topics.RESUME_CONTROLLER)
 
