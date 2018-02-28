@@ -1,0 +1,9 @@
+{'opt': np.array([[846.44262695,   0.        , 315.71467095],
+       [  0.        , 853.62823486, 259.37984495],
+       [  0.        ,   0.        ,   1.        ]]), 'mtx': np.array([[871.73382531,   0.        , 317.33465744],
+       [  0.        , 876.76656571, 257.02612598],
+       [  0.        ,   0.        ,   1.        ]]), 'dist': np.array([[-0.01350503,  0.11296391,  0.00368209, -0.00245962, -2.29995624]])}
+
+
+{'blue': {'Erode': 4, 'H_max': 128, 'Dilate': 10, 'H_min': 90, 'S_max': 255, 'blur': 10, 'V_max': 255, 'gamma': 0.9999999999999992, 'S_min': 176, 'open:1 / close:0': 1, 'V_min': 114}, 'purple': {'Erode': 10, 'H_max': 179, 'Dilate': 10, 'H_min': 179, 'S_max': 255, 'blur': 10, 'V_max': 255, 'gamma': 0.9999999999999992, 'S_min': 255, 'open:1 / close:0': 1, 'V_min': 255}, 'green': {'Erode': 0, 'H_max': 100, 'Dilate': 0, 'H_min': 51, 'S_max': 255, 'blur': 10, 'V_max': 211, 'gamma': 2.0, 'S_min': 195, 'open:1 / close:0': 1, 'V_min': 0}, 'red': {'Erode': 0, 'H_max': 169, 'Dilate': 0, 'H_min': 39, 'S_max': 255, 'blur': 10, 'V_max': 212, 'gamma': -0.09999999999999998, 'S_min': 184, 'open:1 / close:0': 0, 'V_min': 33}, 'yellow': {'Erode': 0, 'H_max': 48, 'Dilate': 9, 'H_min': 13, 'S_max': 255, 'blur': 10, 'V_max': 255, 'gamma': 4.699999999999999, 'S_min': 162, 'open:1 / close:0': 1, 'V_min': 122}}
+

@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 from Adapter import Adaptor
 from Algorithm import StackingAlgorithm
-import message_types import Topics
+from message_types import Topics
 import cv2
 
 class VisionAdaptor:
@@ -42,7 +42,7 @@ class VisionAdaptor:
     def addReleaseAction(self):
         return {
             "action": Topics.EV3_MOVE_RELEASE,
-            "payload": 100
+            "payload": 20
         }
 
     def addResetAction(self,axis):
@@ -86,18 +86,18 @@ class VisionAdaptor:
     def createPickRoutine(self,pickupPoint,endPoint):
         #self.gotoStart()
         print('Heading to package at : {}'.format(pickupPoint))
-        self.actionQueue.put(self.addXAction(pickupPoint[0]))
-        self.actionQueue.put(self.addYAction((pickupPoint[1]))
+        self.actionQueue.put(self.addXAction(int(pickupPoint[0][0][0])))
+        self.actionQueue.put(self.addYAction(int(pickupPoint[1][0][0])))
         self.grab()
         print('Package Recovered!')
-        self.actionQueue.put(self.addXAction(endPoint[0]))
-        self.actionQueue.put(self.addYAction(endPoint[1]))
+        self.actionQueue.put(self.addXAction(int(endPoint[0])))
+        self.actionQueue.put(self.addYAction(int(endPoint[1])))
         self.drop()
         print('Package Delivered!')
         
     def execute(self):
         while True:
-            image, pickingList = self.Adaptor.do_stuff()
+            image, pickingList = self.adaptor.do_stuff()
             cv2.imshow('output',image)
             toFrom = self.stackAlg.getEndPoints(pickingList)
             print(toFrom)
@@ -109,5 +109,10 @@ class VisionAdaptor:
                 for k in toFrom.keys():
                     for b in toFrom[k]:
                         self.createPickRoutine(b[0],b[1])
+                cv2.destroyAllWindows()
                 return
+
+def main():
+    va = VisionAdaptor()
+    va.execute()
 

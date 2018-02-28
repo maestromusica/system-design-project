@@ -19,7 +19,7 @@ During the program use the following buttons:
 from __future__ import print_function
 import cv2
 import numpy as np
-import cPickle as pickle
+import _pickle as pickle
 from Fairies import wsFinder
 from GlobalParams import GlobalParams
 
@@ -71,10 +71,10 @@ def readTrackbars(params,name='HSV'):
     return params
 
 def open_close(mask,kernel,params):
-    if params[params.keys()[-1]] == 1:
+    if params[list(params.keys())[-1]] == 1:
         mask = cv2.erode(mask,iterations = params['Erode'],kernel = kernel)
         mask = cv2.dilate(mask,iterations = params['Dilate'],kernel = kernel)
-    elif params[params.keys()[-1]] == 0:
+    elif params[list(params.keys())[-1]] == 0:
         mask = cv2.dilate(mask,iterations = params['Dilate'],kernel = kernel)
         mask = cv2.erode(mask,iterations = params['Erode'],kernel = kernel)
     return mask
@@ -107,7 +107,7 @@ def checkParams(params):
 def dumpConfiguration(params,filename):
     if filename[-4:]!='.pkl':
         filename = filename+'.pkl'
-    f = open(filename,'w')
+    f = open(filename,'wb')
     pickle.dump(params,f)
     f.close()
     print('Color_configuration saved to file : {}'.format(filename))
@@ -132,8 +132,8 @@ def gamma_correct(img,gamma):
 
 def main():
     
-    gp = GlobalParams()
-    pt = wsFinder(gp.getCamParams(None),gp.getWorkSpace(None))
+    #gp = GlobalParams()
+    #pt = wsFinder(gp.getCamParams(None),gp.getWorkSpace(None))
     
     # Flag for return
     flag = False
@@ -157,12 +157,12 @@ def main():
     # Infinte Processing Loop
     while True:
         ret, frame = cap.read()
-        frame = pt.find(cv2.flip(frame,1))
+        #frame = pt.find(cv2.flip(frame,1))
         # updating values
         params = readTrackbars(params)
 
         blur = frame.copy()
-        for _ in xrange(params['blur']):
+        for _ in range(params['blur']):
             blur = cv2.bilateralFilter(blur,3,50,50)
 
         gamma = gamma_correct(blur,params['gamma'])
@@ -200,9 +200,9 @@ def main():
         elif k == ord('s'):
             ret, incomplete = checkParams(color_conf)
             if ret:
-                filename = raw_input('Enter name for the configuration file: ')
+                filename = input('Enter name for the configuration file: ')
                 dumpConfiguration(color_conf,filename)
-		flag = True
+                flag = True
                 break
             else:
                 print('Color Configuration incomplete.')

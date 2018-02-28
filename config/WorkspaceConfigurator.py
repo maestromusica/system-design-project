@@ -1,6 +1,7 @@
+#! /usr/bin/env python 
 import cv2
 import numpy as np
-import cPickle as pickle
+import _pickle as pickle
 
 global corners, modes, mode
 corners = []
@@ -16,11 +17,11 @@ def returnCoordinate(event,x,y,flags,param):
         if mode<3:
             mode += 1
         elif mode == 3:
-            filename = raw_input('Enter file name: ')
+            filename = input('Enter file name: ')
             print('Saving corners to file : {}'.format(filename))
             corners_dictionary = dict(zip(modes,corners))
             print(corners_dictionary)
-            f = open(filename,'w')
+            f = open(filename,'wb')
             pickle.dump(corners_dictionary,f)
             f.close()
             exit
@@ -33,7 +34,7 @@ def returnCoordinate(event,x,y,flags,param):
             
 def main():
     global modes, mode
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     _ , frame = cap.read()
     cv2.imshow('frame',frame)
     cv2.setMouseCallback('frame',returnCoordinate)

@@ -10,19 +10,20 @@ class StackingAlgorithm:
         pass
 
     def getEndPoints(self,pl):
-        for k in pl.keys():
-            if k == 'red':
+        plist= {}
+        for (i,k) in enumerate(pl.keys()):
+            if i == 0:
                 x = 0
-            elif k == 'green':
-                x = 180
-            elif k == 'blue':
-                x = 360
-            elif k == 'yellow':
-                x = 540
+            elif i == 1:
+                x = 250
+            elif i == 2:
+                x = 500
+            elif i == 3:
+                x = 750
             y = 0
             pickList = []
             for b in pl[k]:
                 pickList.append([b,[x,y]])
-                y += 250
-            pl[k] = pickList
-        return pl
+                y += 280
+            plist[i] = pickList
+        return plist

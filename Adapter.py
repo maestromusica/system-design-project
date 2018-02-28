@@ -1,25 +1,26 @@
 import cv2
 import numpy as np
-import cPickle as pickle
+import _pickle as pickle
 from Vision import Vision
 from base import Box
 from sklearn.linear_model import LinearRegression
 
 
 class Adaptor(object):
-    def __init__(self,modelfile = 'AdapterModels.pkl'):
+    def __init__(self,modelfile = 'data/AdapterModels.pkl'):
         self.vision = Vision()
         self.AdapterX, self.AdapterY = self.loadModels(modelfile)
     def loadModels(self,filename):
-        f = open(filename)
+        f = open(filename,'rb')
         modelX = pickle.load(f)
         modelY = pickle.load(f)
         f.close()
         return modelX,modelY
 
     def AdaptPoints(self, centroid):
-        y = self.AdapterY.predict(centroid[0])
-        x = self.AdapterX.predict(centroid[1]) - 100
+        centroid = np.array([list(centroid)],np.int0)
+        y = self.AdapterY.predict(centroid)
+        x = self.AdapterX.predict(centroid) - 100
         return (x,y)
 
     def getPickPoints(self,boxes):

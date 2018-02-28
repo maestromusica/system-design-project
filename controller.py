@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 import json
 import paho.mqtt.client as mqtt
 from _controller import Controller

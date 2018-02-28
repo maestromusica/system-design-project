@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import cPickle as pickle
+import _pickle as pickle
 import sys
 import json
 
@@ -43,7 +43,7 @@ class MaskGenerator(object):
         return np.uint8(img*255)
 
     def openOrClose(self,mask,kernel):
-        isopen = self.params[self.params.keys()[-1]]
+        isopen = self.params[list(self.params.keys())[-1]]
         if isopen == 1:
             mask = cv2.erode(mask,iterations = self.params['Erode'],kernel = kernel)
             mask = cv2.dilate(mask,iterations = self.params['Dilate'],kernel = kernel)
@@ -63,7 +63,7 @@ class MaskGenerator(object):
         frame_blurred = frame.copy()
 
         # Applying blurring for params['blur'] iterations.
-        for _ in xrange(self.params['blur']):
+        for _ in range(self.params['blur']):
             frame_blurred = cv2.bilateralFilter(frame_blurred,9,75,75)
 
         # Applying Gamma Correction.
@@ -253,16 +253,16 @@ class Drawer(object):
             cv2.putText(frame,colour + ' : {}'.format(val),(10,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         elif colour == 'yellow':
-            cv2.putText(frame,colour + ' : {}'.format(val),(140,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}'.format(val),(10,50),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         elif colour == 'green':
-            cv2.putText(frame,colour + ' : {}'.format(val),(260,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}'.format(val),(10,80),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         elif colour == 'purple':
-            cv2.putText(frame,colour + ' : {}'.format(val),(360,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}'.format(val),(10,110),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         elif colour == 'blue':
-            cv2.putText(frame,colour + ' : {}'.format(val),(460,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}'.format(val),(10,140),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         return frame
 
