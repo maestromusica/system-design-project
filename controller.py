@@ -10,19 +10,12 @@ config = json.load(open("config.json"))
 
 controllerClient = mqtt.Client()
 client11 = mqtt.Client()
-client31 = mqtt.Client()
+#client31 = mqtt.Client()
 
 visionTag = "vision"
 controllerTag = "controller"
 
 def onStartController(client, userdata, msg, controller):
-    visionActionQueue = ActionQueue(pending=False)
-    controllerActionQueue = ActionQueue()
-
-    controller.addActionQueue(visionTag, visionActionQueue)
-    controller.addActionQueue(controllerTag, controllerActionQueue)
-    controller.changeExecutionQueue(visionTag)
-
     print("> Controller started...")
 
 def onProcess(client, userdata, msg, controller):
@@ -80,6 +73,7 @@ def onSwitchToNotPending(client, userdata, msg, controller):
 def forwardAction(action):
     def curriedForwardedAction(client, userdata, msg, controller):
         controller.changeExecutionQueue(controllerTag)
+        client.publish(Topics.APP_RECIEVE_THREAD, controller.currentExecThreadTag)
         payload = msg.payload.decode()
         controller.actionQueues[controllerTag].put({
             "action": action,
@@ -150,7 +144,7 @@ def onRequestNextEV3Action(client, userdata, msg, controller):
         if not currentExecThread.empty():
             nextAction = controller.nextAction()
             client11.publish(nextAction["action"], nextAction["payload"])
-            client31.publish(nextAction["action"], nextAction["payload"])
+            #client31.publish(nextAction["action"], nextAction["payload"])
             currentExecThread.state.waiting = True
             print("> Next action sent to ev3")
         else:
@@ -165,14 +159,14 @@ def onEV3Stop(client, userdata, msg, controller):
     currentExecThread.lock()
     currentExecThread.state.waiting = False
     client11.publish(Topics.EV3_STOP)
-    client31.publish(Topics.EV3_STOP)
+    #client31.publish(Topics.EV3_STOP)
     print("> Action queue locked. Ev3s are STOPPED")
 
 def onEV3Resume(client, userdata, msg, controller):
     """This will resume the execution of the current execution thread.
     """
     client11.publish(Topics.EV3_RESUME)
-    client31.publish(Topics.EV3_RESUME)
+    #client31.publish(Topics.EV3_RESUME)
     currentExecThread = controller.currentExecutionThread()
     currentExecThread.unlock()
     print("> Execution thread unlocked and ready to resume")
@@ -183,7 +177,7 @@ def onEV3Pause(client, userdata, msg, controller):
     currentExecThread = controller.currentExecutionThread()
     currentExecThread.lock()
     client11.publish(Topics.EV3_PAUSE)
-    client31.publish(Topics.EV3_PAUSE)
+    #client31.publish(Topics.EV3_PAUSE)
     print("> Action queue is locked and ev3s are PAUSED")
     return
 
@@ -198,7 +192,7 @@ def onPrintStates(client, userdata, msg, controller):
 def onPrintPositions(client, userdata, msg, controller):
     print("> These are the current positions: ")
     client11.publish(Topics.EV3_PRINT_POS)
-    client31.publish(Topics.EV3_PRINT_POS)
+    #client31.publish(Topics.EV3_PRINT_POS)
 
 def onDelete(client, userdata, msg, controller):
     currentExecThread = controller.currentExecutionThread()
@@ -248,7 +242,17 @@ def onNext(client, userdata, msg, controller):
     client11.publish(Topics.EV3_REQUEST_NEXT)
     print("> Next action should be sent to ev3.")
 
+def onAppRequestThread(client, userdata, msg, controller):
+    client.publish(Topics.APP_RECIEVE_THREAD, controller.currentExecThreadTag)
+
 controller = Controller()
+visionActionQueue = ActionQueue(pending=False)
+controllerActionQueue = ActionQueue()
+
+controller.addActionQueue(visionTag, visionActionQueue)
+controller.addActionQueue(controllerTag, controllerActionQueue)
+controller.changeExecutionQueue(visionTag)
+
 subscribedTopics = {
     # controller related
     Topics.START_CONTROLLER: onStartController,
@@ -273,7 +277,9 @@ subscribedTopics = {
     Topics.RESUME_CONTROLLER: onEV3Resume,
     # client-controller related
     Topics.CONTROLLER_PRINT_STATES: onPrintStates,
-    Topics.CONTROLLER_PRINT_POS: onPrintPositions
+    Topics.CONTROLLER_PRINT_POS: onPrintPositions,
+
+    Topics.APP_REQUEST_THREAD: onAppRequestThread,
 }
 
 def onConnect(client, userdata, flags, rc):
@@ -288,7 +294,7 @@ def onMessage(client, userdata, msg):
         print("Topic {0} is not subscribed".format(msg.topic))
 
 client11.connect(config["ips"]["INF_11"], 1883, 60)
-client31.connect(config["ips"]["INF_31"], 1883, 60)
+#client31.connect(config["ips"]["INF_31"], 1883, 60)
 controllerClient.connect(config["ips"]["CONTROLLER"], 1883, 60)
 
 def onPrint(client, userdata, msg, controller):
@@ -308,13 +314,13 @@ def onEV3Message(client, userdata, msg):
         onPrint(client, userdata, msg, controller)
 
 client11.on_connect = onEV3Connect
-client31.on_connect = onEV3Connect
+#client31.on_connect = onEV3Connect
 client11.on_message = onEV3Message
-client31.on_message = onEV3Message
+#client31.on_message = onEV3Message
 
 controllerClient.on_connect = onConnect
 controllerClient.on_message = onMessage
 
 client11.loop_start()
-client31.loop_start()
+#client31.loop_start()
 controllerClient.loop_forever()

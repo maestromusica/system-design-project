@@ -47,3 +47,8 @@ class Topics:
     EV3_RESET_Z = topics["EV3_RESET_Z"]
 
     EV3_PRINT_POS = topics["EV3_PRINT_POS"]
+
+    APP_RECIEVE_POS = topics["APP_RECIEVE_POS"]
+    APP_REQUEST_POS = topics["APP_REQUEST_POS"]
+    APP_REQUEST_THREAD = topics["APP_REQUEST_THREAD"]
+    APP_RECIEVE_THREAD = topics["APP_RECIEVE_THREAD"]

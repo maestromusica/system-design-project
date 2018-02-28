@@ -40,5 +40,10 @@
     "EV3_RESET_Y": "action/ev3/reset/y",
     "EV3_RESET_Z": "action/ev3/reset/z",
 
-        "EV3_PRINT_POS": "action/ev3/forward/print/pos"
+    "EV3_PRINT_POS": "action/ev3/forward/print/pos",
+
+    "APP_RECIEVE_POS": "action/app/recieve/data/pos",
+    "APP_REQUEST_POS": "action/app/request/data/pos",
+    "APP_REQUEST_THREAD": "action/app/request/data/thread",
+    "APP_RECIEVE_THREAD": "action/app/recieve/data/thread"
 }
