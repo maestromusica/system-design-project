@@ -1,10 +1,28 @@
 import React from 'react';
-import { Switch, Route } from 'react-router';
+import {Switch, Route, withRouter, BrowserRouter} from 'react-router';
 
-import MainPage from './containers/MainPage'
+import {AppStyle, Content, Main} from './styled/components'
 
-export default (
-  <Switch>
-    <Route exact path="/" component={MainPage} />
-  </Switch>
-);
+import AppBar from './components/AppBar'
+import Menu from './components/Menu'
+import Dashboard from './components/Dashboard'
+import Development from './components/Development'
+import Settings from './components/Settings'
+
+const App = () => (
+  <AppStyle>
+    <AppBar />
+    <Main>
+      <Menu />
+      <Content>
+        <Switch>
+          <Route exact path="/" component={Dashboard} />
+          <Route exact path="/development" component={Development} />
+          <Route exact path="/settings" component={Settings} />
+        </Switch>
+      </Content>
+    </Main>
+  </AppStyle>
+)
+
+export default App

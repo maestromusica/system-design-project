@@ -24,8 +24,8 @@ const installExtensions = async () => {
 };
 
 crashReporter.start({
-  productName: 'YourName',
-  companyName: 'YourCompany',
+  productName: 'SortX',
+  companyName: 'Sort.ed',
   submitURL: 'https://your-domain.com/url-to-submit',
   uploadToServer: false
 });
