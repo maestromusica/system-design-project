@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import {colors} from '../../styled/variables'
 
 export const MenuContainer = styled.div`
-  flex: 0 260px;
+  flex: 0 220px;
   width: 300px;
   border-right: 4px solid ${colors.grey["300"]};
 `
@@ -21,8 +21,8 @@ export const MenuItem = styled(NavLink)`
   text-transform: uppercase;
   letter-spacing: 0.5px;
   display: block;
-  padding: 24px 24px 24px 16px;
-  margin: 12px;
+  padding: 20px 20px 20px 16px;
+  margin: 6px;
   text-decoration: none;
   color: ${colors.grey["800"]};
 

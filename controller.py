@@ -5,6 +5,8 @@ from _controller import Controller
 from message_types import Topics
 from action_queue import ActionQueue, ActionQueueLockedException
 from box_helper import mockBoxes, quantitative1
+import cv2
+import time
 
 config = json.load(open("config.json"))
 
@@ -14,21 +16,29 @@ client11 = mqtt.Client()
 
 visionTag = "vision"
 controllerTag = "controller"
+flag = 0
 
 def onStartController(client, userdata, msg, controller):
     print("> Controller started...")
 
 def onProcess(client, userdata, msg, controller):
+    global flag
+    flag = 1
     controller.changeExecutionQueue(visionTag)
     visionActionQueue = controller.actionQueues[visionTag]
     quantitative1(visionActionQueue)
 
     currentExecThread = controller.currentExecutionThread()
-    if currentExecThread.state.pending:
-        client11.publish(Topics.EV3_REQUEST_NEXT)
-        print("> EV3 next action published. EV3's should start working")
-    else:
-        print("> Boxes added!")
+
+def onProcessResponse(client, userdata, msg, controller):
+    # should get the response from the vision system
+    global flag
+    flag = 0
+
+    if msg.payload.decode() == "True":
+        print("> Accepted")
+    elif msg.payload.decode() == "False":
+        print("> Not accepted")
 
 def onSwitchExecutionThread(client, userdata, msg, controller):
     tag = msg.payload.decode()
@@ -257,6 +267,7 @@ subscribedTopics = {
     # controller related
     Topics.START_CONTROLLER: onStartController,
     Topics.PROCESS_CONTROLLER: onProcess,
+    Topics.PROCESS_RESPONSE_CONTROLLER: onProcessResponse,
     Topics.SWITCH_CONTROLLER_EXEC: onSwitchExecutionThread,
     Topics.CONTROLLER_DELETE: onDelete,
     Topics.SWITCH_EXEC_PENDING: onSwitchToPending,
@@ -323,4 +334,13 @@ controllerClient.on_message = onMessage
 
 client11.loop_start()
 #client31.loop_start()
-controllerClient.loop_forever()
+controllerClient.loop_start()
+
+while True:
+    if flag == 1:
+        # change this flag.
+        _, img = cv2.VideoCapture(0).read()
+        img = cv2.flip(img, 1)
+        controllerClient.publish(Topics.APP_RECIEVE_IMG, json.dumps(img))
+        time.sleep(0.02) # send every 20 ms
+    time.sleep(0.01)

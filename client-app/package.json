@@ -1,15 +1,10 @@
 {
-  "name": "electron-react-redux-boilerplate",
+  "name": "SortX",
   "version": "0.0.0",
-  "description": "electron-react-redux-boilerplate",
+  "description": "Sortx client app",
   "main": "init.js",
-  "author": {
-    "name": "Jordan Schroter",
-    "email": "email@author.com"
-  },
-  "repository": "https://github.com/jschr/electron-react-redux-boilerplate",
-  "license": "MIT",
   "dependencies": {
+    "antd": "^3.2.3",
     "babel-runtime": "^6.22.0",
     "history": "^4.6.3",
     "mqtt": "^2.15.3",
@@ -30,6 +25,7 @@
     "babel-cli": "^6.22.2",
     "babel-core": "^6.2.1",
     "babel-eslint": "^8.2.2",
+    "babel-plugin-inline-react-svg": "^0.5.2",
     "babel-plugin-transform-decorators-legacy": "^1.3.4",
     "babel-plugin-transform-runtime": "^6.22.0",
     "babel-preset-es2015": "^6.1.18",

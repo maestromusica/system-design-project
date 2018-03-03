@@ -1,8 +1,9 @@
 import React, {Component} from 'react'
-import {Header} from './style'
+import {Header, Logo} from './style'
+
 
 const AppBar = () => (
-  <Header>AppBar</Header>
+  <Header><Logo /></Header>
 )
 
 export default AppBar

@@ -1,6 +1,16 @@
 import React, {Component} from 'react'
 import topics from '../../../../topics.json' // this is an ugly path...
 import mqtt from 'mqtt'
+import {
+  DevStyle,
+  DevSection,
+  DevSectionTitle,
+  DevOption,
+  DevOptionInput,
+  DevOptionTitle,
+  DevOptionButton} from './style'
+import {Radio} from 'antd'
+const RadioGroup = Radio.Group
 
 const LOCALHOST_IP = "mqtt://127.0.0.1"
 
@@ -27,40 +37,55 @@ export default class Development extends Component {
 
   render() {
     return (
-      <div>
-        {!this.state.thread ? (
-          null
-        ) : (
-          <p>on thread {this.state.thread}</p>
-        ) }
-        <p>MoveX</p>
-        <input onChange={ev => {
-          this.setState({
-            moveX: ev.target.value
-          })
-        }}  placeholder="moveX" />
-        <button onClick={ev => {
-          this.state.client.publish(topics.CONTROLLER_MOVE_X, this.state.moveX)
-        }}>Send command</button>
-        <p>MoveY</p>
-        <input onChange={ev => {
-          this.setState({
-            moveY: ev.target.value
-          })
-        }}  placeholder="moveY" />
-        <button onClick={ev => {
-          this.state.client.publish(topics.CONTROLLER_MOVE_Y, this.state.moveY)
-        }}>Send command</button>
-        <p>MoveZ</p>
-        <input onChange={ev => {
-          this.setState({
-            moveZ: ev.target.value
-          })
-        }}  placeholder="moveZ" />
-        <button onClick={ev => {
-          this.state.client.publish(topics.CONTROLLER_MOVE_Z, this.state.moveZ)
-        }}>Send command</button>
-      </div>
+      <DevStyle>
+        <DevSection>
+          <DevSectionTitle>
+            Thread
+          </DevSectionTitle>
+          <RadioGroup onChange={ev => {
+            console.log(ev.target.value)
+          }} value={this.state.thread}>
+            <Radio value="vision">Vision</Radio>
+            <Radio value="controller">Controller</Radio>
+          </RadioGroup>
+        </DevSection>
+        <DevSection>
+          <DevSectionTitle>Axis Movement</DevSectionTitle>
+          <DevOption>
+            <DevOptionTitle>MoveX</DevOptionTitle>
+            <DevOptionInput onChange={ev => {
+              this.setState({
+                moveX: ev.target.value
+              })
+            }} placeholder="moveX" />
+            <DevOptionButton onClick={ev => {
+              this.state.client.publish(topics.CONTROLLER_MOVE_X, this.state.moveX)
+            }}>Send Command</DevOptionButton>
+          </DevOption>
+          <DevOption>
+            <DevOptionTitle>MoveY</DevOptionTitle>
+            <DevOptionInput onChange={ev => {
+              this.setState({
+                moveY: ev.target.value
+              })
+            }} placeholder="moveY" />
+            <DevOptionButton onClick={ev => {
+              this.state.client.publish(topics.CONTROLLER_MOVE_Y, this.state.moveY)
+            }}>Send Command</DevOptionButton>
+          </DevOption>
+          <DevOption>
+            <DevOptionTitle>MoveZ</DevOptionTitle>
+            <DevOptionInput onChange={ev => {
+              this.setState({
+                moveZ: ev.target.value
+              })
+            }} placeholder="moveZ"/>
+            <DevOptionButton onClick={ev => {
+              this.state.client.publish(topics.CONTROLLER_MOVE_Z, this.state.moveZ)
+            }}>Send Command</DevOptionButton>
+          </DevOption>
+        </DevSection>
+      </DevStyle>
     )
   }
 }

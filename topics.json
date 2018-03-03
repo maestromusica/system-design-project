@@ -1,6 +1,7 @@
 {
     "START_CONTROLLER": "action/controller/start",
     "PROCESS_CONTROLLER": "action/controller/process",
+    "PROCESS_RESPONSE_CONTROLLER": "action/controller/process/res",
     "CONTROLLER_DELETE": "action/controller/delete/exec/action",
 
     "STOP_CONTROLLER": "action/controller/stop/ev3",
@@ -45,5 +46,6 @@
     "APP_RECIEVE_POS": "action/app/recieve/data/pos",
     "APP_REQUEST_POS": "action/app/request/data/pos",
     "APP_REQUEST_THREAD": "action/app/request/data/thread",
-    "APP_RECIEVE_THREAD": "action/app/recieve/data/thread"
+    "APP_RECIEVE_THREAD": "action/app/recieve/data/thread",
+    "APP_RECIEVE_IMG": "action/app/recieve/data/video_feed"
 }

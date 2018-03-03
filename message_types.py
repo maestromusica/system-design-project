@@ -5,6 +5,7 @@ topics = json.load(open("topics.json"))
 class Topics:
     START_CONTROLLER = topics["START_CONTROLLER"]
     PROCESS_CONTROLLER = topics["PROCESS_CONTROLLER"]
+    PROCESS_RESPONSE_CONTROLLER = topics["PROCESS_RESPONSE_CONTROLLER"]
     CONTROLLER_DELETE = topics["CONTROLLER_DELETE"]
     # acts upon the ev3s (and the controller execution thread)
     STOP_CONTROLLER = topics["STOP_CONTROLLER"]
@@ -52,3 +53,4 @@ class Topics:
     APP_REQUEST_POS = topics["APP_REQUEST_POS"]
     APP_REQUEST_THREAD = topics["APP_REQUEST_THREAD"]
     APP_RECIEVE_THREAD = topics["APP_RECIEVE_THREAD"]
+    APP_RECIEVE_IMG = topics["APP_RECIEVE_IMG"]
