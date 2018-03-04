@@ -7,6 +7,8 @@ from action_queue import ActionQueue, ActionQueueLockedException
 from box_helper import mockBoxes, quantitative1
 import cv2
 import time
+import numpy
+import base64
 
 config = json.load(open("config.json"))
 
@@ -24,6 +26,7 @@ def onStartController(client, userdata, msg, controller):
 def onProcess(client, userdata, msg, controller):
     global flag
     flag = 1
+    print("> On process called")
     controller.changeExecutionQueue(visionTag)
     visionActionQueue = controller.actionQueues[visionTag]
     quantitative1(visionActionQueue)
@@ -339,8 +342,15 @@ controllerClient.loop_start()
 while True:
     if flag == 1:
         # change this flag.
-        _, img = cv2.VideoCapture(0).read()
-        img = cv2.flip(img, 1)
-        controllerClient.publish(Topics.APP_RECIEVE_IMG, json.dumps(img))
-        time.sleep(0.02) # send every 20 ms
-    time.sleep(0.01)
+        cap = cv2.VideoCapture(0)
+        retval, img = cap.read()
+
+        if img is not None:
+            img = cv2.flip(img, 1)
+            retval, buffer = cv2.imencode('.jpg', img)
+            jpg = base64.b64encode(buffer)
+            controllerClient.publish(Topics.APP_RECIEVE_IMG, jpg)
+
+        cap.release()
+    else:
+        time.sleep(0.01)
