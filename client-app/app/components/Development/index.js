@@ -1,16 +1,15 @@
 import React, {Component} from 'react'
-import topics from '../../../../topics.json' // this is an ugly path...
+import {MQTT_IP} from '../../utils/config'
 import mqtt from 'mqtt'
 import ThreadSection from './ThreadSection'
 import AxisSection from './AxisSection'
 import ResetSection from './ResetSection'
 import ActionsSection from './ActionsSection'
-
-const LOCALHOST_IP = "mqtt://127.0.0.1"
+import topics from '../../../../topics.json'
 
 export default class Development extends Component {
   state = {
-    client: mqtt.connect(LOCALHOST_IP),
+    client: mqtt.connect(MQTT_IP),
     thread: undefined,
     threadLocked: undefined,
     threadPending: undefined,

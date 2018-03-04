@@ -53,5 +53,8 @@
     "APP_RECIEVE_ACTIONS": "action/app/recieve/data/actions",
 
     "APP_RECIEVE_IMG": "action/app/recieve/data/video_feed",
-    "APP_REQUEST_IMG": "action/app/request/data/video_feed"
+    "APP_REQUEST_IMG": "action/app/request/data/video_feed",
+
+    "CONTROLLER_SAVE_IP_11": "config/app/save/ip/INF_11",
+    "CONTROLLER_SAVE_IP_31": "config/app/save/ip/INF_31"
 }

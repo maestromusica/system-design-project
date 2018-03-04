@@ -1,13 +1,12 @@
 import React, {Component} from 'react'
 import mqtt from 'mqtt'
 import {Button} from '../../styled/components'
-import topics from '../../../../topics.json' // this is an ugly path...
-
-const LOCALHOST_IP = "mqtt://127.0.0.1"
+import {MQTT_IP} from '../../utils/config'
+import topics from '../../../../topics.json'
 
 export default class Dashboard extends Component {
   state = {
-    client: mqtt.connect(LOCALHOST_IP),
+    client: mqtt.connect(MQTT_IP),
     processing: false,
     waiting: false,
     img: ''
@@ -20,7 +19,7 @@ export default class Dashboard extends Component {
 
     this.state.client.on('message',  (topic, msg) => {
       console.log(topic, msg)
-      if(topic == topics.APP_RECIEVE_IMG) {
+      if(topic == topics.APP_RECIEVE_IMG && this.state.processing) {
         if(this.state.waiting) {
           this.setState({
             waiting: false,
@@ -31,11 +30,11 @@ export default class Dashboard extends Component {
         this.setState({
           img: msg
         })
-        for(let i=0; i<10; i++) {
-          this.state.client.publish(topics.APP_REQUEST_IMG)
-        }
+
+        this.state.client.publish(topics.APP_REQUEST_IMG)
       }
       if(!this.state.processing) {
+        console.log(1)
         this.setState({
           img: ''
         })
