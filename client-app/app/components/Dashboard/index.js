@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import mqtt from 'mqtt'
-import {Button} from 'antd'
+import {Button} from '../../styled/components'
 import topics from '../../../../topics.json' // this is an ugly path...
 
 const LOCALHOST_IP = "mqtt://127.0.0.1"
@@ -53,11 +53,17 @@ export default class Dashboard extends Component {
         <div>
           <img src={"data:image/jpeg;base64," + this.state.img} />
           <Button onClick={ev => {
+            this.state.client.publish(topics.PROCESS_RESPONSE_CONTROLLER, "True")
+            this.setState({
+              processing: false
+            })
+          }} type="primary">Accept Capture</Button>
+          <Button onClick={ev => {
             this.state.client.publish(topics.PROCESS_RESPONSE_CONTROLLER, "False")
             this.setState({
               processing: false
             })
-          }}>End processing</Button>
+          }} type="danger">Reject Capture</Button>
         </div>
       )
     }

@@ -28,10 +28,6 @@ def onProcess(client, userdata, msg, controller):
     flag = 1
     print("> On process called")
     controller.changeExecutionQueue(visionTag)
-    visionActionQueue = controller.actionQueues[visionTag]
-    quantitative1(visionActionQueue)
-
-    currentExecThread = controller.currentExecutionThread()
 
 def onProcessResponse(client, userdata, msg, controller):
     # should get the response from the vision system
@@ -39,6 +35,8 @@ def onProcessResponse(client, userdata, msg, controller):
     flag = 0
 
     if msg.payload.decode() == "True":
+        visionActionQueue = controller.actionQueues[visionTag]
+        quantitative1(visionActionQueue)
         print("> Accepted")
     elif msg.payload.decode() == "False":
         print("> Not accepted")

@@ -2,14 +2,15 @@ import React, {Component} from 'react'
 import topics from '../../../../topics.json' // this is an ugly path...
 import mqtt from 'mqtt'
 import {
-  DevStyle,
-  DevSection,
-  DevSectionItem,
-  DevSectionTitle,
-  DevOption,
-  DevOptionInput,
-  DevOptionTitle,
-  DevOptionButton} from './style'
+  Section,
+  SectionItem,
+  SectionTitle,
+  SectionOption,
+  SectionOptionInput,
+  SectionOptionTitle,
+  SectionOptionButton
+} from '../../styled/section'
+import {Button} from '../../styled/components'
 import {Radio, Switch, Table} from 'antd'
 const RadioGroup = Radio.Group
 
@@ -105,12 +106,12 @@ export default class Development extends Component {
     }]
 
     return (
-      <DevStyle>
-        <DevSection>
-          <DevSectionItem>
-            <DevSectionTitle>
+      <div>
+        <Section>
+          <SectionItem>
+            <SectionTitle>
               Thread
-            </DevSectionTitle>
+            </SectionTitle>
             <RadioGroup value={this.state.thread}>
               <Radio value="vision" onClick={ev => {
                 this.state.client.publish(topics.SWITCH_CONTROLLER_EXEC, "vision")
@@ -119,11 +120,11 @@ export default class Development extends Component {
                 this.state.client.publish(topics.SWITCH_CONTROLLER_EXEC, "controller")
               }}>Controller</Radio>
             </RadioGroup>
-          </DevSectionItem>
-          <DevSectionItem>
-            <DevSectionTitle>
+          </SectionItem>
+          <SectionItem>
+            <SectionTitle>
               Locked
-            </DevSectionTitle>
+            </SectionTitle>
             <Switch
               checked={this.state.threadLocked}
               onClick={ev => {
@@ -134,11 +135,11 @@ export default class Development extends Component {
                 this.state.client.publish(topic)
               }}
             />
-          </DevSectionItem>
-          <DevSectionItem>
-            <DevSectionTitle>
+          </SectionItem>
+          <SectionItem>
+            <SectionTitle>
               Pending
-            </DevSectionTitle>
+            </SectionTitle>
             <Switch
               checked={this.state.threadPending}
               disabled={!this.state.threadLocked}
@@ -150,73 +151,73 @@ export default class Development extends Component {
                 this.state.client.publish(topic)
               }}
             />
-          </DevSectionItem>
-        </DevSection>
-        <DevSection>
-          <DevSectionTitle>Axis Movement</DevSectionTitle>
-          <DevOption>
-            <DevOptionTitle>MoveX</DevOptionTitle>
-            <DevOptionInput onChange={ev => {
+          </SectionItem>
+        </Section>
+        <Section>
+          <SectionTitle>Axis Movement</SectionTitle>
+          <SectionOption>
+            <SectionOptionTitle>MoveX</SectionOptionTitle>
+            <SectionOptionInput onChange={ev => {
               this.setState({
                 moveX: ev.target.value
               })
             }} placeholder="moveX" />
-            <DevOptionButton onClick={ev => {
+            <SectionOptionButton onClick={ev => {
               this.state.client.publish(topics.CONTROLLER_MOVE_X, this.state.moveX)
-            }}>Send Command</DevOptionButton>
-          </DevOption>
-          <DevOption>
-            <DevOptionTitle>MoveY</DevOptionTitle>
-            <DevOptionInput onChange={ev => {
+            }}>Send Command</SectionOptionButton>
+          </SectionOption>
+          <SectionOption>
+            <SectionOptionTitle>MoveY</SectionOptionTitle>
+            <SectionOptionInput onChange={ev => {
               this.setState({
                 moveY: ev.target.value
               })
             }} placeholder="moveY" />
-            <DevOptionButton onClick={ev => {
+            <SectionOptionButton onClick={ev => {
               this.state.client.publish(topics.CONTROLLER_MOVE_Y, this.state.moveY)
-            }}>Send Command</DevOptionButton>
-          </DevOption>
-          <DevOption>
-            <DevOptionTitle>MoveZ</DevOptionTitle>
-            <DevOptionInput onChange={ev => {
+            }}>Send Command</SectionOptionButton>
+          </SectionOption>
+          <SectionOption>
+            <SectionOptionTitle>MoveZ</SectionOptionTitle>
+            <SectionOptionInput onChange={ev => {
               this.setState({
                 moveZ: ev.target.value
               })
             }} placeholder="moveZ"/>
-            <DevOptionButton onClick={ev => {
+            <SectionOptionButton onClick={ev => {
               this.state.client.publish(topics.CONTROLLER_MOVE_Z, this.state.moveZ)
-            }}>Send Command</DevOptionButton>
-          </DevOption>
-        </DevSection>
-        <DevSection>
-          <DevSectionTitle>Reset axis</DevSectionTitle>
-          <DevOption>
-            <DevOptionButton onClick={ev => {
+            }}>Send Command</SectionOptionButton>
+          </SectionOption>
+        </Section>
+        <Section>
+          <SectionTitle>Reset axis</SectionTitle>
+          <SectionOption>
+            <SectionOptionButton onClick={ev => {
               this.state.client.publish(topics.CONTROLLER_RESET_X)
               this.state.client.publish(topics.CONTROLLER_RESET_Y)
               this.state.client.publish(topics.CONTROLLER_RESET_Z)
             }} type="primary">
               Reset All
-            </DevOptionButton>
-            <DevOptionButton onClick={ev => {
+            </SectionOptionButton>
+            <SectionOptionButton onClick={ev => {
               this.state.client.publish(topics.CONTROLLER_RESET_X)
             }}>
               Reset X
-            </DevOptionButton>
-            <DevOptionButton onClick={ev => {
+            </SectionOptionButton>
+            <SectionOptionButton onClick={ev => {
               this.state.client.publish(topics.CONTROLLER_RESET_Y)
             }}>
               Reset Y
-            </DevOptionButton>
-            <DevOptionButton onClick={ev => {
+            </SectionOptionButton>
+            <SectionOptionButton onClick={ev => {
               this.state.client.publish(topics.CONTROLLER_RESET_Z)
             }}>
               Reset Z
-            </DevOptionButton>
-          </DevOption>
-        </DevSection>
-        <DevSection>
-          <DevSectionTitle>Actions</DevSectionTitle>
+            </SectionOptionButton>
+          </SectionOption>
+        </Section>
+        <Section>
+          <SectionTitle>Actions</SectionTitle>
           {this.state.actions.length > 0 ? (
             <div>
               <Table
@@ -225,17 +226,24 @@ export default class Development extends Component {
                 size="small"
                 bordered
               />
-              <DevOptionButton type="danger" onClick={ev => {
+              {!this.state.threadPending ? (
+                <Button onClick={ev => {
+                  this.state.client.publish(topics.CONTROLLER_NEXT_ACTION)
+                }}>Perform next action</Button>
+              ) : (
+                null
+              )}
+              <Button type="danger" onClick={ev => {
                 this.state.client.publish(topics.CONTROLLER_DELETE, "all")
               }}>
                 Delete all
-              </DevOptionButton>
+              </Button>
             </div>
           ) : (
             <p>No actions in the thread</p>
           )}
-        </DevSection>
-      </DevStyle>
+        </Section>
+      </div>
     )
   }
 }

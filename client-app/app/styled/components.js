@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import {Button as AntdButton} from 'antd'
 
 export const AppStyle = styled.div`
   background-color: "#f0f0f0";
@@ -18,4 +19,8 @@ export const Main = styled.div`
   & > * {
     flex: 1 auto;
   }
+`
+
+export const Button = styled(AntdButton)`
+  margin: 12px 6px 0 0;
 `
