@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 import json
 import paho.mqtt.client as mqtt
 from _controller import Controller
@@ -18,21 +18,29 @@ client11 = mqtt.Client()
 
 visionTag = "vision"
 controllerTag = "controller"
-flag = 0
 
 def onStartController(client, userdata, msg, controller):
     print("> Controller started...")
 
 def onProcess(client, userdata, msg, controller):
-    global flag
-    flag = 1
     print("> On process called")
     controller.changeExecutionQueue(visionTag)
+    client.publish(Topics.APP_REQUEST_IMG)
+
+def onAppRequestImg(client, userdata, msg, controller):
+    cap = cv2.VideoCapture(0)
+    while True:
+        retval, img = cap.read()
+        if img is not None:
+            img = cv2.flip(img, 1)
+            retval, buffer = cv2.imencode('.jpg', img)
+            jpg = base64.b64encode(buffer)
+            client.publish(Topics.APP_RECIEVE_IMG, jpg)
+            cap.release()
+            break
 
 def onProcessResponse(client, userdata, msg, controller):
     # should get the response from the vision system
-    global flag
-    flag = 0
 
     if msg.payload.decode() == "True":
         visionActionQueue = controller.actionQueues[visionTag]
@@ -307,7 +315,8 @@ subscribedTopics = {
     Topics.CONTROLLER_PRINT_STATES: onPrintStates,
     Topics.CONTROLLER_PRINT_POS: onPrintPositions,
 
-    Topics.APP_REQUEST: onAppRequestData
+    Topics.APP_REQUEST: onAppRequestData,
+    Topics.APP_REQUEST_IMG: onAppRequestImg
 }
 
 def onConnect(client, userdata, flags, rc):
@@ -356,18 +365,4 @@ controllerClient.on_message = onMessage
 
 client11.loop_start()
 #client31.loop_start()
-controllerClient.loop_start()
-
-while True:
-    if flag == 1:
-        cap = cv2.VideoCapture(0)
-        while flag == 1:
-            retval, img = cap.read()
-            if img is not None:
-                img = cv2.flip(img, 1)
-                retval, buffer = cv2.imencode('.jpg', img)
-                jpg = base64.b64encode(buffer)
-                controllerClient.publish(Topics.APP_RECIEVE_IMG, jpg)
-        cap.release()
-    else:
-        time.sleep(0.01)
+controllerClient.loop_forever()

@@ -59,3 +59,4 @@ class Topics:
     APP_RECIEVE_ACTIONS = topics["APP_RECIEVE_ACTIONS"]
 
     APP_RECIEVE_IMG = topics["APP_RECIEVE_IMG"]
+    APP_REQUEST_IMG = topics["APP_REQUEST_IMG"]

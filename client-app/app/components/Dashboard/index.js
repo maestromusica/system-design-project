@@ -9,7 +9,8 @@ export default class Dashboard extends Component {
   state = {
     client: mqtt.connect(LOCALHOST_IP),
     processing: false,
-    waiting: false
+    waiting: false,
+    img: ''
   }
 
   componentDidMount() {
@@ -18,6 +19,7 @@ export default class Dashboard extends Component {
     })
 
     this.state.client.on('message',  (topic, msg) => {
+      console.log(topic, msg)
       if(topic == topics.APP_RECIEVE_IMG) {
         if(this.state.waiting) {
           this.setState({
@@ -28,6 +30,14 @@ export default class Dashboard extends Component {
 
         this.setState({
           img: msg
+        })
+        for(let i=0; i<10; i++) {
+          this.state.client.publish(topics.APP_REQUEST_IMG)
+        }
+      }
+      if(!this.state.processing) {
+        this.setState({
+          img: ''
         })
       }
     })
@@ -55,13 +65,15 @@ export default class Dashboard extends Component {
           <Button onClick={ev => {
             this.state.client.publish(topics.PROCESS_RESPONSE_CONTROLLER, "True")
             this.setState({
-              processing: false
+              processing: false,
+              img: ''
             })
           }} type="primary">Accept Capture</Button>
           <Button onClick={ev => {
             this.state.client.publish(topics.PROCESS_RESPONSE_CONTROLLER, "False")
             this.setState({
-              processing: false
+              processing: false,
+              img: ''
             })
           }} type="danger">Reject Capture</Button>
         </div>
