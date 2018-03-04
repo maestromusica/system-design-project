@@ -50,10 +50,6 @@ def onSwitchExecutionThread(client, userdata, msg, controller):
         print("> Execution thread switched to {0}".format(tag))
     else:
         print("> Execution thread not switched to {0}".format(tag))
-    client.publish(Topics.APP_REQUEST, "thread")
-    client.publish(Topics.APP_REQUEST, "locked")
-    client.publish(Topics.APP_REQUEST, "waiting")
-    client.publish(Topics.APP_REQUEST, "pending")
 
 def onSwitchToPending(client, userdata, msg, controller):
     tag = msg.payload.decode()
@@ -70,10 +66,6 @@ def onSwitchToPending(client, userdata, msg, controller):
 
     execThread.state.pending = True
     print("Execution thread was switched to pending")
-    client.publish(Topics.APP_REQUEST, "thread")
-    client.publish(Topics.APP_REQUEST, "locked")
-    client.publish(Topics.APP_REQUEST, "waiting")
-    client.publish(Topics.APP_REQUEST, "pending")
 
 def onSwitchToNotPending(client, userdata, msg, controller):
     tag = msg.payload.decode()
@@ -90,10 +82,6 @@ def onSwitchToNotPending(client, userdata, msg, controller):
 
     execThread.state.pending = False
     print("Execution thread was switched to pending")
-    client.publish(Topics.APP_REQUEST, "thread")
-    client.publish(Topics.APP_REQUEST, "locked")
-    client.publish(Topics.APP_REQUEST, "waiting")
-    client.publish(Topics.APP_REQUEST, "pending")
 
 def forwardAction(action):
     def curriedForwardedAction(client, userdata, msg, controller):
@@ -127,25 +115,21 @@ def onEV3ActionCompleted(client, userdata, msg, controller):
     controller.removeFirstAction()
     if currentExecThread is None:
         print(">>> No execution thread found in the controller!")
+        client.publish(Topics.APP_REQUEST, "all")
         return
     if currentExecThread.waiting():
         print(">>> Thread was waiting")
         currentExecThread.state.waiting = False
     if currentExecThread.locked():
         print(">>> Execution thread is locked. Actions can't be performed")
+        client.publish(Topics.APP_REQUEST, "all")
         return
     if currentExecThread.pending():
         if not currentExecThread.empty():
             client.publish(Topics.EV3_REQUEST_NEXT)
         else:
             print("> No actions left in the execution queue")
-    # controller.unlockCurrentExecutionQueue()
-    # print("> EV3 Action Completed")
-    # currentExecutionQueue = controller.currentExecutionQueue
-    # if not controller.actionQueues[currentExecutionQueue].empty():
-    #     client.publish(Topics.EV3_REQUEST_NEXT)
-    # else:
-    #     print("> No actions left in the {0} queue".format(currentExecutionQueue))
+    client.publish(Topics.APP_REQUEST, "all")
 
 def onRequestNextEV3Action(client, userdata, msg, controller):
     """Sends the next action to the ev3's.
@@ -159,6 +143,7 @@ def onRequestNextEV3Action(client, userdata, msg, controller):
     - ["LOCKED", *] => no action. current exec thread is locked
     """
     currentExecThread = controller.currentExecutionThread()
+    client.publish(Topics.APP_REQUEST, "all")
     if currentExecThread.locked():
         print("> Current execution thread is locked")
         return
@@ -174,6 +159,7 @@ def onRequestNextEV3Action(client, userdata, msg, controller):
             print("> Next action sent to ev3")
         else:
             print("> No actions in execution thread!")
+    client.publish(Topics.APP_REQUEST, "all")
 
 def onEV3Stop(client, userdata, msg, controller):
     """This will stop execution on the ev3, and the current action performing
@@ -186,8 +172,6 @@ def onEV3Stop(client, userdata, msg, controller):
     client11.publish(Topics.EV3_STOP)
     #client31.publish(Topics.EV3_STOP)
     print("> Action queue locked. Ev3s are STOPPED")
-    client.publish(Topics.APP_REQUEST, "locked")
-    client.publish(Topics.APP_REQUEST, "waiting")
 
 def onEV3Resume(client, userdata, msg, controller):
     """This will resume the execution of the current execution thread.
@@ -197,7 +181,6 @@ def onEV3Resume(client, userdata, msg, controller):
     currentExecThread = controller.currentExecutionThread()
     currentExecThread.unlock()
     print("> Execution thread unlocked and ready to resume")
-    client.publish(Topics.APP_REQUEST, "locked")
     if currentExecThread.pending():
         client11.publish(Topics.EV3_REQUEST_NEXT)
 
@@ -270,9 +253,6 @@ def onNext(client, userdata, msg, controller):
     client11.publish(Topics.EV3_REQUEST_NEXT)
     print("> Next action should be sent to ev3.")
 
-def onAppRequestThread(client, userdata, msg, controller):
-    client.publish(Topics.APP_RECIEVE_THREAD, controller.currentExecThreadTag)
-
 def onAppRequestData(client, userdata, msg, controller):
     whatToSend = msg.payload.decode()
     currentExecThread = controller.currentExecutionThread()
@@ -284,6 +264,15 @@ def onAppRequestData(client, userdata, msg, controller):
         client.publish(Topics.APP_RECIEVE_PENDING, currentExecThread.state.pending)
     elif whatToSend == "waiting":
         client.publish(Topics.APP_RECIEVE_WAITING, currentExecThread.state.waiting)
+    elif whatToSend == "actions":
+        actions = numpy.array(currentExecThread.queue).tolist()
+        client.publish(Topics.APP_RECIEVE_ACTIONS, json.dumps(actions))
+    elif whatToSend == "all":
+        client.publish(Topics.APP_REQUEST, "thread")
+        client.publish(Topics.APP_REQUEST, "locked")
+        client.publish(Topics.APP_REQUEST, "pending")
+        client.publish(Topics.APP_REQUEST, "waiting")
+        client.publish(Topics.APP_REQUEST, "actions")
 
 controller = Controller()
 visionActionQueue = ActionQueue(pending=False)
@@ -320,7 +309,6 @@ subscribedTopics = {
     Topics.CONTROLLER_PRINT_STATES: onPrintStates,
     Topics.CONTROLLER_PRINT_POS: onPrintPositions,
 
-    Topics.APP_REQUEST_THREAD: onAppRequestThread,
     Topics.APP_REQUEST: onAppRequestData
 }
 
@@ -328,10 +316,15 @@ def onConnect(client, userdata, flags, rc):
     print("Controller listening to messages")
     for key in subscribedTopics.keys():
         client.subscribe(key)
+    client.publish(Topics.APP_REQUEST, "all")
 
 def onMessage(client, userdata, msg):
     if msg.topic in subscribedTopics.keys():
+        if not msg.topic == Topics.APP_REQUEST:
+            client.publish(Topics.APP_REQUEST, "all")
         subscribedTopics[msg.topic](client, userdata, msg, controller)
+        if not msg.topic == Topics.APP_REQUEST:
+            client.publish(Topics.APP_REQUEST, "all")
     else:
         print("Topic {0} is not subscribed".format(msg.topic))
 

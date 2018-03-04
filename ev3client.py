@@ -33,6 +33,7 @@ subscribedTopics = {
     Topics.EV3_MOVE_RELEASE: onEV3Action,
     Topics.EV3_RESET_X: onEV3Action,
     Topics.EV3_RESET_Y: onEV3Action,
+    Topics.EV3_RESET_Z: onEV3Action,
     Topics.EV3_STOP: onEV3Stop,
     Topics.EV3_RESUME: onEV3Resume,
     Topics.EV3_PAUSE: onEV3Pause,

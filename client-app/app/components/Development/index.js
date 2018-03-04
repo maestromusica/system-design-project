@@ -10,7 +10,7 @@ import {
   DevOptionInput,
   DevOptionTitle,
   DevOptionButton} from './style'
-import {Radio, Switch} from 'antd'
+import {Radio, Switch, Table} from 'antd'
 const RadioGroup = Radio.Group
 
 const LOCALHOST_IP = "mqtt://127.0.0.1"
@@ -20,7 +20,8 @@ export default class Development extends Component {
     client: mqtt.connect(LOCALHOST_IP),
     thread: undefined,
     threadLocked: undefined,
-    threadPending: undefined
+    threadPending: undefined,
+    actions: []
   }
 
   componentDidMount() {
@@ -28,13 +29,13 @@ export default class Development extends Component {
       this.state.client.subscribe(topics.APP_RECIEVE_THREAD)
       this.state.client.subscribe(topics.APP_RECIEVE_LOCKED)
       this.state.client.subscribe(topics.APP_RECIEVE_PENDING)
+      this.state.client.subscribe(topics.APP_RECIEVE_ACTIONS)
 
-      this.state.client.publish(topics.APP_REQUEST, "thread")
-      this.state.client.publish(topics.APP_REQUEST,  "locked")
-      this.state.client.publish(topics.APP_REQUEST, "pending")
+      this.state.client.publish(topics.APP_REQUEST, "all")
     })
 
     this.state.client.on('message', (topic, message) => {
+      console.log(topic, message)
       switch(topic) {
         case topics.APP_RECIEVE_THREAD:
           this.setState({
@@ -51,6 +52,11 @@ export default class Development extends Component {
             threadPending: message.toString() === "True"
           })
           break
+        case topics.APP_RECIEVE_ACTIONS:
+          this.setState({
+            actions: JSON.parse(message.toString())
+          })
+          break
       }
     })
   }
@@ -61,6 +67,43 @@ export default class Development extends Component {
   }
 
   render() {
+    let i = 0
+    const actions = this.state.actions.map((el) => {
+      i += 1
+      for(const topic in topics) {
+        if(el.action == topics[topic]) {
+          return {
+            key: i,
+            action: topic,
+            payload: el.payload
+          }
+        }
+      }
+    })
+    const columns = [{
+      title: "#",
+      dataIndex: "key",
+      key: "key"
+    }, {
+      title: "Action",
+      dataIndex: "action",
+      key: "action"
+    }, {
+      title: "Payload",
+      dataIndex: "payload",
+      key: "payload"
+    }, {
+      title: "Operation",
+      key: "delete",
+      render: (text, record) => (
+        <span>
+          <a onClick={ev => {
+            this.state.client.publish(topics.CONTROLLER_DELETE, (record.key - 1).toString())
+          }}>Delete</a>
+        </span>
+      )
+    }]
+
     return (
       <DevStyle>
         <DevSection>
@@ -144,6 +187,53 @@ export default class Development extends Component {
               this.state.client.publish(topics.CONTROLLER_MOVE_Z, this.state.moveZ)
             }}>Send Command</DevOptionButton>
           </DevOption>
+        </DevSection>
+        <DevSection>
+          <DevSectionTitle>Reset axis</DevSectionTitle>
+          <DevOption>
+            <DevOptionButton onClick={ev => {
+              this.state.client.publish(topics.CONTROLLER_RESET_X)
+              this.state.client.publish(topics.CONTROLLER_RESET_Y)
+              this.state.client.publish(topics.CONTROLLER_RESET_Z)
+            }} type="primary">
+              Reset All
+            </DevOptionButton>
+            <DevOptionButton onClick={ev => {
+              this.state.client.publish(topics.CONTROLLER_RESET_X)
+            }}>
+              Reset X
+            </DevOptionButton>
+            <DevOptionButton onClick={ev => {
+              this.state.client.publish(topics.CONTROLLER_RESET_Y)
+            }}>
+              Reset Y
+            </DevOptionButton>
+            <DevOptionButton onClick={ev => {
+              this.state.client.publish(topics.CONTROLLER_RESET_Z)
+            }}>
+              Reset Z
+            </DevOptionButton>
+          </DevOption>
+        </DevSection>
+        <DevSection>
+          <DevSectionTitle>Actions</DevSectionTitle>
+          {this.state.actions.length > 0 ? (
+            <div>
+              <Table
+                dataSource={actions}
+                columns={columns}
+                size="small"
+                bordered
+              />
+              <DevOptionButton type="danger" onClick={ev => {
+                this.state.client.publish(topics.CONTROLLER_DELETE, "all")
+              }}>
+                Delete all
+              </DevOptionButton>
+            </div>
+          ) : (
+            <p>No actions in the thread</p>
+          )}
         </DevSection>
       </DevStyle>
     )
