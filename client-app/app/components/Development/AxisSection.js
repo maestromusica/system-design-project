@@ -17,6 +17,9 @@ export default class AxisSection extends Component {
   }
 
   render() {
+    const disabledX = !this.state.moveX
+    const disabledY = !this.state.moveY
+    const disabledZ = !this.state.moveZ
     return (
       <Section>
         <SectionTitle>Axis Movement</SectionTitle>
@@ -26,10 +29,13 @@ export default class AxisSection extends Component {
             this.setState({
               moveX: ev.target.value
             })
-          }} placeholder="moveX" />
+          }} placeholder="moveX" value={this.state.moveX} />
           <SectionOptionButton onClick={ev => {
             this.props.client.publish(topics.CONTROLLER_MOVE_X, this.state.moveX)
-          }}>
+            this.setState({
+              moveX: undefined
+            })
+          }} disabled={disabledX}>
             Send Command
           </SectionOptionButton>
         </SectionOption>
@@ -39,10 +45,13 @@ export default class AxisSection extends Component {
             this.setState({
               moveY: ev.target.value
             })
-          }} placeholder="moveY" />
+          }} placeholder="moveY" value={this.state.moveY} />
           <SectionOptionButton onClick={ev => {
             this.props.client.publish(topics.CONTROLLER_MOVE_Y, this.state.moveY)
-          }}>
+            this.setState({
+              moveY: undefined
+            })
+          }} disabled={disabledY}>
             Send Command
           </SectionOptionButton>
         </SectionOption>
@@ -52,10 +61,13 @@ export default class AxisSection extends Component {
             this.setState({
               moveZ: ev.target.value
             })
-          }} placeholder="moveZ"/>
+          }} placeholder="moveZ" value={this.state.moveZ} />
           <SectionOptionButton onClick={ev => {
             this.props.client.publish(topics.CONTROLLER_MOVE_Z, this.state.moveZ)
-          }}>
+            this.setState({
+              moveZ: undefined
+            })
+          }} disabled={disabledZ}>
             Send Command
           </SectionOptionButton>
         </SectionOption>
