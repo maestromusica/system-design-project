@@ -39,6 +39,9 @@ export default class Dashboard extends Component {
       // the controller a warning to stop the processing
       this.state.client.publish(topics.PROCESS_RESPONSE_CONTROLLER, "False")
     }
+
+    const forceEnd = true
+    this.state.client.end(forceEnd)
   }
 
   render() {

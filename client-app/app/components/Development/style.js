@@ -9,7 +9,20 @@ export const DevStyle = styled.div`
 export const DevSection = styled.div`
   padding-bottom: 20px;
   margin-bottom: 20px;
-  border-bottom: 1px solid ${colors.grey["300"]}
+  border-bottom: 1px solid ${colors.grey["300"]};
+
+  &::after, &::before {
+    display: table;
+    content: ' ';
+    clear: both;
+  }
+`
+
+export const DevSectionItem = styled.div`
+  float: left;
+  padding-right: 16px;
+  margin-right: 16px;
+  ${'' /* border-right: 1px solid ${colors.grey["300"]}; */}
 `
 
 export const DevSectionTitle = styled.h3`

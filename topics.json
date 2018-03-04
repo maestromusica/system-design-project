@@ -43,9 +43,16 @@
 
     "EV3_PRINT_POS": "action/ev3/forward/print/pos",
 
+    "APP_REQUEST": "action/app/request/data",
     "APP_RECIEVE_POS": "action/app/recieve/data/pos",
     "APP_REQUEST_POS": "action/app/request/data/pos",
     "APP_REQUEST_THREAD": "action/app/request/data/thread",
     "APP_RECIEVE_THREAD": "action/app/recieve/data/thread",
+    "APP_REQUEST_LOCKED": "action/app/request/data/locked",
+    "APP_RECIEVE_LOCKED": "action/app/recieve/data/locked",
+    "APP_REQUEST_PENDING": "action/app/request/data/pending",
+    "APP_RECIEVE_PENDING": "action/app/recieve/data/pending",
+    "APP_RECIEVE_WAITING": "action/app/recieve/data/waiting",
+
     "APP_RECIEVE_IMG": "action/app/recieve/data/video_feed"
 }

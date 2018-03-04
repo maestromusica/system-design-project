@@ -4,12 +4,13 @@ import mqtt from 'mqtt'
 import {
   DevStyle,
   DevSection,
+  DevSectionItem,
   DevSectionTitle,
   DevOption,
   DevOptionInput,
   DevOptionTitle,
   DevOptionButton} from './style'
-import {Radio} from 'antd'
+import {Radio, Switch} from 'antd'
 const RadioGroup = Radio.Group
 
 const LOCALHOST_IP = "mqtt://127.0.0.1"
@@ -17,37 +18,96 @@ const LOCALHOST_IP = "mqtt://127.0.0.1"
 export default class Development extends Component {
   state = {
     client: mqtt.connect(LOCALHOST_IP),
-    thread: undefined
+    thread: undefined,
+    threadLocked: undefined,
+    threadPending: undefined
   }
 
   componentDidMount() {
     this.state.client.on('connect', () => {
       this.state.client.subscribe(topics.APP_RECIEVE_THREAD)
-      this.state.client.publish(topics.APP_REQUEST_THREAD)
+      this.state.client.subscribe(topics.APP_RECIEVE_LOCKED)
+      this.state.client.subscribe(topics.APP_RECIEVE_PENDING)
+
+      this.state.client.publish(topics.APP_REQUEST, "thread")
+      this.state.client.publish(topics.APP_REQUEST,  "locked")
+      this.state.client.publish(topics.APP_REQUEST, "pending")
     })
 
     this.state.client.on('message', (topic, message) => {
-      if(topic == topics.APP_RECIEVE_THREAD) {
-        this.setState({
-          thread: message.toString()
-        })
+      switch(topic) {
+        case topics.APP_RECIEVE_THREAD:
+          this.setState({
+            thread: message.toString()
+          })
+          break
+        case topics.APP_RECIEVE_LOCKED:
+          this.setState({
+            threadLocked: message.toString() === "True"
+          })
+          break
+        case topics.APP_RECIEVE_PENDING:
+          this.setState({
+            threadPending: message.toString() === "True"
+          })
+          break
       }
     })
+  }
+
+  componentWillUnmount() {
+    const forceEnd = true
+    this.state.client.end(forceEnd)
   }
 
   render() {
     return (
       <DevStyle>
         <DevSection>
-          <DevSectionTitle>
-            Thread
-          </DevSectionTitle>
-          <RadioGroup onChange={ev => {
-            console.log(ev.target.value)
-          }} value={this.state.thread}>
-            <Radio value="vision">Vision</Radio>
-            <Radio value="controller">Controller</Radio>
-          </RadioGroup>
+          <DevSectionItem>
+            <DevSectionTitle>
+              Thread
+            </DevSectionTitle>
+            <RadioGroup value={this.state.thread}>
+              <Radio value="vision" onClick={ev => {
+                this.state.client.publish(topics.SWITCH_CONTROLLER_EXEC, "vision")
+              }}>Vision</Radio>
+              <Radio value="controller" onClick={ev => {
+                this.state.client.publish(topics.SWITCH_CONTROLLER_EXEC, "controller")
+              }}>Controller</Radio>
+            </RadioGroup>
+          </DevSectionItem>
+          <DevSectionItem>
+            <DevSectionTitle>
+              Locked
+            </DevSectionTitle>
+            <Switch
+              checked={this.state.threadLocked}
+              onClick={ev => {
+                const topic = this.state.threadLocked
+                  ? topics.RESUME_CONTROLLER
+                  : topics.STOP_CONTROLLER
+
+                this.state.client.publish(topic)
+              }}
+            />
+          </DevSectionItem>
+          <DevSectionItem>
+            <DevSectionTitle>
+              Pending
+            </DevSectionTitle>
+            <Switch
+              checked={this.state.threadPending}
+              disabled={!this.state.threadLocked}
+              onClick={ev => {
+                const topic = this.state.threadPending
+                  ? topics.SWITCH_EXEC_NOT_PENDING
+                  : topics.SWITCH_EXEC_PENDING
+
+                this.state.client.publish(topic)
+              }}
+            />
+          </DevSectionItem>
         </DevSection>
         <DevSection>
           <DevSectionTitle>Axis Movement</DevSectionTitle>
