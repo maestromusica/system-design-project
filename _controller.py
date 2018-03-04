@@ -1,5 +1,5 @@
 from action_queue import ActionQueue, ActionQueueLockedException
-from System import VisionAdaptor
+
 class Controller:
     def __init__(self):
         # will keep the action queues

@@ -52,5 +52,6 @@
     "APP_RECIEVE_WAITING": "action/app/recieve/data/waiting",
     "APP_RECIEVE_ACTIONS": "action/app/recieve/data/actions",
 
-    "APP_RECIEVE_IMG": "action/app/recieve/data/video_feed"
+    "APP_RECIEVE_IMG": "action/app/recieve/data/video_feed",
+    "APP_REQUEST_IMG": "action/app/request/data/video_feed"
 }
