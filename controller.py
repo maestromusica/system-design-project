@@ -341,16 +341,14 @@ controllerClient.loop_start()
 
 while True:
     if flag == 1:
-        # change this flag.
         cap = cv2.VideoCapture(0)
-        retval, img = cap.read()
-
-        if img is not None:
-            img = cv2.flip(img, 1)
-            retval, buffer = cv2.imencode('.jpg', img)
-            jpg = base64.b64encode(buffer)
-            controllerClient.publish(Topics.APP_RECIEVE_IMG, jpg)
-
+        while flag == 1:
+            retval, img = cap.read()
+            if img is not None:
+                img = cv2.flip(img, 1)
+                retval, buffer = cv2.imencode('.jpg', img)
+                jpg = base64.b64encode(buffer)
+                controllerClient.publish(Topics.APP_RECIEVE_IMG, jpg)
         cap.release()
     else:
         time.sleep(0.01)
