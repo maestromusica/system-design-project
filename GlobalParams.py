@@ -12,7 +12,7 @@ class GlobalParams(object):
 
     def __init__(self):
         #should this be picklerick or demo?
-        self.mask = 'config/monday.pkl'
+        self.mask = 'demo.pkl'
         self.cam = 'data/camera_intrinsic_params3.pkl'
         self.boardSize = (9,6)
         #coords go [col,row] ffs
