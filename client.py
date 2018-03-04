@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 from cmd import Cmd
 import paho.mqtt.client as mqtt
 import time
