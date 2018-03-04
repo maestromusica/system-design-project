@@ -118,7 +118,7 @@ np
 **/__pycache__
 **/*.py~
 **/*.pyc
-<<<<<<< HEAD
+
 **/dist
 **/.DS_Store
 **/build
