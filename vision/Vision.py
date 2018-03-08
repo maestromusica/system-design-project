@@ -38,7 +38,7 @@ class Vision(object):
         self.camParams = gp.getCamParams(cam)
         self.workspace = gp.getWorkSpace(wkspc)
         self.maskVals = gp.getMaskVals(maskv)
-        self.cap = cv2.VideoCapture(1)
+        self.cap = cv2.VideoCapture(0)
         self.processor = Gods.ImageProcessor(self.camParams,self.workspace,self.maskVals)
         self.camcal = Gods.CamCalibrator(gp.boardSize)
         self.maskcal = Gods.MaskValueCalibrator()
@@ -47,8 +47,8 @@ class Vision(object):
     def go(self):
         ret, img = self.cap.read()
         img = cv2.flip(img,1)
-        cv2.imshow('img',img)
-        cv2.waitKey(1)
+        #cv2.imshow('img',img)
+        #cv2.waitKey(1)
         bimg, boxes = self.processor.process(img)
         return bimg, boxes        
 

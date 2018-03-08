@@ -9,6 +9,7 @@ import cv2
 import time
 import numpy
 import base64
+from vision.System import VisionAdaptor
 
 config = json.load(open("config.json"))
 
@@ -28,16 +29,12 @@ def onProcess(client, userdata, msg, controller):
     client.publish(Topics.APP_REQUEST_IMG)
 
 def onAppRequestImg(client, userdata, msg, controller):
-    cap = cv2.VideoCapture(0)
-    while True:
-        retval, img = cap.read()
-        if img is not None:
-            img = cv2.flip(img, 1)
-            retval, buffer = cv2.imencode('.jpg', img)
-            jpg = base64.b64encode(buffer)
-            client.publish(Topics.APP_RECIEVE_IMG, jpg)
-            cap.release()
-            break
+    va = VisionAdaptor(visionActionQueue)
+    img = va.getFrame()
+    retval, buffer = cv2.imencode('.jpg', img)
+    jpg = base64.b64encode(buffer)
+    client.publish(Topics.APP_RECIEVE_IMG, jpg)
+    
 
 def onProcessResponse(client, userdata, msg, controller):
     # should get the response from the vision system

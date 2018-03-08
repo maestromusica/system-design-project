@@ -1,3 +1,4 @@
+from os import path 
 import _pickle as pkl
 
 '''
@@ -12,11 +13,12 @@ class GlobalParams(object):
 
     def __init__(self):
         #should this be picklerick or demo?
-        self.mask = 'demo.pkl'
-        self.cam = 'data/camera_intrinsic_params3.pkl'
+        dir = path.dirname(path.abspath(__file__))
+        self.mask = path.join(dir,'config/monday.pkl')
+        self.cam = path.join(dir,'data/camera_intrinsic_params3.pkl')
         self.boardSize = (9,6)
         #coords go [col,row] ffs
-        self.workspace = {'topleft':([200,35],[0,0]),'bottomleft':([143,436],[0,500]),'topright':([416,38],[200,0]),'bottomright':([402,460],[200,500])}
+        self.workspace = path.join(dir,'config/workspace.pkl')
 
     def findCorners(self,k):
         if k == 'TopLeft':
@@ -49,7 +51,7 @@ class GlobalParams(object):
 
     def getWorkSpace(self,filename):
         if filename is None:
-            filename = 'config/workspace.pkl'
+            filename = self.workspace
         f = open(filename,'rb')
         workspace = pkl.load(f)
         f.close()

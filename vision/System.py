@@ -94,7 +94,11 @@ class VisionAdaptor:
         self.actionQueue.put(self.addYAction(int(endPoint[1])))
         self.drop()
         print('Package Delivered!')
-        
+
+    def getFrame(self):
+        image, pickingList = self.adaptor.do_stuff()
+        return image
+    
     def execute(self):
         while True:
             image, pickingList = self.adaptor.do_stuff()
