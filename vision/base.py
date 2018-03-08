@@ -302,34 +302,6 @@ class PerspectiveTransform(object):
         M = cv2.getPerspectiveTransform(self.original_points,self.transformed_points)
 
         return cv2.warpPerspective(corrected_img,M,(400,850))
-    
-##class for box objects
-class Box(object):
-    '''
-    Class to create objects of detected boxes.
-    '''
-
-    def __init__(self,centroid,length,width,colour,rotation):
-        self.centroid = centroid
-        self.length = length
-        self.width = width
-        self.colour = colour
-        self.rotation = rotation
-
-
-    def getDetails(self):
-        detail = {}
-        detail['centroid'] = self.centroid
-        detail['colour'] = self.colour
-        detail['length'] = self.length
-        detail['width'] = self.width
-        detail['rotation'] = self.rotation
-        detail_json = json.dumps(detail)
-        return detail_json
-
-    def __str__(self):
-        print('Box:: [colour: {} | centroid : {} ]'.format(self.centroid,self.colour))
-
 
 class BoxExtractor(object):
     '''The Primary class that the controller will talk with. '''
@@ -337,7 +309,6 @@ class BoxExtractor(object):
 
         self.changePerspective = PerspectiveTransform(camParam,workspace)
         self.colours = maskParam.keys()
-        self.boxes = {}
         # Creating Mask Generator Objects for each Colour.
         self.maskGenerators = {}
         for c in self.colours:
@@ -348,12 +319,21 @@ class BoxExtractor(object):
         self.drawer = Drawer()
 
 
-
+    def createDict(self,centroid,dim,colour,rotation):
+        if dim[0] > dim[1]:
+            length = dim[0]
+            width = dim[1]
+        else:
+            length = dim[1]
+            width = dim[0]
+        return {'centroid':centroid,'length':length,'width':width,\
+                'colour':colour,'rotation':rotation}
+        
     def processImage(self, frame):
         changed_image = self.changePerspective.transform(frame)
         draw = changed_image.copy()
+        boxes = []
         for c in self.colours:
-            boxes= []
             mask = self.maskGenerators[c].extractMask(changed_image)
             cv2.imshow('mask-{}'.format(c),mask)
             contours = self.contourExtractor.segmentation(mask)
@@ -362,13 +342,12 @@ class BoxExtractor(object):
                     corners,centroid = self.cornersDetector.detectCorners(changed_image,mask,box)
                     #draw = self.drawer.drawBox(draw,corners,centroid,'r')
                     draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'b')
-                    boxes.append(Box(rect[0],box,c,rect[2]))
-                self.boxes[c] = boxes
+                    boxes.append(self.createDict(rect[0],rect[1],c,rect[2]))
                 draw = self.drawer.putText(draw,c,len(boxes))
             #else:
                 #print('No Boxes')
 
-        return draw, self.boxes
+        return draw, boxes
 
 def main(argv):
     param = argv[1]

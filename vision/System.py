@@ -2,12 +2,14 @@ import paho.mqtt.client as mqtt
 from Adapter import Adaptor
 from Algorithm import StackingAlgorithm
 from message_types import Topics
+from Vision import Vision
 import cv2
 
 class VisionAdaptor:
     def __init__(self,actionQueue):
         self.adaptor = Adaptor()
-        self.stackAlg = StackingAlgorithm()
+        self.vision = Vision()
+        #self.stackAlg = StackingAlgorithm()
         self.actionQueue = actionQueue
         self.actionQueue.put(self.addResetAction('X'))
         self.actionQueue.put(self.addResetAction('Y'))
@@ -96,22 +98,24 @@ class VisionAdaptor:
         print('Package Delivered!')
 
     def getFrame(self):
-        image, pickingList = self.adaptor.do_stuff()
+        image, _ = self.vision.go()
         return image
     
     def execute(self):
         while True:
-            image, pickingList = self.adaptor.do_stuff()
+            image, boxes = self.vision.go()
             cv2.imshow('output',image)
-            toFrom = self.stackAlg.getEndPoints(pickingList)
-            print(toFrom)
-            k = cv2.waitKey(10)
-        
+            k = cv2.waitKey(1)
             if k == ord('c'):
-                # For now only 4 boxes
-                print('Targets Acquired : {}'.format(pickingList))
-                for k in toFrom.keys():
-                    for b in toFrom[k]:
+                # Sending list of boxes to algorithm for stacking.
+                bins = StackingAlgorithm(boxes,(20,20),'BPOF').pack()
+
+                # Send these bins to Adaptor and transform pick and drop points.
+                layers = self.adaptor.transform(bins)
+                
+                for l in layers.keys():
+                    print("Creating pickup Routine for Layer: {}".format(l))
+                    for b in layers[l]:
                         self.createPickRoutine(b[0],b[1])
                 cv2.destroyAllWindows()
                 return

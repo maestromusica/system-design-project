@@ -128,7 +128,7 @@ class ImageProcessor(object):
         image, boxes = self.boxFinder.find(wsImg,masks)
         #unpack the boxes to return in a more universal format
         unpacked_boxes = self.unpack(boxes)
-        return image, boxes
+        return image, unpacked_boxes
 
     def unpack(self,boxes):
         unpacked_boxes = []
