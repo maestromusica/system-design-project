@@ -1,0 +1,73 @@
+###To Use:###
+
+--- start code ----
+
+	from Algorithm import Algorithm
+
+	algo = Algorithm(boxes, binSize, alg)
+
+--- end code ---
+
+Inputs:
+
+-boxes is a list of dict objects:
+	[{'color':string,'centroid':(float,float),'rotation':float,'width':float,'length':float}]
+	colours are: red, blue, green, yellow, purple
+-binSize is a tuple (width:int,length:int)
+-alg is a string: 'BPOF' only currently
+
+Attributes:
+-timestamp: time when it was created
+-packer: initialisation of the packing algorithm
+-coords: list of coords from and to by layer
+
+---
+
+###To Extend:###
+
+-add a class ALG to Packer.py
+	-init takes 2 parameters: a list of box objects and a tuple binSize
+	-method sort takes 0 parameters and does not return
+        -method get_xy() takes 0 parameters and returns a list of coordinates centre from and centre to
+        -method get_error() takes 0 parameters and retutrns a dict of error metrics
+
+Then use Algorithm(boxes, binSize, 'ALG')
+
+--- Containers ---
+:: Box Class ::
+	Attributes:
+		-colour(string): red, blue, green, yellow, purple
+		-weight(float): taken from known boxes
+		-centrefrom(tuple float): taken from 'centroid' in boxes input to Algorithm
+		-rotation(float): taken from 'rotation' in boxes input to Algorithm
+		-centreto(tuple float): initially None
+		-packed(bool): initially False
+		-length(float): taken from known boxes of the colour
+		-width(float): taken from known boxes of the colour
+		-height(float): taken from known boxes of the colour
+		-area(float): length*width
+		-volume(float): length*width*height
+	Methods:
+		-nearest(w, l): used to compute length, width, and height of the given box by comparison with known boxes
+
+:: Bin Class ::
+	Attributes:
+		-length: taken from input binSize
+		-width: taken from input binSize
+		-area: 2D array of bools, True for empty, False for full
+		-boxes_packed: list of box objects that are packed in this bin
+
+--- Parameters ---
+Boxes: list of dicts with parameters of known boxes
+offset: how much space needed around edges of boxes in RL
+
+
+--- Algorithm ---
+-comment line 11: LOGLEVEL = logging.INFO to see debug info
+-init does the following:
+	-makes a timestamp
+	-gets the boxes as box objects with known box measurements
+	-creates a packer with the given algorithm
+	-sorts the boxes using the packer
+	-takes the coordinate pairs
+	-logs the error metrics into a timestamped file
