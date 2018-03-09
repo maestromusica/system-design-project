@@ -1,16 +1,20 @@
 #! /usr/bin/env python3
 import json
 import paho.mqtt.client as mqtt
-from _controller import Controller
-from message_types import Topics
-from action_queue import ActionQueue, ActionQueueLockedException
-from box_helper import mockBoxes, quantitative1
 import cv2
 import time
 import numpy
 import base64
+import os
 
-config = json.load(open("config.json"))
+from ._controller import Controller
+from ..utils.action_queue import ActionQueue, ActionQueueLockedException
+from ..utils.box_helper import mockBoxes, quantitative1
+
+configPath = os.path.join(os.path.dirname(__file__), "../config/config.json")
+config = json.load(open(configPath))
+topicsPath = os.path.join(os.path.dirname(__file__), "../config/topics.json")
+topics = json.load(open(topicsPath))
 
 controllerClient = mqtt.Client()
 client11 = mqtt.Client()
@@ -25,7 +29,7 @@ def onStartController(client, userdata, msg, controller):
 def onProcess(client, userdata, msg, controller):
     print("> On process called")
     controller.changeExecutionQueue(visionTag)
-    client.publish(Topics.APP_REQUEST_IMG)
+    client.publish(topicsAPP_REQUEST_IMG)
 
 def onAppRequestImg(client, userdata, msg, controller):
     cap = cv2.VideoCapture(0)
@@ -35,7 +39,7 @@ def onAppRequestImg(client, userdata, msg, controller):
             img = cv2.flip(img, 1)
             retval, buffer = cv2.imencode('.jpg', img)
             jpg = base64.b64encode(buffer)
-            client.publish(Topics.APP_RECIEVE_IMG, jpg)
+            client.publish(topics["APP_RECIEVE_IMG"], jpg)
             cap.release()
             break
 
@@ -92,7 +96,7 @@ def onSwitchToNotPending(client, userdata, msg, controller):
 def forwardAction(action):
     def curriedForwardedAction(client, userdata, msg, controller):
         controller.changeExecutionQueue(controllerTag)
-        client.publish(Topics.APP_RECIEVE_THREAD, controller.currentExecThreadTag)
+        client.publish(topics["APP_RECIEVE_THREAD"], controller.currentExecThreadTag)
         payload = msg.payload.decode()
         controller.actionQueues[controllerTag].put({
             "action": action,
@@ -100,7 +104,7 @@ def forwardAction(action):
         })
         currentExecThread = controller.currentExecutionThread()
         if currentExecThread.state.pending:
-            client11.publish(Topics.EV3_REQUEST_NEXT)
+            client11.publish(topics["EV3_REQUEST_NEXT"])
         print("> Next action added to the queue")
 
     return curriedForwardedAction
@@ -121,21 +125,21 @@ def onEV3ActionCompleted(client, userdata, msg, controller):
     controller.removeFirstAction()
     if currentExecThread is None:
         print(">>> No execution thread found in the controller!")
-        client.publish(Topics.APP_REQUEST, "all")
+        client.publish(topics["APP_REQUEST"], "all")
         return
     if currentExecThread.waiting():
         print(">>> Thread was waiting")
         currentExecThread.state.waiting = False
     if currentExecThread.locked():
         print(">>> Execution thread is locked. Actions can't be performed")
-        client.publish(Topics.APP_REQUEST, "all")
+        client.publish(topics["APP_REQUEST"], "all")
         return
     if currentExecThread.pending():
         if not currentExecThread.empty():
-            client.publish(Topics.EV3_REQUEST_NEXT)
+            client.publish(topics["EV3_REQUEST_NEXT"])
         else:
             print("> No actions left in the execution queue")
-    client.publish(Topics.APP_REQUEST, "all")
+    client.publish(topics["APP_REQUEST"], "all")
 
 def onRequestNextEV3Action(client, userdata, msg, controller):
     """Sends the next action to the ev3's.
@@ -149,7 +153,7 @@ def onRequestNextEV3Action(client, userdata, msg, controller):
     - ["LOCKED", *] => no action. current exec thread is locked
     """
     currentExecThread = controller.currentExecutionThread()
-    client.publish(Topics.APP_REQUEST, "all")
+    client.publish(topics["APP_REQUEST"], "all")
     if currentExecThread.locked():
         print("> Current execution thread is locked")
         return
@@ -165,7 +169,7 @@ def onRequestNextEV3Action(client, userdata, msg, controller):
             print("> Next action sent to ev3")
         else:
             print("> No actions in execution thread!")
-    client.publish(Topics.APP_REQUEST, "all")
+    client.publish(topics["APP_REQUEST"], "all")
 
 def onEV3Stop(client, userdata, msg, controller):
     """This will stop execution on the ev3, and the current action performing
@@ -175,26 +179,26 @@ def onEV3Stop(client, userdata, msg, controller):
     currentExecThread = controller.currentExecutionThread()
     currentExecThread.lock()
     currentExecThread.state.waiting = False
-    client11.publish(Topics.EV3_STOP)
-    #client31.publish(Topics.EV3_STOP)
+    client11.publish(topics["EV3_STOP"])
+    #client31.publish(topics["EV3_STOP"])
     print("> Action queue locked. Ev3s are STOPPED")
 
 def onEV3Resume(client, userdata, msg, controller):
     """This will resume the execution of the current execution thread.
     """
-    client11.publish(Topics.EV3_RESUME)
-    #client31.publish(Topics.EV3_RESUME)
+    client11.publish(topics["EV3_RESUME"])
+    #client31.publish(topics["EV3_RESUME"])
     currentExecThread = controller.currentExecutionThread()
     currentExecThread.unlock()
     print("> Execution thread unlocked and ready to resume")
     if currentExecThread.pending():
-        client11.publish(Topics.EV3_REQUEST_NEXT)
+        client11.publish(topics["EV3_REQUEST_NEXT"])
 
 def onEV3Pause(client, userdata, msg, controller):
     currentExecThread = controller.currentExecutionThread()
     currentExecThread.lock()
-    client11.publish(Topics.EV3_PAUSE)
-    #client31.publish(Topics.EV3_PAUSE)
+    client11.publish(topics["EV3_PAUSE"])
+    #client31.publish(topics["EV3_PAUSE"])
     print("> Action queue is locked and ev3s are PAUSED")
     return
 
@@ -208,8 +212,8 @@ def onPrintStates(client, userdata, msg, controller):
 
 def onPrintPositions(client, userdata, msg, controller):
     print("> These are the current positions: ")
-    client11.publish(Topics.EV3_PRINT_POS)
-    #client31.publish(Topics.EV3_PRINT_POS)
+    client11.publish(topics["EV3_PRINT_POS"])
+    #client31.publish(topics["EV3_PRINT_POS"])
 
 def onDelete(client, userdata, msg, controller):
     currentExecThread = controller.currentExecutionThread()
@@ -256,29 +260,29 @@ def onNext(client, userdata, msg, controller):
     if currentExecThread.state.locked:
         print("> Current exec thread is locked!")
         return
-    client11.publish(Topics.EV3_REQUEST_NEXT)
+    client11.publish(topics["EV3_REQUEST_NEXT"])
     print("> Next action should be sent to ev3.")
 
 def onAppRequestData(client, userdata, msg, controller):
     whatToSend = msg.payload.decode()
     currentExecThread = controller.currentExecutionThread()
     if whatToSend == "thread":
-        client.publish(Topics.APP_RECIEVE_THREAD, controller.currentExecThreadTag)
+        client.publish(topics["APP_RECIEVE_THREAD"], controller.currentExecThreadTag)
     elif whatToSend == "locked":
-        client.publish(Topics.APP_RECIEVE_LOCKED, currentExecThread.state.locked)
+        client.publish(topics["APP_RECIEVE_LOCKED"], currentExecThread.state.locked)
     elif whatToSend == "pending":
-        client.publish(Topics.APP_RECIEVE_PENDING, currentExecThread.state.pending)
+        client.publish(topics["APP_RECIEVE_PENDING"], currentExecThread.state.pending)
     elif whatToSend == "waiting":
-        client.publish(Topics.APP_RECIEVE_WAITING, currentExecThread.state.waiting)
+        client.publish(topics["APP_RECIEVE_WAITING"], currentExecThread.state.waiting)
     elif whatToSend == "actions":
         actions = numpy.array(currentExecThread.queue).tolist()
-        client.publish(Topics.APP_RECIEVE_ACTIONS, json.dumps(actions))
+        client.publish(topics["APP_RECIEVE_ACTIONS"], json.dumps(actions))
     elif whatToSend == "all":
-        client.publish(Topics.APP_REQUEST, "thread")
-        client.publish(Topics.APP_REQUEST, "locked")
-        client.publish(Topics.APP_REQUEST, "pending")
-        client.publish(Topics.APP_REQUEST, "waiting")
-        client.publish(Topics.APP_REQUEST, "actions")
+        client.publish(topics["APP_REQUEST"], "thread")
+        client.publish(topics["APP_REQUEST"], "locked")
+        client.publish(topics["APP_REQUEST"], "pending")
+        client.publish(topics["APP_REQUEST"], "waiting")
+        client.publish(topics["APP_REQUEST"], "actions")
 
 controller = Controller()
 visionActionQueue = ActionQueue(pending=False)
@@ -290,48 +294,48 @@ controller.changeExecutionQueue(visionTag)
 
 subscribedTopics = {
     # controller related
-    Topics.START_CONTROLLER: onStartController,
-    Topics.PROCESS_CONTROLLER: onProcess,
-    Topics.PROCESS_RESPONSE_CONTROLLER: onProcessResponse,
-    Topics.SWITCH_CONTROLLER_EXEC: onSwitchExecutionThread,
-    Topics.CONTROLLER_DELETE: onDelete,
-    Topics.SWITCH_EXEC_PENDING: onSwitchToPending,
-    Topics.SWITCH_EXEC_NOT_PENDING: onSwitchToNotPending,
-    Topics.CONTROLLER_NEXT_ACTION: onNext,
+    topics["START_CONTROLLER"]: onStartController,
+    topics["PROCESS_CONTROLLER"]: onProcess,
+    topics["PROCESS_RESPONSE_CONTROLLER"]: onProcessResponse,
+    topics["SWITCH_CONTROLLER_EXEC"]: onSwitchExecutionThread,
+    topics["CONTROLLER_DELETE"]: onDelete,
+    topics["SWITCH_EXEC_PENDING"]: onSwitchToPending,
+    topics["SWITCH_EXEC_NOT_PENDING"]: onSwitchToNotPending,
+    topics["CONTROLLER_NEXT_ACTION"]: onNext,
     # the controller will only forwards to ev3
-    Topics.CONTROLLER_MOVE_X: forwardAction(Topics.EV3_MOVE_X),
-    Topics.CONTROLLER_MOVE_Y: forwardAction(Topics.EV3_MOVE_Y),
-    Topics.CONTROLLER_MOVE_Z: forwardAction(Topics.EV3_MOVE_Z),
-    Topics.CONTROLLER_GRAB: forwardAction(Topics.EV3_MOVE_GRAB),
-    Topics.CONTROLLER_RELEASE: forwardAction(Topics.EV3_MOVE_RELEASE),
-    Topics.CONTROLLER_RESET_X: forwardAction(Topics.EV3_RESET_X),
-    Topics.CONTROLLER_RESET_Y: forwardAction(Topics.EV3_RESET_Y),
-    Topics.CONTROLLER_RESET_Z: forwardAction(Topics.EV3_RESET_Z),
+    topics["CONTROLLER_MOVE_X"]: forwardAction(topics["EV3_MOVE_X"]),
+    topics["CONTROLLER_MOVE_Y"]: forwardAction(topics["EV3_MOVE_Y"]),
+    topics["CONTROLLER_MOVE_Z"]: forwardAction(topics["EV3_MOVE_Z"]),
+    topics["CONTROLLER_GRAB"]: forwardAction(topics["EV3_MOVE_GRAB"]),
+    topics["CONTROLLER_RELEASE"]: forwardAction(topics["EV3_MOVE_RELEASE"]),
+    topics["CONTROLLER_RESET_X"]: forwardAction(topics["EV3_RESET_X"]),
+    topics["CONTROLLER_RESET_Y"]: forwardAction(topics["EV3_RESET_Y"]),
+    topics["CONTROLLER_RESET_Z"]: forwardAction(topics["EV3_RESET_Z"]),
     # ev3 related
-    Topics.STOP_CONTROLLER: onEV3Stop,
-    Topics.PAUSE_CONTROLLER: onEV3Pause,
-    Topics.RESUME_CONTROLLER: onEV3Resume,
+    topics["STOP_CONTROLLER"]: onEV3Stop,
+    topics["PAUSE_CONTROLLER"]: onEV3Pause,
+    topics["RESUME_CONTROLLER"]: onEV3Resume,
     # client-controller related
-    Topics.CONTROLLER_PRINT_STATES: onPrintStates,
-    Topics.CONTROLLER_PRINT_POS: onPrintPositions,
+    topics["CONTROLLER_PRINT_STATES"]: onPrintStates,
+    topics["CONTROLLER_PRINT_POS"]: onPrintPositions,
 
-    Topics.APP_REQUEST: onAppRequestData,
-    Topics.APP_REQUEST_IMG: onAppRequestImg
+    topics["APP_REQUEST"]: onAppRequestData,
+    topics["APP_REQUEST_IMG"]: onAppRequestImg
 }
 
 def onConnect(client, userdata, flags, rc):
     print("Controller listening to messages")
     for key in subscribedTopics.keys():
         client.subscribe(key)
-    client.publish(Topics.APP_REQUEST, "all")
+    client.publish(topics["APP_REQUEST"], "all")
 
 def onMessage(client, userdata, msg):
     if msg.topic in subscribedTopics.keys():
-        if not msg.topic == Topics.APP_REQUEST:
-            client.publish(Topics.APP_REQUEST, "all")
+        if not msg.topic == topics["APP_REQUEST"]:
+            client.publish(topics["APP_REQUEST"], "all")
         subscribedTopics[msg.topic](client, userdata, msg, controller)
-        if not msg.topic == Topics.APP_REQUEST:
-            client.publish(Topics.APP_REQUEST, "all")
+        if not msg.topic == topics["APP_REQUEST"]:
+            client.publish(topics["APP_REQUEST"], "all")
     else:
         print("Topic {0} is not subscribed".format(msg.topic))
 
@@ -343,16 +347,16 @@ def onPrint(client, userdata, msg, controller):
     print(msg.payload.decode())
 
 def onEV3Connect(client, userdata, flags, rc):
-    client.subscribe(Topics.EV3_REQUEST_NEXT)
-    client.subscribe(Topics.EV3_ACTION_COMPLETED)
-    client.subscribe(Topics.CONTROLLER_PRINT)
+    client.subscribe(topics["EV3_REQUEST_NEXT"])
+    client.subscribe(topics["EV3_ACTION_COMPLETED"])
+    client.subscribe(topics["CONTROLLER_PRINT"])
 
 def onEV3Message(client, userdata, msg):
-    if msg.topic == Topics.EV3_REQUEST_NEXT:
+    if msg.topic == topics["EV3_REQUEST_NEXT"]:
         onRequestNextEV3Action(client, userdata, msg, controller)
-    elif msg.topic == Topics.EV3_ACTION_COMPLETED:
+    elif msg.topic == topics["EV3_ACTION_COMPLETED"]:
         onEV3ActionCompleted(client, userdata, msg, controller)
-    elif msg.topic == Topics.CONTROLLER_PRINT:
+    elif msg.topic == topics["CONTROLLER_PRINT"]:
         onPrint(client, userdata, msg, controller)
 
 client11.on_connect = onEV3Connect

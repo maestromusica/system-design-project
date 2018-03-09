@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import topics from '../../../../topics.json'
+import topics from '../../../../config/topics.json'
 import {
   Section,
   SectionTitle,

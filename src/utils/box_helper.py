@@ -1,4 +1,4 @@
-from message_types import Topics
+from src.utils.message_types import Topics
 
 def mockBoxes(actionQueue):
     boxes = [{

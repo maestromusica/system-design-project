@@ -1,6 +1,8 @@
 import json
+import os
 
-topics = json.load(open("topics.json"))
+topicsPath = os.path.join(os.path.dirname(__file__), "../config/topics.json")
+topics = json.load(open(topicsPath))
 
 class Topics:
     START_CONTROLLER = topics["START_CONTROLLER"]

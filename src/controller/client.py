@@ -1,9 +1,7 @@
 #! /usr/bin/env python
 from cmd import Cmd
 import paho.mqtt.client as mqtt
-import time
-import json
-from message_types import Topics
+from ..utils.message_types import Topics
 
 
 class ClientPrompt(Cmd):

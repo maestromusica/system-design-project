@@ -1,5 +1,5 @@
 import React from 'react'
-import topics from '../../../../topics.json' // this is an ugly path...
+import topics from '../../../../config/topics.json' // this is an ugly path...
 import {
   Section,
   SectionTitle,

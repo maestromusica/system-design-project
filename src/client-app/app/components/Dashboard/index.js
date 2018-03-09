@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import mqtt from 'mqtt'
 import {Button} from '../../styled/components'
 import {MQTT_IP} from '../../utils/config'
-import topics from '../../../../topics.json'
+import topics from '../../../../config/topics.json'
 
 export default class Dashboard extends Component {
   state = {

@@ -1,5 +1,3 @@
-from action_queue import ActionQueue, ActionQueueLockedException
-
 class Controller:
     def __init__(self):
         # will keep the action queues

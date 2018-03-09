@@ -5,7 +5,7 @@ import ThreadSection from './ThreadSection'
 import AxisSection from './AxisSection'
 import ResetSection from './ResetSection'
 import ActionsSection from './ActionsSection'
-import topics from '../../../../topics.json'
+import topics from '../../../../config/topics.json'
 
 export default class Development extends Component {
   state = {
