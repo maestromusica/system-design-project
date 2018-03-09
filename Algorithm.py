@@ -19,14 +19,16 @@ class Algorithm(object):
 
     def __init__(self, boxes, binSize, alg):
         self.timestamp = time()
-        new_boxes = self.getTrueBoxes(boxes)
-        exec('self.packer = Packer.'+alg+'(new_boxes, binSize)')
+        #new_boxes = self.getTrueBoxes(boxes)
+        exec('self.packer = Packer.'+alg+'(boxes, binSize)')
         self.packer.sort()
         self.coords = self.packer.get_xy()
         self.log_error(boxes, new_boxes, alg)
     
 
-        
+    def pack(self):
+        return self.packer.bins
+    
     #takes a list of dict objects with box information like vision output
     #returns a list of box objects in nonincreasing order
     def getTrueBoxes(self, boxes):
