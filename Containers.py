@@ -4,9 +4,9 @@ import numpy as np
 
 class Bin(object):
 
-    def __init__(self, (w, l)):
-        self.length = l
-        self.width = w
+    def __init__(self, dim):
+        self.length = dim[1]
+        self.width = dim[0]
         #2d array of bools, True is empty, False is full
         self.area = np.ones((self.length,self.width),np.bool_)
         #list of box 

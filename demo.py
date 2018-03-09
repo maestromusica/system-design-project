@@ -1,5 +1,5 @@
-from Algorithm import Algorithm as a
-import cPickle as pkl
+from Algorithm import StackingAlgorithm as a
+import _pickle as pkl
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches

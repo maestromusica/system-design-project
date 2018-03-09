@@ -125,11 +125,11 @@ class ImageProcessor(object):
         masks = self.maskFinder.find(wsImg)
         #finds the boxes in the workspace
         #boxes :: {'colorname':[box]} dict of lists of boxes (box object type) by name of color (string)
-        image, boxes = self.boxFinder.find(wsImg,masks)
+        return self.boxFinder.find(wsImg,masks)
         #unpack the boxes to return in a more universal format
-        unpacked_boxes = self.unpack(boxes)
-        return image, unpacked_boxes
-
+        #unpacked_boxes = self.unpack(boxes)
+        #return image, boxes
+    '''
     def unpack(self,boxes):
         unpacked_boxes = []
         for c, boxlist in boxes.items():
@@ -137,4 +137,4 @@ class ImageProcessor(object):
                 unpacked_boxes.append(box.getDetails())
         
         return unpacked_boxes
-
+    '''

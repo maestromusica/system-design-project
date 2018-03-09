@@ -21,13 +21,15 @@ class Adaptor(object):
         centroid = np.array([list(centroid)],np.int0)
         y = self.AdapterY.predict(centroid)
         x = self.AdapterX.predict(centroid) - 100
-        return np.uint32([x,y])
+        return (x.flatten()[0],y.flatten()[0])
     
     def adaptBoxes(self,boxes):
         adaptedBoxes = []
         for b in boxes:
+            print("OriginalValues : from : {}\t to {}".format(b.centrefrom,b.centreto))
             b.centrefrom = self.adaptPoints(b.centrefrom)
             b.centreto = self.adaptPoints(b.centreto)
+            
             adaptedBoxes.append([b.centrefrom,b.centreto])
 
         return adaptedBoxes
@@ -35,5 +37,5 @@ class Adaptor(object):
     def transform(self,bins):
         layers = {}
         for i, bin in enumerate(bins):
-            layers[i] = adaptBoxes(bin.boxes_packed)
+            layers[i] = self.adaptBoxes(bin.boxes_packed)
         return layers

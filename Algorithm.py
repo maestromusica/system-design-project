@@ -1,4 +1,4 @@
-import cPickle as pkl
+import _pickle as pkl
 import logging
 import numpy as np
 from time import time
@@ -15,12 +15,13 @@ logging.basicConfig(format='%(levelname)s: %(message)s', level=LOGLEVEL)
 ##everything goes width length
 
 
-class Algorithm(object):
+class StackingAlgorithm(object):
 
     def __init__(self, boxes, binSize, alg):
         self.timestamp = time()
-        #new_boxes = self.getTrueBoxes(boxes)
-        exec('self.packer = Packer.'+alg+'(boxes, binSize)')
+        print(boxes)
+        new_boxes = self.getTrueBoxes(boxes)
+        exec('self.packer = Packer.'+alg+'(new_boxes, binSize)')
         self.packer.sort()
         self.coords = self.packer.get_xy()
         self.log_error(boxes, new_boxes, alg)
@@ -70,7 +71,7 @@ class Algorithm(object):
         error = {'Algorithm':alg,'Unused Area':unused_area, 'Width Error':boxWidthErr, 'Length Error':boxLengthErr, 'Runtime':time()-self.timestamp}
         error.update(self.packer.get_error())
         logging.debug("Writing error metrics '{}' to 'error_log' file".format(error))
-        f = open(str(self.timestamp)+'_error_log','a+')
+        f = open(str(self.timestamp)+'_error_log','a+b')
         pkl.dump(error,f)
         f.close()
         logging.debug("Written to file.")

@@ -88,8 +88,8 @@ class VisionAdaptor:
     def createPickRoutine(self,pickupPoint,endPoint):
         #self.gotoStart()
         print('Heading to package at : {}'.format(pickupPoint))
-        self.actionQueue.put(self.addXAction(int(pickupPoint[0][0][0])))
-        self.actionQueue.put(self.addYAction(int(pickupPoint[1][0][0])))
+        self.actionQueue.put(self.addXAction(int(pickupPoint[0])))
+        self.actionQueue.put(self.addYAction(int(pickupPoint[1])))
         self.grab()
         print('Package Recovered!')
         self.actionQueue.put(self.addXAction(int(endPoint[0])))
@@ -112,13 +112,13 @@ class VisionAdaptor:
 
                 # Send these bins to Adaptor and transform pick and drop points.
                 layers = self.adaptor.transform(bins)
-                
+                print(layers)
                 for l in layers.keys():
                     print("Creating pickup Routine for Layer: {}".format(l))
                     for b in layers[l]:
                         self.createPickRoutine(b[0],b[1])
                 cv2.destroyAllWindows()
-                return
+                return image
 
 def main():
     va = VisionAdaptor()

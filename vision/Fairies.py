@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from base import MaskGenerator, ContourExtractor, CornersDetector, Drawer, Box
+from base import MaskGenerator, ContourExtractor, CornersDetector, Drawer
 
 #class for finding the workspace out of a big image thing
 class wsFinder(object):
@@ -51,20 +51,30 @@ class boxFinder(object):
         self.contourExtractor = ContourExtractor()
         self.cornersDetector = CornersDetector(quality=quality)
         self.drawer = Drawer()
-        self.boxDict = {}
+        #self.boxDict = {}
 
+    def createDict(self,centroid,dim,colour,rotation):
+        if dim[0] > dim[1]:
+            length = dim[0]
+            width = dim[1]
+        else:
+            length = dim[1]
+            width = dim[0]
+        return {'centroid':centroid,'length':length,'width':width,\
+                'colour':colour,'rotation':rotation}
+    
     def find(self, img, masks):
         draw = img.copy()
+        boxes = []
         for k, m in masks.items():
-            boxes = []
             contours = self.contourExtractor.segmentation(m)
             if len(contours) > 0:
                 for box, rect in contours:
-                    corners, centroid = self.cornersDetector.detectCorners(img, m, box)
+                    #corners, centroid = self.cornersDetector.detectCorners(img, m, box)
                     #draw = self.drawer.drawBox(img,corners,centroid,'r')
                     draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'b')
-                    boxes.append(Box(rect[0], rect[1][1],rect[1][0],k,rect[2]))
-                self.boxDict.update({k:boxes})
+                    boxes.append(self.createDict(rect[0],rect[1],k,rect[2]))
+                #self.boxDict.update({k:boxes})
                 draw = self.drawer.putText(draw,k,len(boxes))
-        return draw, self.boxDict
+        return draw, boxes
 
