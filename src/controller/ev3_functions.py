@@ -5,6 +5,9 @@ import os
 topicsPath = os.path.join(os.path.dirname(__file__), "../config/topics.json")
 topics = json.load(open(topicsPath))
 
+configPath = os.path.join(os.path.dirname(__file__), "../config/config.json")
+config = json.load(open(configPath))
+
 visionTag = "vision"
 controllerTag = "controller"
 
@@ -97,19 +100,48 @@ def onEV3Pause(client, ev3, msg, controller):
     print("> Action queue is locked and ev3s are PAUSED")
     return
 
+def onEV3ConnectionAck(client, ev3, msg, controller):
+    tag = msg.payload.decode()
+    ev3.setConnected(tag)
+    print("> EV3 {0} is connected!".format(tag))
+
 class EV3Client():
     def __init__(self, controllerClient):
         self.client11 = mqtt.Client()
         self.client31 = mqtt.Client()
         self.controllerClient = controllerClient
-        self.devicesConnected = 0
+        self.client11Connected = False
+        self.client31Connected = True # testing purposes
+        self.connected = False
 
-    def connect(self, ev11, ev31):
-        self.client11.connect(ev11["ip"], ev11["port"], ev11["keepalive"])
-        # self.client31.connect(ev31["ip"], ev31["port"], ev31["keepalive"])
+    def connect(self):
+        self.connect11()
+        self.connect31()
+
+    def connect11(self):
+        config = json.load(open(configPath))
+        ev11 = {"ip": config["ips"]["INF_11"], "port": 1883, "keepalive": 60}
+
+        try:
+            self.client11.connect(ev11["ip"], ev11["port"], ev11["keepalive"])
+            self.setConnected("11")
+        except OSError:
+            self.client11Connected = False
+            self.connected = False
+
+    def connect31(self):
+        config = json.load(open(configPath))
+        ev31 = {"ip": config["ips"]["INF_31"], "port": 1883, "keepalive": 60}
+
+        try:
+            self.client31.connect(ev31["ip"], ev31["port"], ev31["keepalive"])
+            self.setConnected("31")
+        except OSError:
+            self.client31Connected = False
+            self.connected = False
 
     def publish(self, topic, message=None):
-        if(topic == topics["EV3_REQUEST_NEXT"]):
+        if topic == topics["EV3_REQUEST_NEXT"]:
             self.client11.publish(topic, message)
         else:
             self.client11.publish(topic, message)
@@ -135,3 +167,20 @@ class EV3Client():
         self.devicesConnected += 1
         if self.devicesConnected == 1:
             self.controllerClient.publish(topics["EV3_CONNECTED"])
+
+    def setConnected(self, tag):
+        if tag == "11":
+            self.client11Connected = True
+        elif tag == "31":
+            self.client31Connected = True
+
+        if self.client11Connected is True and self.client31Connected is True:
+            self.connected = True
+
+    def setDisconnected(self, tag):
+        if tag == "11":
+            self.client11Connected = False
+            self.connected = False
+        elif tag == "31":
+            self.client31Connected = False
+            self.connected = False

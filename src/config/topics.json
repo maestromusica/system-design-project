@@ -51,6 +51,7 @@
     "APP_RECEIVE_PENDING": "action/app/receive/data/pending",
     "APP_RECEIVE_WAITING": "action/app/receive/data/waiting",
     "APP_RECEIVE_ACTIONS": "action/app/receive/data/actions",
+    "APP_RECEIVE_CONNECTION": "aciton/app/receive/data/connection",
 
     "APP_RECEIVE_IMG": "action/app/receive/data/video_feed",
     "APP_REQUEST_IMG": "action/app/request/data/video_feed",
@@ -59,5 +60,10 @@
     "CONTROLLER_SAVE_IP_31": "config/app/save/ip/INF_31",
 
     "EV3_CONNECTED": "info/ev3/connected",
-    "APP_EV3_CONNECTED": "info/app/ev3/connected"
+    "APP_EV3_CONNECTED": "info/app/ev3/connected",
+
+    "CONN": "info/controller/check/connection",
+    "CONN_ACK": "info/controller/ack/connection",
+    "EV3_CONN": "info/ev3/check/connection",
+    "EV3_CONN_ACK": "info/ev3/ack/connection"
 }

@@ -63,15 +63,10 @@ const meta = (state = metaInitialState, action) => {
         ...state,
         connected: false
       }
-    case EV3_CONNECTED:
+    case topics.APP_RECEIVE_CONNECTION:
       return {
         ...state,
-        ev3Connected: true
-      }
-    case EV3_DISCONNECTED:
-      return {
-        ...state,
-        ev3Disconnected: false
+        ev3Connected: action.data.connected
       }
     default:
       return state

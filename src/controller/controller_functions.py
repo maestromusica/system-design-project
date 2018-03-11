@@ -147,12 +147,15 @@ def onAppRequestData(client, ev3, msg, controller):
     elif whatToSend == "actions":
         actions = numpy.array(currentExecThread.queue).tolist()
         client.publish(topics["APP_RECEIVE_ACTIONS"], json.dumps(actions))
+    elif whatToSend == "connection":
+        client.publish(topics["APP_RECEIVE_CONNECTION"], ev3.connected)
     elif whatToSend == "all":
         client.publish(topics["APP_REQUEST"], "thread")
         client.publish(topics["APP_REQUEST"], "locked")
         client.publish(topics["APP_REQUEST"], "pending")
         client.publish(topics["APP_REQUEST"], "waiting")
         client.publish(topics["APP_REQUEST"], "actions")
+        client.publish(topics["APP_REQUEST"], "connection")
 
 def onAppRequestImg(client, ev3, msg, controller):
     cap = cv2.VideoCapture(0)
@@ -188,6 +191,9 @@ def onAppSaveEV11IP(client, ev3, msg, controller):
     config["ips"]["INF_11"] = ip
     with open(configPath, 'w') as out:
         json.dump(config, out)
+    ev3.setDisconnected("11")
+    ev3.client11.disconnect()
+    ev3.connect11()
     print("> EV3 INF_11 IP rewritten to {0}".format(ip))
 
 def onAppSaveEV31IP(client, ev3, msg, controller):
@@ -196,4 +202,11 @@ def onAppSaveEV31IP(client, ev3, msg, controller):
     config["ips"]["INF_31"] = ip
     with open(configPath, 'w') as out:
         json.dump(config, out)
+
+    ev3.setDisconnected("31")
+    ev3.client31.disconnect()
+    ev3.connect31()
     print("> EV3 INF_31 IP rewritten to {0}".format(ip))
+
+def onAppConn(client, ev3, msg, controller):
+    print("> App tries to connect")

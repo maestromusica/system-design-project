@@ -3,10 +3,11 @@ import {topics} from '../../utils/config'
 import {
   clientConnected,
   clientDisconnected,
-  ev3Connected,
+  appReceiveEV3Connection,
   appReceiveThread,
   appReceiveLocked,
   appReceivePending,
+  appReceiveWaiting,
   appReceiveActions
 } from './actions'
 
@@ -23,6 +24,7 @@ const reduxMqttMiddleware = (ip) => ({dispatch, getState}) => {
     client.subscribe(topics.APP_RECEIVE_PENDING)
     client.subscribe(topics.APP_RECEIVE_WAITING)
     client.subscribe(topics.APP_RECEIVE_ACTIONS)
+    client.subscribe(topics.APP_RECEIVE_CONNECTION)
 
     client.publish(topics.APP_REQUEST, "all")
     dispatch(clientConnected())
@@ -35,20 +37,23 @@ const reduxMqttMiddleware = (ip) => ({dispatch, getState}) => {
   client.on('message', (topic, msg) => {
     const data = msg.toString()
     switch(topic) {
-      case topics.APP_EV3_CONNECTED:
-        dispatch(ev3Connected())
-        break
       case topics.APP_RECEIVE_THREAD:
         dispatch(appReceiveThread(data))
         break
       case topics.APP_RECEIVE_LOCKED:
         dispatch(appReceiveLocked(data))
         break
-      case topic.APP_RECEIVE_PENDING:
+      case topics.APP_RECEIVE_PENDING:
         dispatch(appReceivePending(data))
+        break
+      case topics.APP_RECEIVE_WAITING:
+        dispatch(appReceiveWaiting(data))
         break
       case topics.APP_RECEIVE_ACTIONS:
         dispatch(appReceiveActions(data))
+        break
+      case topics.APP_RECEIVE_CONNECTION:
+        dispatch(appReceiveEV3Connection(data))
         break
     }
   })

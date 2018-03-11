@@ -1,16 +1,14 @@
 #! /usr/bin/env python3
 import paho.mqtt.client as mqtt
-from message_types import Topics
+from ..config.index import topics
 import time
-
-state = "RUNNING"
 
 def onEV3Action(client, userdata, msg):
     print("> Topic is: ", msg.topic)
     print("> Payload is: ", msg.payload.decode())
     print("> Action completed")
     time.sleep(1)
-    client.publish(Topics.EV3_ACTION_COMPLETED)
+    client.publish(topics["EV3_ACTION_COMPLETED"])
 
 def onEV3Stop(client, userdata, msg):
     print("> EV3 stop not implemented")
@@ -23,21 +21,27 @@ def onEV3Pause(client, userdata, msg):
 
 def onPrint(client, userdata, msg):
     print("xax1: 900")
-    client.publish(Topics.CONTROLLER_PRINT, "xax1: 900")
+    client.publish(topics["CONTROLLER_PRINT"], "xax1: 900")
+
+def onConn(client, userdata, msg):
+    print(userdata)
+    print("> Connection received!")
+    client.publish(topics["EV3_CONN_ACK"], "11")
 
 subscribedTopics = {
-    Topics.EV3_MOVE_X: onEV3Action,
-    Topics.EV3_MOVE_Y: onEV3Action,
-    Topics.EV3_MOVE_Z: onEV3Action,
-    Topics.EV3_MOVE_GRAB: onEV3Action,
-    Topics.EV3_MOVE_RELEASE: onEV3Action,
-    Topics.EV3_RESET_X: onEV3Action,
-    Topics.EV3_RESET_Y: onEV3Action,
-    Topics.EV3_RESET_Z: onEV3Action,
-    Topics.EV3_STOP: onEV3Stop,
-    Topics.EV3_RESUME: onEV3Resume,
-    Topics.EV3_PAUSE: onEV3Pause,
-    Topics.EV3_PRINT_POS: onPrint
+    topics["EV3_MOVE_X"]: onEV3Action,
+    topics["EV3_MOVE_Y"]: onEV3Action,
+    topics["EV3_MOVE_Z"]: onEV3Action,
+    topics["EV3_MOVE_GRAB"]: onEV3Action,
+    topics["EV3_MOVE_RELEASE"]: onEV3Action,
+    topics["EV3_RESET_X"]: onEV3Action,
+    topics["EV3_RESET_Y"]: onEV3Action,
+    topics["EV3_RESET_Z"]: onEV3Action,
+    topics["EV3_STOP"]: onEV3Stop,
+    topics["EV3_RESUME"]: onEV3Resume,
+    topics["EV3_PAUSE"]: onEV3Pause,
+    topics["EV3_PRINT_POS"]: onPrint,
+    topics["EV3_CONN"]: onConn
 }
 
 def onConnect(client, userdata, flags, rc):

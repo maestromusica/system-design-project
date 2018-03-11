@@ -50,7 +50,8 @@ subscribedTopics = {
     topics["EV3_CONNECTED"]: onEV3Connected,
 
     topics["CONTROLLER_SAVE_IP_11"]: onAppSaveEV11IP,
-    topics["CONTROLLER_SAVE_IP_31"]: onAppSaveEV31IP
+    topics["CONTROLLER_SAVE_IP_31"]: onAppSaveEV31IP,
+    topics["CONN"]: onAppConn
 }
 
 def onConnect(client, userdata, flags, rc):
@@ -71,15 +72,7 @@ def onConnect(client, userdata, flags, rc):
 
     ev3.on_connect(onEV3Connect)
     ev3.on_message(onEV3Message)
-    ev3.connect({
-        "ip": config["ips"]["INF_11"],
-        "port": 1883,
-        "keepalive": 60
-    }, {
-        "ip": config["ips"]["INF_31"],
-        "port": 1883,
-        "keepalive": 60
-    })
+    ev3.connect()
     ev3.loop_start()
 
 def onMessage(client, userdata, msg):
@@ -93,19 +86,23 @@ def onMessage(client, userdata, msg):
 def onPrint(client, userdata, msg, controller):
     print(msg.payload.decode())
 
+ev3SubscribedTopics = {
+    topics["EV3_REQUEST_NEXT"]: onRequestNextEV3Action,
+    topics["EV3_ACTION_COMPLETED"]: onEV3ActionCompleted,
+    topics["CONTROLLER_PRINT"]: onPrint,
+    topics["EV3_CONN_ACK"]: onEV3ConnectionAck
+}
+
 def onEV3Connect(client, userdata, flags, rc):
-    ev3.subscribe(topics["EV3_REQUEST_NEXT"])
-    ev3.subscribe(topics["EV3_ACTION_COMPLETED"])
-    ev3.subscribe(topics["CONTROLLER_PRINT"])
-    ev3.deviceConnected()
+    for topic in ev3SubscribedTopics.keys():
+        client.subscribe(topic)
+    ev3.publish(topics["EV3_CONN"])
 
 def onEV3Message(client, userdata, msg):
-    if msg.topic == topics["EV3_REQUEST_NEXT"]:
-        onRequestNextEV3Action(client, ev3, msg, controller)
-    elif msg.topic == topics["EV3_ACTION_COMPLETED"]:
-        onEV3ActionCompleted(client, ev3, msg, controller)
-    elif msg.topic == topics["CONTROLLER_PRINT"]:
-        onPrint(client, userdata, msg, controller)
+    if msg.topic in ev3SubscribedTopics.keys():
+        ev3SubscribedTopics[msg.topic](controllerClient, ev3, msg, controller)
+    else:
+        print("Topic {0} is not subscribed".format(msg.topic))
 
 controllerClient.on_connect = onConnect
 controllerClient.on_message = onMessage

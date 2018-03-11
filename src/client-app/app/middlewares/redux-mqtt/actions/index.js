@@ -1,9 +1,7 @@
 import {topics} from '../../../utils/config'
 
 export const CLIENT_CONNECTED = 'CLIENT_CONNECTED'
-export const EV3_CONNECTED = 'EV3_CONNECTED'
 export const CLIENT_DISCONNECTED = 'CLIENT_DISCONNECTED'
-export const EV3_DISCONNECTED = 'EV3_DISCONNECTED'
 
 export const clientConnected = () => ({
   type: CLIENT_CONNECTED
@@ -13,12 +11,11 @@ export const clientDisconnected = () => ({
   type: CLIENT_DISCONNECTED
 })
 
-export const ev3Connected = () => ({
-  type: EV3_CONNECTED
-})
-
-export const ev3Disconnected = () => ({
-  type: EV3_DISCONNECTED
+export const appReceiveEV3Connection = data => ({
+  type: topics.APP_RECEIVE_CONNECTION,
+  data: {
+    connected: data == "True"
+  }
 })
 
 export const appReceiveThread = data => ({
@@ -39,6 +36,13 @@ export const appReceivePending = data => ({
   type: topics.APP_RECEIVE_PENDING,
   data: {
     pending: data === "True"
+  }
+})
+
+export const appReceiveWaiting = data => ({
+  type: topics.APP_RECEIVE_WAITING,
+  data: {
+    waiting: data === "True"
   }
 })
 
