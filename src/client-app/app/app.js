@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Provider } from 'react-redux';
-import { ConnectedRouter } from 'react-router-redux';
-import { createMemoryHistory } from 'history';
+import {Provider} from 'react-redux';
+import {applyMiddleware} from 'redux'
+import {ConnectedRouter} from 'react-router-redux';
+import {createMemoryHistory} from 'history';
 import App from './routes';
 import configureStore from './store';
 
@@ -15,7 +16,7 @@ const syncHistoryWithStore = (store, history) => {
 
 const initialState = {};
 const routerHistory = createMemoryHistory();
-const store = configureStore(initialState, routerHistory);
+let store = configureStore(initialState, routerHistory);
 syncHistoryWithStore(store, routerHistory);
 
 const rootElement = document.querySelector(document.currentScript.getAttribute('data-container'));

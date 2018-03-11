@@ -20,45 +20,44 @@ class Settings extends Component {
   }
 
   render() {
+    console.log(this.props.actions)
     return (
-      <div>
-        <Section>
-          <SectionTitle>IP Settings</SectionTitle>
-          <SectionOption>
-            <SectionOptionTitle>Client IP</SectionOptionTitle>
-            <SectionOptionInput onChange={ev => {
-              this.setState({
-                CLIENT: ev.target.value
-              })
-            }} value={this.state.CLIENT} />
-            <SectionOptionButton onClick={ev => {
-              this.props.actions.addControllerIP(this.state.CLIENT)
-            }}>Save IP</SectionOptionButton>
-          </SectionOption>
-          <SectionOption>
-            <SectionOptionTitle>EV3 INF_11</SectionOptionTitle>
-            <SectionOptionInput onChange={ev => {
-              this.setState({
-                INF_11: ev.target.value
-              })
-            }} value={this.state.INF_11} />
-            <SectionOptionButton onClick={ev => {
-              this.props.actions.add11IP(this.state.INF_11)
-            }}>Save IP</SectionOptionButton>
-          </SectionOption>
-          <SectionOption>
-            <SectionOptionTitle>EV3 INF_31</SectionOptionTitle>
-            <SectionOptionInput onChange={ev => {
-              this.setState({
-                INF_31: ev.target.value
-              })
-            }} value={this.state.INF_31} />
-            <SectionOptionButton onClick={ev => {
-              this.props.actions.add31IP(this.state.INF_31)
-            }}>Save IP</SectionOptionButton>
-          </SectionOption>
-        </Section>
-      </div>
+      <Section>
+        <SectionTitle>IP Settings</SectionTitle>
+        <SectionOption>
+          <SectionOptionTitle>Client IP</SectionOptionTitle>
+          <SectionOptionInput onChange={ev => {
+            this.setState({
+              CLIENT: ev.target.value
+            })
+          }} value={this.state.CLIENT} />
+          <SectionOptionButton onClick={ev => {
+            this.props.actions.addControllerIP(this.state.CLIENT)
+          }}>Save IP</SectionOptionButton>
+        </SectionOption>
+        <SectionOption>
+          <SectionOptionTitle>EV3 INF_11</SectionOptionTitle>
+          <SectionOptionInput onChange={ev => {
+            this.setState({
+              INF_11: ev.target.value
+            })
+          }} value={this.state.INF_11} />
+          <SectionOptionButton onClick={ev => {
+            this.props.actions.add11IP(this.state.INF_11)
+          }}>Save IP</SectionOptionButton>
+        </SectionOption>
+        <SectionOption>
+          <SectionOptionTitle>EV3 INF_31</SectionOptionTitle>
+          <SectionOptionInput onChange={ev => {
+            this.setState({
+              INF_31: ev.target.value
+            })
+          }} value={this.state.INF_31} />
+          <SectionOptionButton onClick={ev => {
+            this.props.actions.add31IP(this.state.INF_31)
+          }}>Save IP</SectionOptionButton>
+        </SectionOption>
+      </Section>
     )
   }
 }

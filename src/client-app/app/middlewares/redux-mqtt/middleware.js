@@ -10,8 +10,11 @@ import {
   appReceiveActions
 } from './actions'
 
-const reduxMqttMiddleware = ip => ({dispatch}) => {
-  const client = mqtt.connect(ip)
+const reduxMqttMiddleware = (ip) => ({dispatch, getState}) => {
+  const state = getState()
+  const client = state.ips.CLIENT
+    ? mqtt.connect("mqtt://" + state.ips.CLIENT)
+    : mqtt.connect(ip)
 
   client.on('connect', () => {
     client.subscribe(topics.APP_EV3_CONNECTED)
@@ -30,7 +33,6 @@ const reduxMqttMiddleware = ip => ({dispatch}) => {
   })
 
   client.on('message', (topic, msg) => {
-    console.log("mata", topic)
     const data = msg.toString()
     switch(topic) {
       case topics.APP_EV3_CONNECTED:
@@ -53,7 +55,6 @@ const reduxMqttMiddleware = ip => ({dispatch}) => {
 
   return next => (action) => {
     if(action.topic) {
-      console.log('next action', action)
       Promise.resolve(
         client.publish(action.topic, action.data)
       ).then(next(action))
