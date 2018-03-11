@@ -209,4 +209,5 @@ def onAppSaveEV31IP(client, ev3, msg, controller):
     print("> EV3 INF_31 IP rewritten to {0}".format(ip))
 
 def onAppConn(client, ev3, msg, controller):
-    print("> App tries to connect")
+    print("> App wants to connect to the controller!")
+    client.publish(topics["CONN_ACK"])

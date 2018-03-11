@@ -20,7 +20,6 @@ class Settings extends Component {
   }
 
   render() {
-    console.log(this.props.actions)
     return (
       <Section>
         <SectionTitle>IP Settings</SectionTitle>
