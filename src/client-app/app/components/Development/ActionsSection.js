@@ -1,5 +1,5 @@
 import React from 'react'
-import topics from '../../../../config/topics.json' // this is an ugly path...
+import {topics} from '../../utils/config'
 import {
   Section,
   SectionTitle
@@ -7,9 +7,9 @@ import {
 import {Button} from '../../styled/components'
 import {Table} from 'antd'
 
-const ActionsSection = ({client, threadPending, actions}) => {
+const ActionsSection = ({meta, thread, actions}) => {
   let i = 0
-  const actionsList = actions.map((el) => {
+  const actionsList = thread.actions.map((el) => {
     i += 1
     for(const topic in topics) {
       if(el.action == topics[topic]) {
@@ -40,7 +40,7 @@ const ActionsSection = ({client, threadPending, actions}) => {
     render: (text, record) => (
       <span>
         <a onClick={ev => {
-          client.publish(topics.CONTROLLER_DELETE, (record.key - 1).toString())
+          actions.deleteAction((record.key - 1).toString())
         }}>Delete</a>
       </span>
     )
@@ -49,7 +49,7 @@ const ActionsSection = ({client, threadPending, actions}) => {
   return (
     <Section>
       <SectionTitle>Actions</SectionTitle>
-      {actions.length > 0 ? (
+      {thread.actions.length > 0 ? (
         <div>
           <Table
             dataSource={actionsList}
@@ -57,15 +57,15 @@ const ActionsSection = ({client, threadPending, actions}) => {
             size="small"
             bordered
           />
-          {!threadPending ? (
+          {!thread.pending ? (
             <Button onClick={ev => {
-              client.publish(topics.CONTROLLER_NEXT_ACTION)
+              acitons.requestNextAction()
             }}>Perform next action</Button>
           ) : (
             null
           )}
           <Button type="danger" onClick={ev => {
-            client.publish(topics.CONTROLLER_DELETE, "all")
+            actions.deleteAction('all')
           }}>
             Delete all
           </Button>

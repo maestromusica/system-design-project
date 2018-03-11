@@ -1,5 +1,4 @@
 import React, {Component} from 'react'
-import topics from '../../../../config/topics.json'
 import {
   Section,
   SectionTitle,
@@ -31,7 +30,7 @@ export default class AxisSection extends Component {
             })
           }} placeholder="moveX" value={this.state.moveX} />
           <SectionOptionButton onClick={ev => {
-            this.props.client.publish(topics.CONTROLLER_MOVE_X, this.state.moveX)
+            this.props.actions.moveX(this.state.moveX)
             this.setState({
               moveX: undefined
             })
@@ -47,7 +46,7 @@ export default class AxisSection extends Component {
             })
           }} placeholder="moveY" value={this.state.moveY} />
           <SectionOptionButton onClick={ev => {
-            this.props.client.publish(topics.CONTROLLER_MOVE_Y, this.state.moveY)
+            this.props.actions.moveY(this.state.moveY)
             this.setState({
               moveY: undefined
             })
@@ -63,7 +62,7 @@ export default class AxisSection extends Component {
             })
           }} placeholder="moveZ" value={this.state.moveZ} />
           <SectionOptionButton onClick={ev => {
-            this.props.client.publish(topics.CONTROLLER_MOVE_Z, this.state.moveZ)
+            this.props.actions.moveZ(this.state.moveZ)
             this.setState({
               moveZ: undefined
             })

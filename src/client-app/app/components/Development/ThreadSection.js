@@ -1,5 +1,4 @@
 import React from 'react'
-import topics from '../../../../config/topics.json' // this is an ugly path...
 import {
   Section,
   SectionItem,
@@ -8,18 +7,21 @@ import {
 import {Radio, Switch} from 'antd'
 const RadioGroup = Radio.Group
 
-const ThreadSection = ({client, thread, threadPending, threadLocked}) => (
+const VISION_TAG = "vision"
+const CONTROLLER_TAG = "controller"
+
+const ThreadSection = ({meta, thread, actions}) => (
   <Section>
     <SectionItem>
       <SectionTitle>
         Thread
       </SectionTitle>
-      <RadioGroup value={thread}>
+      <RadioGroup value={thread.name}>
         <Radio value="vision" onClick={ev => {
-          client.publish(topics.SWITCH_CONTROLLER_EXEC, "vision")
+          actions.switchExecutionThread(VISION_TAG)
         }}>Vision</Radio>
         <Radio value="controller" onClick={ev => {
-          client.publish(topics.SWITCH_CONTROLLER_EXEC, "controller")
+          actions.switchExecutionThread(CONTROLLER_TAG)
         }}>Controller</Radio>
       </RadioGroup>
     </SectionItem>
@@ -28,13 +30,14 @@ const ThreadSection = ({client, thread, threadPending, threadLocked}) => (
         Locked
       </SectionTitle>
       <Switch
-        checked={threadLocked}
+        checked={thread.locked}
         onClick={ev => {
-          const topic = threadLocked
-            ? topics.RESUME_CONTROLLER
-            : topics.STOP_CONTROLLER
-
-          client.publish(topic)
+          if(thread.locked) {
+            actions.resumeController()
+          }
+          else {
+            actions.stopController()
+          }
         }}
       />
     </SectionItem>
@@ -43,14 +46,15 @@ const ThreadSection = ({client, thread, threadPending, threadLocked}) => (
         Pending
       </SectionTitle>
       <Switch
-        checked={threadPending}
-        disabled={!threadLocked}
+        checked={thread.pending}
+        disabled={!thread.locked}
         onClick={ev => {
-          const topic = threadPending
-            ? topics.SWITCH_EXEC_NOT_PENDING
-            : topics.SWITCH_EXEC_PENDING
-
-          client.publish(topic)
+          if(thread.pending) {
+            actions.switchExecToNotPending()
+          }
+          else {
+            actions.switchExecToPending()
+          }
         }}
       />
     </SectionItem>

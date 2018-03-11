@@ -1,84 +1,42 @@
-import React, {Component} from 'react'
-import {MQTT_IP} from '../../utils/config'
-import mqtt from 'mqtt'
+import React from 'react'
+import {connect} from 'react-redux'
+import {bindActionCreators} from 'redux'
+
 import ThreadSection from './ThreadSection'
 import AxisSection from './AxisSection'
 import ResetSection from './ResetSection'
 import ActionsSection from './ActionsSection'
-import topics from '../../../../config/topics.json'
 
-export default class Development extends Component {
-  state = {
-    client: mqtt.connect(MQTT_IP),
-    thread: undefined,
-    threadLocked: undefined,
-    threadPending: undefined,
-    actions: []
-  }
+import * as actions from '../../actions'
 
-  componentDidMount() {
-    this.state.client.on('connect', () => {
-      this.state.client.subscribe(topics.APP_RECIEVE_THREAD)
-      this.state.client.subscribe(topics.APP_RECIEVE_LOCKED)
-      this.state.client.subscribe(topics.APP_RECIEVE_PENDING)
-      this.state.client.subscribe(topics.APP_RECIEVE_ACTIONS)
+const Development = ({meta, thread, actions}) => (
+  <div>
+    <ThreadSection
+      actions={actions}
+      thread={thread}
+      meta={meta}
+    />
+    <AxisSection
+      actions={actions}
+    />
+    <ResetSection
+      actions={actions}
+    />
+    <ActionsSection
+      actions={actions}
+      meta={meta}
+      thread={thread}
+    />
+  </div>
+)
 
-      this.state.client.publish(topics.APP_REQUEST, "all")
-    })
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators(actions, dispatch)
+})
 
-    this.state.client.on('message', (topic, message) => {
-      console.log(topic, message)
-      switch(topic) {
-        case topics.APP_RECIEVE_THREAD:
-          this.setState({
-            thread: message.toString()
-          })
-          break
-        case topics.APP_RECIEVE_LOCKED:
-          this.setState({
-            threadLocked: message.toString() === "True"
-          })
-          break
-        case topics.APP_RECIEVE_PENDING:
-          this.setState({
-            threadPending: message.toString() === "True"
-          })
-          break
-        case topics.APP_RECIEVE_ACTIONS:
-          this.setState({
-            actions: JSON.parse(message.toString())
-          })
-          break
-      }
-    })
-  }
+const mapStateToProps = state => ({
+  meta: state.meta,
+  thread: state.thread
+})
 
-  componentWillUnmount() {
-    const forceEnd = true
-    this.state.client.end(forceEnd)
-  }
-
-  render() {
-    return (
-      <div>
-        <ThreadSection
-          client={this.state.client}
-          thread={this.state.thread}
-          threadPending={this.state.threadPending}
-          threadLocked={this.state.threadLocked}
-        />
-        <AxisSection
-          client={this.state.client}
-        />
-        <ResetSection
-          client={this.state.client}
-        />
-        <ActionsSection
-          client={this.state.client}
-          threadPending={this.state.threadPending}
-          actions={this.state.actions}
-        />
-      </div>
-    )
-  }
-}
+export default connect(mapStateToProps, mapDispatchToProps)(Development)

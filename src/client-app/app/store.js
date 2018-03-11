@@ -4,7 +4,9 @@ import persistState from 'redux-localstorage';
 import thunk from 'redux-thunk';
 
 import ips from './reducers/ips';
+import {reduxMqttReducer, reduxMqttMiddleware} from './middlewares/redux-mqtt'
 import ipActions from './actions/ips';
+import {MQTT_IP} from './utils/config'
 
 export default function configureStore(initialState, routerHistory) {
   const router = routerMiddleware(routerHistory);
@@ -16,10 +18,11 @@ export default function configureStore(initialState, routerHistory) {
 
   const reducers = {
     ips,
-    routing
+    routing,
+    ...reduxMqttReducer
   };
 
-  const middlewares = [ thunk, router ];
+  const middlewares = [ thunk, router, reduxMqttMiddleware(MQTT_IP) ];
 
   const composeEnhancers = (() => {
     const compose_ = window && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__;

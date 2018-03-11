@@ -1,12 +1,11 @@
 import React, {Component} from 'react'
 import mqtt from 'mqtt'
 import {Button} from '../../styled/components'
-import {MQTT_IP} from '../../utils/config'
-import topics from '../../../../config/topics.json'
+import {MQTT_IP, topics} from '../../utils/config'
 
 export default class Dashboard extends Component {
   state = {
-    client: mqtt.connect(MQTT_IP),
+    client: mqtt.connect(),
     processing: false,
     waiting: false,
     img: ''
@@ -14,12 +13,12 @@ export default class Dashboard extends Component {
 
   componentDidMount() {
     this.state.client.on('connect', () => {
-      this.state.client.subscribe(topics.APP_RECIEVE_IMG)
+      this.state.client.subscribe(topics.APP_RECEIVE_IMG)
     })
 
     this.state.client.on('message',  (topic, msg) => {
       console.log(topic, msg)
-      if(topic == topics.APP_RECIEVE_IMG && this.state.processing) {
+      if(topic == topics.APP_RECEIVE_IMG && this.state.processing) {
         if(this.state.waiting) {
           this.setState({
             waiting: false,

@@ -45,16 +45,19 @@
 
     "APP_REQUEST": "action/app/request/data",
 
-    "APP_RECIEVE_POS": "action/app/recieve/data/pos",
-    "APP_RECIEVE_THREAD": "action/app/recieve/data/thread",
-    "APP_RECIEVE_LOCKED": "action/app/recieve/data/locked",
-    "APP_RECIEVE_PENDING": "action/app/recieve/data/pending",
-    "APP_RECIEVE_WAITING": "action/app/recieve/data/waiting",
-    "APP_RECIEVE_ACTIONS": "action/app/recieve/data/actions",
+    "APP_RECEIVE_POS": "action/app/receive/data/pos",
+    "APP_RECEIVE_THREAD": "action/app/receive/data/thread",
+    "APP_RECEIVE_LOCKED": "action/app/receive/data/locked",
+    "APP_RECEIVE_PENDING": "action/app/receive/data/pending",
+    "APP_RECEIVE_WAITING": "action/app/receive/data/waiting",
+    "APP_RECEIVE_ACTIONS": "action/app/receive/data/actions",
 
-    "APP_RECIEVE_IMG": "action/app/recieve/data/video_feed",
+    "APP_RECEIVE_IMG": "action/app/receive/data/video_feed",
     "APP_REQUEST_IMG": "action/app/request/data/video_feed",
 
     "CONTROLLER_SAVE_IP_11": "config/app/save/ip/INF_11",
-    "CONTROLLER_SAVE_IP_31": "config/app/save/ip/INF_31"
+    "CONTROLLER_SAVE_IP_31": "config/app/save/ip/INF_31",
+
+    "EV3_CONNECTED": "info/ev3/connected",
+    "APP_EV3_CONNECTED": "info/app/ev3/connected"
 }

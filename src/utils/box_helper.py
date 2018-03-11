@@ -1,4 +1,4 @@
-from src.utils.message_types import Topics
+from ..config.index import topics
 
 def mockBoxes(actionQueue):
     boxes = [{
@@ -27,27 +27,27 @@ def mockBoxes(actionQueue):
 
     for box in boxes:
         actionQueue.put({
-            "action": Topics.EV3_MOVE_X,
+            "action": topics["EV3_MOVE_X"],
             "payload": box["from"]["x"]
         })
         actionQueue.put({
-            "action": Topics.EV3_MOVE_Y,
+            "action": topics["EV3_MOVE_Y"],
             "payload": box["from"]["y"]
         })
         actionQueue.put({
-            "action": Topics.EV3_MOVE_GRAB,
+            "action": topics["EV3_MOVE_GRAB"],
             "payload": None
         })
         actionQueue.put({
-            "action": Topics.EV3_MOVE_X,
+            "action": topics["EV3_MOVE_X"],
             "payload": box["to"]["x"]
         })
         actionQueue.put({
-            "action": Topics.EV3_MOVE_Y,
+            "action": topics["EV3_MOVE_Y"],
             "payload": box["to"]["y"]
         })
         actionQueue.put({
-            "action": Topics.EV3_MOVE_RELEASE,
+            "action": topics["EV3_MOVE_RELEASE"],
             "payload": None
         })
 
@@ -62,43 +62,42 @@ def quantitative1(actionQueue):
     for i in range(10):
         for box in boxes:
             actionQueue.put({
-                "action": Topics.EV3_MOVE_X,
+                "action": topics["EV3_MOVE_X"],
                 "payload": box["from"]["x"]
             })
             actionQueue.put({
-                "action": Topics.EV3_MOVE_Y,
+                "action": topics["EV3_MOVE_Y"],
                 "payload": box["from"]["y"]
             })
             actionQueue.put({
-                "action": Topics.EV3_MOVE_Z,
+                "action": topics["EV3_MOVE_Z"],
                 "payload": 0
             })
             actionQueue.put({
-                "action": Topics.EV3_MOVE_GRAB,
+                "action": topics["EV3_MOVE_GRAB"],
                 "payload": 0
             })
             actionQueue.put({
-                "action": Topics.EV3_MOVE_Z,
+                "action": topics["EV3_MOVE_Z"],
                 "payload": 500
             })
             actionQueue.put({
-                "action": Topics.EV3_MOVE_X,
+                "action": topics["EV3_MOVE_X"],
                 "payload": box["to"]["x"]
             })
             actionQueue.put({
-                "action": Topics.EV3_MOVE_Y,
+                "action": topics["EV3_MOVE_Y"],
                 "payload": box["to"]["y"]
             })
             actionQueue.put({
-                "action": Topics.EV3_MOVE_Z,
+                "action": topics["EV3_MOVE_Z"],
                 "payload": 0
             })
             actionQueue.put({
-                "action": Topics.EV3_MOVE_RELEASE,
+                "action": topics["EV3_MOVE_RELEASE"],
                 "payload": 100
             })
             actionQueue.put({
-                "action": Topics.EV3_MOVE_Z,
+                "action": topics["EV3_MOVE_Z"],
                 "payload": 500
             })
-            # it's a fucking queue

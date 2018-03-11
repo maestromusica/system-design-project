@@ -1,5 +1,4 @@
 import React from 'react'
-import topics from '../../../../config/topics.json' // this is an ugly path...
 import {
   Section,
   SectionTitle,
@@ -7,29 +6,29 @@ import {
   SectionOptionButton
 } from '../../styled/section'
 
-const ResetSection = ({client}) => (
+const ResetSection = ({actions}) => (
   <Section>
     <SectionTitle>Reset axis</SectionTitle>
     <SectionOption>
       <SectionOptionButton onClick={ev => {
-        client.publish(topics.CONTROLLER_RESET_X)
-        client.publish(topics.CONTROLLER_RESET_Y)
-        client.publish(topics.CONTROLLER_RESET_Z)
+        actions.resetX()
+        actions.resetY()
+        action.resetZ()
       }} type="primary">
         Reset All
       </SectionOptionButton>
       <SectionOptionButton onClick={ev => {
-        client.publish(topics.CONTROLLER_RESET_X)
+        actions.resetX()
       }}>
         Reset X
       </SectionOptionButton>
       <SectionOptionButton onClick={ev => {
-        client.publish(topics.CONTROLLER_RESET_Y)
+        actions.resetY()
       }}>
         Reset Y
       </SectionOptionButton>
       <SectionOptionButton onClick={ev => {
-        client.publish(topics.CONTROLLER_RESET_Z)
+        actions.resetZ()
       }}>
         Reset Z
       </SectionOptionButton>
