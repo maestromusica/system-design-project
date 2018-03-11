@@ -73,7 +73,16 @@ export const switchExecToPending = () => ({
 })
 
 export const addControllerIP = (ip) => ({
-  type: FORWARD_TO_MQTT,
   type: 'ADD_CONTROLLER_IP',
+  ip: ip
+})
+
+export const add11IP = ip => ({
+  type: 'ADD_11_IP',
+  ip: ip
+})
+
+export const add31IP = ip => ({
+  type: 'ADD_31_IP',
   ip: ip
 })

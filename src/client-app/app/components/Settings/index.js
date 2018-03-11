@@ -1,4 +1,8 @@
 import React, {Component} from 'react'
+import {connect} from 'react-redux'
+import {bindActionCreators} from 'redux'
+import * as actions from '../../actions'
+
 import {
   Section,
   SectionTitle,
@@ -8,31 +12,63 @@ import {
   SectionOptionButton
 } from '../../styled/section'
 
-export default class Settings extends Component {
+class Settings extends Component {
+  state = {
+    CLIENT: this.props.ips.CLIENT,
+    INF_11: this.props.ips.INF_11,
+    INF_31: this.props.ips.INF_31
+  }
+
   render() {
     return (
       <div>
         <Section>
           <SectionTitle>IP Settings</SectionTitle>
           <SectionOption>
-            <SectionOptionTitle>Controller IP</SectionOptionTitle>
-            <SectionOptionInput />
+            <SectionOptionTitle>Client IP</SectionOptionTitle>
+            <SectionOptionInput onChange={ev => {
+              this.setState({
+                CLIENT: ev.target.value
+              })
+            }} value={this.state.CLIENT} />
             <SectionOptionButton onClick={ev => {
-              
+              this.props.actions.addControllerIP(this.state.CLIENT)
             }}>Save IP</SectionOptionButton>
           </SectionOption>
           <SectionOption>
             <SectionOptionTitle>EV3 INF_11</SectionOptionTitle>
-            <SectionOptionInput />
-            <SectionOptionButton>Save IP</SectionOptionButton>
+            <SectionOptionInput onChange={ev => {
+              this.setState({
+                INF_11: ev.target.value
+              })
+            }} value={this.state.INF_11} />
+            <SectionOptionButton onClick={ev => {
+              this.props.actions.add11IP(this.state.INF_11)
+            }}>Save IP</SectionOptionButton>
           </SectionOption>
           <SectionOption>
             <SectionOptionTitle>EV3 INF_31</SectionOptionTitle>
-            <SectionOptionInput />
-            <SectionOptionButton>Save IP</SectionOptionButton>
+            <SectionOptionInput onChange={ev => {
+              this.setState({
+                INF_31: ev.target.value
+              })
+            }} value={this.state.INF_31} />
+            <SectionOptionButton onClick={ev => {
+              this.props.actions.add31IP(this.state.INF_31)
+            }}>Save IP</SectionOptionButton>
           </SectionOption>
         </Section>
       </div>
     )
   }
 }
+
+const mapStateToProps = state => ({
+  ips: state.ips
+})
+
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators(actions, dispatch)
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(Settings)
