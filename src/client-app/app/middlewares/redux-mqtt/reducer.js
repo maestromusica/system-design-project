@@ -1,10 +1,9 @@
 import {
   CLIENT_CONNECTED,
   CLIENT_DISCONNECTED,
-  EV3_CONNECTED,
-  EV3_DISCONNECTED
+  SAVE_CLIENT
 } from './actions'
-import topics from '../../../../config/topics.json'
+import {topics} from '../../utils/config'
 
 const initialState = {
   name: undefined,
@@ -48,7 +47,8 @@ const thread = (state = initialState, action) => {
 
 const metaInitialState = {
   connected: false,
-  ev3Connected: false
+  ev3Connected: false,
+  client: undefined
 }
 
 const meta = (state = metaInitialState, action) => {
@@ -61,12 +61,18 @@ const meta = (state = metaInitialState, action) => {
     case CLIENT_DISCONNECTED:
       return {
         ...state,
-        connected: false
+        connected: false,
+        ev3Connected: false
       }
     case topics.APP_RECEIVE_CONNECTION:
       return {
         ...state,
         ev3Connected: action.data.connected
+      }
+    case SAVE_CLIENT:
+      return {
+        ...state,
+        client: action.data.client
       }
     default:
       return state

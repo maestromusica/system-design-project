@@ -1,5 +1,5 @@
 import mqtt from 'mqtt'
-import {topics} from '../../utils/config'
+import {topics, MQTT_IP} from '../../utils/config'
 import {
   clientConnected,
   clientDisconnected,
@@ -8,23 +8,15 @@ import {
   appReceiveLocked,
   appReceivePending,
   appReceiveWaiting,
-  appReceiveActions
+  appReceiveActions,
+  saveClient
 } from './actions'
 
-let client
-
-const restartClient = (dispatch, state) => {
-  if(client && client.connected) {
-    client.end(true)
-  }
-
-  client = state.ips.CLIENT
-    ? mqtt.connect("mqtt://" + state.ips.CLIENT)
-    : mqtt.connect(ip)
-
-  console.log(">>>>> This is called!!!!")
-
+const initClient = (client, dispatch, state) => {
+  console.log("INIT CALLED")
+  // dispatch(saveClient(client))
   dispatch(clientDisconnected())
+
   client.on('connect', () => {
     console.log("on connect called")
     client.subscribe(topics.APP_RECEIVE_THREAD)
@@ -72,15 +64,31 @@ const restartClient = (dispatch, state) => {
   })
 }
 
-const reduxMqttMiddleware = (ip) => ({dispatch, getState}) => {
-  restartClient(dispatch, getState())
+const reduxMqttMiddleware = () => ({dispatch, getState}) => {
+  let state = getState()
+  let client
+  const ip = MQTT_IP
+  client = state.ips.CLIENT
+    ? mqtt.connect("mqtt://" + state.ips.CLIENT + ":1883")
+    : mqtt.connect(ip + ":1883")
+
+  initClient(client, dispatch, state)
+
+  console.log(">>>>> Middleware initialised!")
 
   return next => action => {
-    if(action.type == "ADD_CONTROLLER_IP") {
-      restartClient(dispatch, getState())
-      console.log("should connect...")
-    }
+    if(action.type == "RESTART_CLIENT") {
+      console.log("restart client called!")
+      state = getState()
+      // should restart the client
+      console.log("should be called")
+      client = undefined
+      client = state.ips.CLIENT
+        ? mqtt.connect("mqtt://" + state.ips.CLIENT + ":1883")
+        : mqtt.connect(ip + ":1883")
 
+      initClient(client, dispatch, getState())
+    }
     if(action.topic) {
       Promise.resolve(
         client.publish(action.topic, action.data)
@@ -92,4 +100,5 @@ const reduxMqttMiddleware = (ip) => ({dispatch, getState}) => {
   }
 }
 
+export {initClient}
 export default reduxMqttMiddleware

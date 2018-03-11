@@ -1,4 +1,6 @@
 import {topics} from '../utils/config'
+import {initClient} from '../middlewares/redux-mqtt/middleware'
+import {clientDisconnected} from '../middlewares/redux-mqtt/actions'
 
 const FORWARD_TO_MQTT = "forward_to_mqtt"
 
@@ -69,10 +71,10 @@ export const switchExecToNotPending = () => ({
 
 export const switchExecToPending = () => ({
   type: FORWARD_TO_MQTT,
-  topic: topics.SWTCH_EXEC_PENDING
+  topic: topics.SWITCH_EXEC_PENDING
 })
 
-export const addControllerIP = (ip) => ({
+export const addControllerIP = ip => ({
   type: 'ADD_CONTROLLER_IP',
   ip: ip,
 })
@@ -88,5 +90,12 @@ export const add31IP = ip => ({
   type: 'ADD_31_IP',
   topic: topics.CONTROLLER_SAVE_IP_31,
   ip: ip,
-  data: ip
+  data: ip // need for forwarding mqtt
 })
+
+export const restartClient = () => {
+  return (dispatch, getState) => {
+    dispatch(clientDisconnected())
+    dispatch({type: "RESTART_CLIENT"})
+  }
+}

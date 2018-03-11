@@ -2,6 +2,7 @@ import {topics} from '../../../utils/config'
 
 export const CLIENT_CONNECTED = 'CLIENT_CONNECTED'
 export const CLIENT_DISCONNECTED = 'CLIENT_DISCONNECTED'
+export const SAVE_CLIENT = 'SAVE_CLIENT'
 
 export const clientConnected = () => ({
   type: CLIENT_CONNECTED
@@ -50,5 +51,12 @@ export const appReceiveActions = data => ({
   type: topics.APP_RECEIVE_ACTIONS,
   data: {
     actions: JSON.parse(data)
+  }
+})
+
+export const saveClient = client => ({
+  type: "SAVE_CLIENT",
+  data: {
+    client: client
   }
 })

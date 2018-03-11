@@ -11,6 +11,9 @@ import {
   SectionOptionInput,
   SectionOptionButton
 } from '../../styled/section'
+import {
+  Button
+} from '../../styled/components'
 
 class Settings extends Component {
   state = {
@@ -54,15 +57,21 @@ class Settings extends Component {
           }} value={this.state.INF_31} />
           <SectionOptionButton onClick={ev => {
             this.props.actions.add31IP(this.state.INF_31)
-          }}>Save IP</SectionOptionButton>
+          }}>
+            Save IP
+          </SectionOptionButton>
         </SectionOption>
+        <Button type="primary" onClick={ev => {
+          this.props.actions.restartClient()
+        }}>Connect</Button>
       </Section>
     )
   }
 }
 
 const mapStateToProps = state => ({
-  ips: state.ips
+  ips: state.ips,
+  meta: state.meta
 })
 
 const mapDispatchToProps = dispatch => ({
