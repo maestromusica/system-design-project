@@ -47,7 +47,10 @@ subscribedTopics = {
 
     topics["APP_REQUEST"]: onAppRequestData,
     topics["APP_REQUEST_IMG"]: onAppRequestImg,
-    topics["EV3_CONNECTED"]: onEV3Connected
+    topics["EV3_CONNECTED"]: onEV3Connected,
+
+    topics["CONTROLLER_SAVE_IP_11"]: onAppSaveEV11IP,
+    topics["CONTROLLER_SAVE_IP_31"]: onAppSaveEV31IP
 }
 
 def onConnect(client, userdata, flags, rc):

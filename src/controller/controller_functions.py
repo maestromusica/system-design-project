@@ -11,6 +11,8 @@ controllerTag = "controller"
 topicsPath = os.path.join(os.path.dirname(__file__), "../config/topics.json")
 topics = json.load(open(topicsPath))
 
+configPath = os.path.join(os.path.dirname(__file__), "../config/config.json")
+
 def onStartController(client, ev3, msg, controller):
     print("> Controller started...")
 
@@ -179,3 +181,19 @@ def onPrintPositions(client, ev3, msg, controller):
 def onEV3Connected(client, ev3, msg, controller):
     print("> EV3 Connected")
     ev3.publish(topics["APP_EV3_CONNECTED"])
+
+def onAppSaveEV11IP(client, ev3, msg, controller):
+    config = json.load(open(configPath))
+    ip = msg.payload.decode()
+    config["ips"]["INF_11"] = ip
+    with open(configPath, 'w') as out:
+        json.dump(config, out)
+    print("> EV3 INF_11 IP rewritten to {0}".format(ip))
+
+def onAppSaveEV31IP(client, ev3, msg, controller):
+    config = json.load(open(configPath))
+    ip = msg.payload.decode()
+    config["ips"]["INF_31"] = ip
+    with open(configPath, 'w') as out:
+        json.dump(config, out)
+    print("> EV3 INF_31 IP rewritten to {0}".format(ip))
