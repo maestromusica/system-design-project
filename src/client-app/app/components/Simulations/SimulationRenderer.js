@@ -203,7 +203,17 @@ export default class SimulationRenderer extends Component {
 
     if(this.state.simulationFinished) {
       let numOfLvls = this.state.boxes.length
-      for(let i=0; i<numOfLvls; i++) {
+      levels.push(
+        <RadioAligned value={-1} onClick={ev => {
+          this.setState({
+            level: -1
+          })
+          this._showLevel(-1)
+        }} key={-1}>
+          All levels
+        </RadioAligned>
+      )
+      for(let i=numOfLvls-1; i>=0; i--) {
         levels.push(
           <RadioAligned value={i} onClick={ev => {
             this.setState({
@@ -216,16 +226,6 @@ export default class SimulationRenderer extends Component {
           </RadioAligned>
         )
       }
-      levels.push(
-        <RadioAligned value={-1} onClick={ev => {
-          this.setState({
-            level: -1
-          })
-          this._showLevel(-1)
-        }} key={-1}>
-          All levels
-        </RadioAligned>
-      )
     }
     else {
       levels = null
