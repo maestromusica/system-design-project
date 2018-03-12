@@ -1,34 +1,17 @@
 import React, {Component} from 'react'
 import * as THREE from 'three'
 const OrbitControls = require('three-orbit-controls')(THREE)
-import {adaptCoordinates} from '../../utils/simulation'
-import {Button} from '../../styled/components'
+import {adaptCoordinates, createMeshMaterial} from '../../utils/simulation'
+import {
+  Button,
+  RadioGroup,
+  RadioAligned
+} from '../../styled/components'
 import {
   Section,
-  SectionTitle
+  SectionTitle,
+  SectionItem
 } from '../../styled/section'
-import {Radio} from 'antd'
-const RadioGroup = Radio.Group
-
-const itemMaterial = new THREE.MeshNormalMaterial({
-  transparent: true,
-  opacity: 0.8,
-  // color: 0x000000,
-  overdraw: 0.5,
-  polygonOffset: true,
-  polygonOffsetFactor: 1, // positive value pushes polygon further away
-  polygonOffsetUnits: 1
-})
-
-const hiddenMaterial = new THREE.MeshNormalMaterial({
-  transparent: true,
-  opacity: 0.2,
-  // color: 0x000000,
-  overdraw: 0.5,
-  polygonOffset: true,
-  polygonOffsetFactor: 1, // positive value pushes polygon further away
-  polygonOffsetUnits: 1
-})
 
 export default class SimulationRenderer extends Component {
   state = {
@@ -48,14 +31,14 @@ export default class SimulationRenderer extends Component {
   _resetLevel(level) {
     this.state.boxes[level].forEach(id => {
       let box = this.state.scene.getObjectByName(id)
-      box.material = itemMaterial
+      box.material.opacity = 0.95
     })
   }
 
   _hideLevel(level) {
     this.state.boxes[level].forEach(id => {
       let box = this.state.scene.getObjectByName(id)
-      box.material = hiddenMaterial
+      box.material.opacity = 0.2
     })
   }
 
@@ -73,7 +56,6 @@ export default class SimulationRenderer extends Component {
           this._resetLevel(i)
         }
         else {
-          console.log(i)
           this._hideLevel(i)
         }
       }
@@ -100,11 +82,15 @@ export default class SimulationRenderer extends Component {
     let pos = 0
     boxes = boxes.map(level => {
       return level.map(box => {
-        return adaptCoordinates(box, {
+        const adaptedCoordinates = adaptCoordinates(box, {
           xCamera: this.state.cameraSize.x,
           yCamera: this.state.cameraSize.y,
           zCamera: this.state.cameraSize.z
         })
+        return {
+          ...box,
+          ...adaptedCoordinates
+        }
       })
     }).map(level => {
       return level.map(box => {
@@ -126,6 +112,7 @@ export default class SimulationRenderer extends Component {
       if(pos < flattenedBoxes.length) {
         const box = flattenedBoxes[pos]
         const itemGeometry = new THREE.BoxGeometry(box.width, box.height, box.depth)
+        const itemMaterial = createMeshMaterial(box.color)
         let cube = new THREE.Mesh(itemGeometry, itemMaterial)
         cube.position.set(box.x, box.y, box.z)
         cube.name = box.id
@@ -133,7 +120,7 @@ export default class SimulationRenderer extends Component {
         this.state.scene.add(cube)
 
         let geo = new THREE.EdgesGeometry(cube.geometry)
-        let mat = new THREE.LineBasicMaterial({color: 0x888888, linewidth: 100})
+        let mat = new THREE.LineBasicMaterial({color: 0x444444, linewidth: 2})
         let wireframe = new THREE.LineSegments(geo, mat)
         cube.add(wireframe);
       }
@@ -152,19 +139,22 @@ export default class SimulationRenderer extends Component {
       boxes: boxes.map(level => level.map(box => box.id))
     }, () => {
       intervalID = setInterval(addToScene, 300)
+      this.setState({
+        intervalID
+      })
     })
   }
 
   componentDidMount() {
     let scene = new THREE.Scene();
-    let camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000)
+    let camera = new THREE.PerspectiveCamera( 75, 1.5, 0.1, 1000)
     let controls = new OrbitControls(camera, document.getElementById("graph-sim"))
     camera.position.set(0, 20, 10)
     controls.update()
 
     let renderer = new THREE.WebGLRenderer();
     renderer.setClearColor( 0xf0f0f0 );
-    renderer.setSize( window.innerWidth / 2, window.innerHeight / 2 );
+    renderer.setSize( 750, 500 );
     document.getElementById('graph-sim').appendChild( renderer.domElement );
 
     camera.position.z = 5;
@@ -183,11 +173,16 @@ export default class SimulationRenderer extends Component {
     wireframe.name = 'container';
     scene.add( wireframe );
 
+    let light = new THREE.DirectionalLight(0xffffff)
+    light.position.set(-20, 20, 20).normalize()
+    scene.add(light);
+
+
     function animate() {
       requestAnimationFrame(animate);
       // required if controls.enableDamping or controls.autoRotate are set to true
       controls.update();
-      renderer.render( scene, camera );
+      renderer.render(scene, camera);
     }
 
     animate();
@@ -198,6 +193,7 @@ export default class SimulationRenderer extends Component {
   }
 
   componentWillUnmount() {
+    window.clearInterval(this.state.intervalID)
     let el = document.getElementById("graph-sim")
     el.outerHTML = ""
   }
@@ -209,7 +205,7 @@ export default class SimulationRenderer extends Component {
       let numOfLvls = this.state.boxes.length
       for(let i=0; i<numOfLvls; i++) {
         levels.push(
-          <Radio value={i} onClick={ev => {
+          <RadioAligned value={i} onClick={ev => {
             this.setState({
               level: i
             }, () => {
@@ -217,18 +213,18 @@ export default class SimulationRenderer extends Component {
             })
           }} key={i}>
             Level {i}
-          </Radio>
+          </RadioAligned>
         )
       }
       levels.push(
-        <Radio value={-1} onClick={ev => {
+        <RadioAligned value={-1} onClick={ev => {
           this.setState({
             level: -1
           })
           this._showLevel(-1)
         }} key={-1}>
           All levels
-        </Radio>
+        </RadioAligned>
       )
     }
     else {
@@ -238,6 +234,7 @@ export default class SimulationRenderer extends Component {
     return (
       <Section>
         <SectionTitle>Simulations</SectionTitle>
+        <SectionItem id="graph-sim"></SectionItem>
         <Button onClick={ev => {
           this._cleanRenderer(() => {
             this.setState({
@@ -257,7 +254,6 @@ export default class SimulationRenderer extends Component {
         ) : (
           null
         )}
-        <div id="graph-sim"></div>
       </Section>
     )
   }
