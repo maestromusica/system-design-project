@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.py~
-
+*.py#
 # C extensions
 *.so
 
@@ -111,6 +111,9 @@ Calibrator
 cot
 cv2
 np
+
+# Algorithm error logs
+*_error_log
 
 # vim swap files
 *.swp

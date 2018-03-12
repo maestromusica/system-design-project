@@ -168,6 +168,11 @@ def onAppRequestImg(client, ev3, msg, controller):
             client.publish(topics["APP_RECEIVE_IMG"], jpg)
             cap.release()
             break
+    # va = VisionAdaptor(visionActionQueue)
+    # img = va.getFrame()
+    # retval, buffer = cv2.imencode('.jpg', img)
+    # jpg = base64.b64encode(buffer)
+    # client.publish(Topics.APP_RECIEVE_IMG, jpg)
 
 def onPrintStates(client, ev3, msg, controller):
     print("> These are the current execution threads: ")

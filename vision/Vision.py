@@ -47,8 +47,8 @@ class Vision(object):
     def go(self):
         ret, img = self.cap.read()
         img = cv2.flip(img,1)
-        cv2.imshow('img',img)
-        cv2.waitKey(1)
+        #cv2.imshow('img',img)
+        #cv2.waitKey(0)
         bimg, boxes = self.processor.process(img)
         return bimg, boxes        
 
