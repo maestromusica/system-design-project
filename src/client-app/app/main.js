@@ -24,8 +24,8 @@ const installExtensions = async () => {
 };
 
 crashReporter.start({
-  productName: 'SortX',
-  companyName: 'Sort.ed',
+  productName: 'sortX',
+  companyName: 'sort.ed',
   submitURL: 'https://your-domain.com/url-to-submit',
   uploadToServer: false
 });
@@ -89,7 +89,7 @@ app.on('ready', async () => {
     }
   });
 
-  if (isDevelopment) {
+  // if (isDevelopment) {
     // auto-open dev tools
     mainWindow.webContents.openDevTools();
 
@@ -102,5 +102,5 @@ app.on('ready', async () => {
         }
       }]).popup(mainWindow);
     });
-  }
+  // }
 });

@@ -1,8 +1,14 @@
 {
-  "name": "SortX",
-  "version": "0.0.0",
+  "name": "sortX",
+  "version": "0.0.1",
   "description": "Sortx client app",
   "main": "init.js",
+  "author": {
+    "name": "Ali Cerrahoglu @ SortX",
+    "email": "acerrahoglu.ali@gmail.com"
+  },
+  "homepage" : "https://google.com",
+  "license": "MIT",
   "dependencies": {
     "antd": "^3.2.3",
     "babel-loader": "^7.1.4",
