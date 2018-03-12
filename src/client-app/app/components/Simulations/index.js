@@ -84,13 +84,13 @@ let boxes = [{
 
 export default class Simulations extends Component {
   componentDidMount() {
-    var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
-    var controls = new OrbitControls( camera );
+    let scene = new THREE.Scene();
+    let camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+    let controls = new OrbitControls( camera );
     camera.position.set(0, 20, 10)
     controls.update()
 
-    var renderer = new THREE.WebGLRenderer();
+    let renderer = new THREE.WebGLRenderer();
     renderer.setClearColor( 0xf0f0f0 );
     renderer.setSize( window.innerWidth / 2, window.innerHeight / 2 );
     document.getElementById('graph-sim').appendChild( renderer.domElement );
@@ -108,28 +108,34 @@ export default class Simulations extends Component {
       z: 14
     }
 
-    var geometry = new THREE.BoxGeometry(
+    let geometry = new THREE.BoxGeometry(
       cameraSize.x,
       cameraSize.y,
       cameraSize.z
     )
 
-    var geo = new THREE.EdgesGeometry( geometry ); // or WireframeGeometry( geometry )
-    var mat = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 2 } );
-    var wireframe = new THREE.LineSegments( geo, mat );
+    let light = new THREE.PointLight(0xffffff)
+    light.position.set(0,150,100)
+    scene.add(light)
+
+
+    let geo = new THREE.EdgesGeometry( geometry ); // or WireframeGeometry( geometry )
+    let mat = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 2 } );
+    let wireframe = new THREE.LineSegments( geo, mat );
     wireframe.position.set(0, 0, 0);
     wireframe.name = 'container';
     scene.add( wireframe );
 
-    // // pack two items
-    // var itemGeometry = new THREE.BoxGeometry(4, 4, 4)
     const itemMaterial = new THREE.MeshNormalMaterial({
-      transparent: true, opacity: 0.6
+      transparent: true,
+      opacity: 0.8,
+      // color: 0x000000,
+      overdraw: 0.5,
+      polygonOffset: true,
+      polygonOffsetFactor: 1, // positive value pushes polygon further away
+      polygonOffsetUnits: 1
     })
-    // var cube = new THREE.Mesh(itemGeometry, itemMaterial)
-    // cube.position.set(-8, -8, -8)
-    // cube.name = "1"
-    // scene.add(cube)
+
     boxes = boxes.map(box => {
       return adaptCoordinates(box, {
         xCamera: cameraSize.x,
@@ -151,10 +157,18 @@ export default class Simulations extends Component {
         cube.name = box.id
         pos += 1
         scene.add(cube)
+
+        let geo = new THREE.EdgesGeometry(cube.geometry)
+        let mat = new THREE.LineBasicMaterial({color: 0x888888, linewidth: 100})
+        let wireframe = new THREE.LineSegments(geo, mat)
+        cube.add(wireframe);
+      }
+      else {
+        window.clearInterval(intervalID)
       }
     }
 
-    setInterval(addToScene, 300)
+    var intervalID = setInterval(addToScene, 300)
 
     function animate() {
       requestAnimationFrame( animate );
@@ -168,13 +182,17 @@ export default class Simulations extends Component {
 
   render() {
     var aspectratio = this.props.width / this.props.height;
-    var cameraprops = {fov : 75, aspect : aspectratio,
-      near : 1, far : 5000,
-      position : new THREE.Vector3(0,0,600),
-      lookat : new THREE.Vector3(0,0,0)};
+    var cameraprops = {
+      fov: 10,
+      aspect: aspectratio,
+      near: 1,
+      far: 5000,
+      position: new THREE.Vector3(0, 0, 600),
+      lookat: new THREE.Vector3(0, 0, 0)
+    }
 
-      return (
-        <div id="graph-sim"></div>
-      )
+    return (
+      <div id="graph-sim"></div>
+    )
     }
   }
