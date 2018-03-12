@@ -33,6 +33,18 @@ export const moveZ = (pos) => ({
   data: pos
 })
 
+export const grab = (pos) => ({
+  type: FORWARD_TO_MQTT,
+  topic: topics.CONTROLLER_GRAB,
+  data: pos
+})
+
+export const rotate = (pos) => ({
+  type: FORWARD_TO_MQTT,
+  topic: topics.CONTROLLER_ROTATE,
+  data: pos
+})
+
 export const resetX = () => ({
   type: FORWARD_TO_MQTT,
   topic: topics.CONTROLLER_RESET_X,

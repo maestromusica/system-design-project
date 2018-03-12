@@ -94,12 +94,7 @@ export default class Simulations extends Component {
     renderer.setClearColor( 0xf0f0f0 );
     renderer.setSize( window.innerWidth / 2, window.innerHeight / 2 );
     document.getElementById('graph-sim').appendChild( renderer.domElement );
-
-    // var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    // var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-    // var cube = new THREE.Mesh( geometry, material );
-    // scene.add( cube );
-
+    
     camera.position.z = 5;
     renderer.render(scene, camera);
     const cameraSize = {
@@ -113,11 +108,6 @@ export default class Simulations extends Component {
       cameraSize.y,
       cameraSize.z
     )
-
-    let light = new THREE.PointLight(0xffffff)
-    light.position.set(0,150,100)
-    scene.add(light)
-
 
     let geo = new THREE.EdgesGeometry( geometry ); // or WireframeGeometry( geometry )
     let mat = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 2 } );

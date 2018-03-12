@@ -59,7 +59,7 @@ const ActionsSection = ({meta, thread, actions}) => {
           />
           {!thread.pending ? (
             <Button onClick={ev => {
-              acitons.requestNextAction()
+              actions.requestNextAction()
             }}>Perform next action</Button>
           ) : (
             null

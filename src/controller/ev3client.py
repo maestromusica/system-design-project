@@ -34,6 +34,7 @@ subscribedTopics = {
     topics["EV3_MOVE_Z"]: onEV3Action,
     topics["EV3_MOVE_GRAB"]: onEV3Action,
     topics["EV3_MOVE_RELEASE"]: onEV3Action,
+    topics["EV3_ROTATE"]: onEV3Action,
     topics["EV3_RESET_X"]: onEV3Action,
     topics["EV3_RESET_Y"]: onEV3Action,
     topics["EV3_RESET_Z"]: onEV3Action,

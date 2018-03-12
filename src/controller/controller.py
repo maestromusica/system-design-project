@@ -34,6 +34,7 @@ subscribedTopics = {
     topics["CONTROLLER_MOVE_Z"]: forwardAction(topics["EV3_MOVE_Z"]),
     topics["CONTROLLER_GRAB"]: forwardAction(topics["EV3_MOVE_GRAB"]),
     topics["CONTROLLER_RELEASE"]: forwardAction(topics["EV3_MOVE_RELEASE"]),
+    topics["CONTROLLER_ROTATE"]: forwardAction(topics["EV3_ROTATE"]),
     topics["CONTROLLER_RESET_X"]: forwardAction(topics["EV3_RESET_X"]),
     topics["CONTROLLER_RESET_Y"]: forwardAction(topics["EV3_RESET_Y"]),
     topics["CONTROLLER_RESET_Z"]: forwardAction(topics["EV3_RESET_Z"]),

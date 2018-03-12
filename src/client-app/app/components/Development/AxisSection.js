@@ -12,13 +12,17 @@ export default class AxisSection extends Component {
   state = {
     moveX: undefined,
     moveY: undefined,
-    moveZ: undefined
+    moveZ: undefined,
+    moveGrabber: undefined
   }
 
   render() {
     const disabledX = !this.state.moveX
     const disabledY = !this.state.moveY
     const disabledZ = !this.state.moveZ
+    const disabledGrabber = !this.state.moveGrabber
+    const disabledRotate = !this.state.moveRotate
+
     return (
       <Section>
         <SectionTitle>Axis Movement</SectionTitle>
@@ -68,6 +72,38 @@ export default class AxisSection extends Component {
             })
           }} disabled={disabledZ}>
             Send Command
+          </SectionOptionButton>
+        </SectionOption>
+        <SectionOption>
+          <SectionOptionTitle>Move grabber</SectionOptionTitle>
+          <SectionOptionInput onChange={ev => {
+            this.setState({
+              moveGrabber: ev.target.value
+            })
+          }} placeholder="move grabber" value={this.state.moveGrabber} />
+          <SectionOptionButton onClick={ev => {
+            this.props.actions.grab(this.state.moveGrabber)
+            this.setState({
+              moveGrabber: undefined
+            })
+          }} disabled={disabledGrabber}>
+            Send Command
+          </SectionOptionButton>
+        </SectionOption>
+        <SectionOption>
+          <SectionOptionTitle>Rotate grabber</SectionOptionTitle>
+          <SectionOptionInput onChange={ev => {
+            this.setState({
+              moveRotate: ev.target.value
+            })
+          }} placeholder="rotate grabber" value={this.state.moveRotate} />
+          <SectionOptionButton onClick={ev => {
+            this.props.actions.rotate(this.state.moveRotate)
+            this.setState({
+              moveRotate: undefined
+            })
+          }} disabled={disabledRotate}>
+            Send command
           </SectionOptionButton>
         </SectionOption>
       </Section>
