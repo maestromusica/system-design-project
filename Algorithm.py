@@ -8,18 +8,17 @@ import Packer
 
 #logging debug stuff
 LOGLEVEL = logging.DEBUG
-LOGLEVEL = logging.INFO
+#LOGLEVEL = logging.INFO
 logging.basicConfig(format='%(levelname)s: %(message)s', level=LOGLEVEL)
 
 
 ##everything goes width length
 
 
-class StackingAlgorithm(object):
+class Algorithm(object):
 
     def __init__(self, boxes, binSize, alg):
         self.timestamp = time()
-        print(boxes)
         new_boxes = self.getTrueBoxes(boxes)
         exec('self.packer = Packer.'+alg+'(new_boxes, binSize)')
         self.packer.sort()
@@ -27,9 +26,7 @@ class StackingAlgorithm(object):
         self.log_error(boxes, new_boxes, alg)
     
 
-    def pack(self):
-        return self.packer.bins
-    
+        
     #takes a list of dict objects with box information like vision output
     #returns a list of box objects in nonincreasing order
     def getTrueBoxes(self, boxes):
@@ -44,16 +41,7 @@ class StackingAlgorithm(object):
         return unsorted_boxes    
        
         
-        
-    def calculate_waste(self):
-        total_area_available = np.float32(0)
-        total_area_packed = np.float32(0)
-        for b in self.packer.bins:
-            total_area_available += b.length*b.width
-            for pb in b.boxes_packed:
-                total_area_packed += pb.area
-        error = np.abs(total_area_available - total_area_packed)
-        return error
+
 
     def box_error(self, boxes, sorted_boxes):
         width_off = 0
@@ -66,12 +54,13 @@ class StackingAlgorithm(object):
         return width_off, length_off
         
     def log_error(self, boxes, new_boxes, alg):
-        unused_area = self.calculate_waste()
         boxWidthErr, boxLengthErr = self.box_error(boxes, new_boxes)
-        error = {'Algorithm':alg,'Unused Area':unused_area, 'Width Error':boxWidthErr, 'Length Error':boxLengthErr, 'Runtime':time()-self.timestamp}
-        error.update(self.packer.get_error())
+        error = {'Algorithm':alg, 'Box Width Error':boxWidthErr, 'Box Length Error':boxLengthErr, 'Runtime':time()-self.timestamp}
+        packererror = self.packer.get_error()
+        error.update(error)
+        error.update(packererror)
         logging.debug("Writing error metrics '{}' to 'error_log' file".format(error))
-        f = open(str(self.timestamp)+'_error_log','a+b')
+        f = open(str(self.timestamp)+'_error_log','ab+')
         pkl.dump(error,f)
         f.close()
         logging.debug("Written to file.")

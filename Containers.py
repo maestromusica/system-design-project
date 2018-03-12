@@ -4,9 +4,9 @@ import numpy as np
 
 class Bin(object):
 
-    def __init__(self, dim):
-        self.length = dim[1]
-        self.width = dim[0]
+    def __init__(self, binSize):
+        self.length = binSize[1]
+        self.width = binSize[0]
         #2d array of bools, True is empty, False is full
         self.area = np.ones((self.length,self.width),np.bool_)
         #list of box 
@@ -22,6 +22,7 @@ class Box(object):
         (_, self.weight) = Boxes[self.colour]
         self.centrefrom = np.float32(box['centroid'])
         self.rotation = np.float32(box['rotation'])
+        self.rotateto = False
         self.centreto = None
         self.packed = False
         self.length, self.width, self.height = self.nearest(box['width'],box['length'])

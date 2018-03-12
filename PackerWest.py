@@ -147,24 +147,18 @@ class BPRF(object):
             logging.debug("packto: {}".format(packto))
             for i in range(0,len(self.bins)):
                 logging.debug("for bin {}".format(i))
-                logging.debug("nonrotated")
-                poslist = self.getPositions(np.int8(box.width), np.int8(box.length), i)
-                if len(poslist) > 0:
-                    for pos in poslist:
-                        newscore = self.score(pos,np.int8(box.width+offset),np.int8(box.length+offset),i)
-                        if  newscore > score:
-                            packto=(i, pos, False, newscore)
-                            score = newscore
-                        logging.debug("packto: {}".format(packto))
-                    logging.debug("rotated")
-                poslist = self.getPositions(np.int8(box.length),np.int8(box.width),i)
-                if len(poslist)>0:
-                    for pos in poslist:
-                        newscore = self.score(pos,np.int8(box.length+offset),np.int8(box.width+offset),i)
-                        if newscore > score:
-                            packto=(i, pos, True,newscore)
-                            score = newscore
-                        logging.debug("packto: {}".format(packto))
+                
+                posn, scoren = self.getPosition(np.int8(box.width), np.int8(box.length), i)
+                logging.debug("nonrotated: {}, {}".format(posn,scoren))
+                posr, scorer = self.getPosition(np.int8(box.length),np.int8(box.width),i)
+                logging.debug("rotated: {}, {}".format(posr,scorer))
+                
+                if scorer > scoren and scorer > score:
+                    score = scorer
+                    packto = (i, posr, True)
+                elif scoren > score:
+                    score = scoren
+                    packto = (i, posn, False)
             try:
                 self.pack(packto[0],packto[1],packto[2], box)
             except IndexError:
@@ -254,29 +248,40 @@ class BPRF(object):
         logging.debug("score: {}".format(score))
         return score
                     
-    def getPositions(self, w, l, bid):
+    def getPosition(self, w, l, bid):
         #list of tuples: positions by bottom left corner
-        poslist = []
+        w = np.int8(w+offset)
+        l = np.int8(l+offset)
+        packto = None
+        score = 0
         logging.debug("whats in the box? {}".format(self.bins[bid].boxes_packed))
         if len(self.bins[bid].boxes_packed)>0:
             for box in self.bins[bid].boxes_packed:
                 (cw,cl) = box.centreto
                 bw = box.width+offset
                 bl = box.length+offset
-                topleft = (np.int8(cw-bw/2),np.int8(cl+bl/2))
-                btmright = (np.int8(cw+bw/2),np.int8(cl-bl/2))
-                corners = [topleft,btmright]
-                logging.debug("corners possible: {}".format(corners))
-                #add the corner if it is a suitable position
-                for cor in corners:
-                    if not self.binSize[0]-1 < cor[0]+w+offset and not self.binSize[1]-1 < cor[1]+l+offset:
-                        if np.all(self.bins[bid].area[cor[0]:cor[0]+w+offset,cor[1]:cor[1]+l+offset]):
-                            poslist.append(cor)
+                cw = np.int8(cw+bw/2)
+                cl = np.int8(cl+bl/2)
+                for i in range(0,cw+1):
+                    if not self.binSize[0]-1 < cw-i+w and not self.binSize[1]-1 < cl+l:
+                        if np.all(self.bins[bid].area[cw-i:cw-i+w,cl:cl+l]):
+                            newscore = self.score((cw-i,cl), w, l, bid)
+                            if score < newscore:
+                                score = newscore
+                                packto = (cw-i,cl)
+                            
+                for i in range(0,cl+1):
+                    if not self.binSize[0]-1 < cw+w and not self.binSize[1]-1 < cl-i+l:
+                        if np.all(self.bins[bid].area[cw:cl+w,cl-i:cl-i+l]):
+                            newscore = self.score((cw,cl-i),w,l,bid)
+                            if score < newscore:
+                                score = newscore
+                                packto = (cw,cl-i)
         
         else:
-            poslist.append((0,0))
-        logging.debug("poslist: {}".format(poslist))
-        return poslist
+            packto = (0,0)
+            score = self.score(packto,w,l,bid)
+        return packto, score
         
         
     def compute_L(self):
