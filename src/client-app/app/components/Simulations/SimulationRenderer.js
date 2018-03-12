@@ -93,8 +93,8 @@ export default class SimulationRenderer extends Component {
     let boxes = this.props.boxes
 
     let scene = new THREE.Scene();
-    let camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
-    let controls = new OrbitControls( camera );
+    let camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000)
+    let controls = new OrbitControls(camera, document.getElementById("graph-sim"))
     camera.position.set(0, 20, 10)
     controls.update()
 
@@ -131,6 +131,11 @@ export default class SimulationRenderer extends Component {
     this.setState({
       scene: scene
     })
+  }
+
+  componentWillUnmount() {
+    let el = document.getElementById("graph-sim")
+    el.outerHTML = ""
   }
 
   render() {
