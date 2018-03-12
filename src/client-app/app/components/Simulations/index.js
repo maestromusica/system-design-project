@@ -2,16 +2,92 @@ import React, {Component} from 'react'
 import * as THREE from 'three'
 const OrbitControls = require('three-orbit-controls')(THREE)
 
-export default class Simulations extends Component {
-  state = {
-
+const adaptCoordinates = (
+  {x, y, z, width, height, depth},
+  {xCamera, yCamera, zCamera}
+) => {
+  // the 0, 0, 0 position is in fact the center of the box
+  return {
+    x: x + width/2 -xCamera/2 ,
+    y: y + height/2 - yCamera/2,
+    z: z + depth/2 - zCamera/2,
+    width,
+    height,
+    depth
   }
+}
 
+let boxes = [{
+  x: 0,
+  y: 0,
+  z: 0,
+  width: 7,
+  height: 4,
+  depth: 10
+}, {
+  x: 7,
+  y: 0,
+  z: 0,
+  width: 6,
+  height: 4,
+  depth: 9
+}, {
+  x: 13,
+  y: 0,
+  z: 0,
+  width: 5,
+  height: 4,
+  depth: 8
+}, {
+  x: 0,
+  y: 4,
+  z: 0,
+  width: 6,
+  height: 3,
+  depth: 8
+}, {
+  x: 6,
+  y: 4,
+  z: 0,
+  width: 6,
+  height: 3,
+  depth: 8
+}, {
+  x: 12,
+  y: 4,
+  z: 0,
+  width: 6,
+  height: 3,
+  depth: 8
+}, {
+  x: 0,
+  y: 7,
+  z: 0,
+  width: 10,
+  height: 2,
+  depth: 4
+}, {
+  x: 0,
+  y: 7,
+  z: 4,
+  width: 9,
+  height: 2,
+  depth: 3
+}, {
+  x: 10,
+  y: 7,
+  z: 0,
+  width: 5,
+  height: 2,
+  depth: 3
+}]
+
+export default class Simulations extends Component {
   componentDidMount() {
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
     var controls = new OrbitControls( camera );
-    camera.position.set(0, 20, 100)
+    camera.position.set(0, 20, 10)
     controls.update()
 
     var renderer = new THREE.WebGLRenderer();
@@ -26,8 +102,18 @@ export default class Simulations extends Component {
 
     camera.position.z = 5;
     renderer.render(scene, camera);
+    const cameraSize = {
+      x: 20,
+      y: 10,
+      z: 14
+    }
 
-    var geometry = new THREE.BoxGeometry(20, 20, 20);
+    var geometry = new THREE.BoxGeometry(
+      cameraSize.x,
+      cameraSize.y,
+      cameraSize.z
+    )
+
     var geo = new THREE.EdgesGeometry( geometry ); // or WireframeGeometry( geometry )
     var mat = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 2 } );
     var wireframe = new THREE.LineSegments( geo, mat );
@@ -35,21 +121,40 @@ export default class Simulations extends Component {
     wireframe.name = 'container';
     scene.add( wireframe );
 
-    // pack two items
-    var itemGeometry = new THREE.BoxGeometry(4, 4, 4)
-    var itemMaterial = new THREE.MeshNormalMaterial({
+    // // pack two items
+    // var itemGeometry = new THREE.BoxGeometry(4, 4, 4)
+    const itemMaterial = new THREE.MeshNormalMaterial({
       transparent: true, opacity: 0.6
     })
-    var cube = new THREE.Mesh(itemGeometry, itemMaterial)
-    cube.position.set(-8, -8, -8)
-    cube.name = "1"
-    scene.add(cube)
+    // var cube = new THREE.Mesh(itemGeometry, itemMaterial)
+    // cube.position.set(-8, -8, -8)
+    // cube.name = "1"
+    // scene.add(cube)
+    boxes = boxes.map(box => {
+      return adaptCoordinates(box, {
+        xCamera: cameraSize.x,
+        yCamera: cameraSize.y,
+        zCamera: cameraSize.z
+      })
+    }).map((box, id) => {
+      box.id = id
+      return box
+    })
 
-    var cube2 = new THREE.Mesh(itemGeometry, itemMaterial)
-    cube2.position.set(-4, -8, -8)
-    cube2.name="2"
-    scene.add(cube2)
+    let pos = 0
+    function addToScene() {
+      if(pos < boxes.length) {
+        const box = boxes[pos]
+        const itemGeometry = new THREE.BoxGeometry(box.width, box.height, box.depth)
+        let cube = new THREE.Mesh(itemGeometry, itemMaterial)
+        cube.position.set(box.x, box.y, box.z)
+        cube.name = box.id
+        pos += 1
+        scene.add(cube)
+      }
+    }
 
+    setInterval(addToScene, 300)
 
     function animate() {
       requestAnimationFrame( animate );
