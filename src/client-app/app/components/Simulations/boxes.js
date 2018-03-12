@@ -1,4 +1,5 @@
-const mockedBoxes = [{
+const boxes = [
+  [{
   x: 0,
   y: 0,
   z: 0,
@@ -19,7 +20,8 @@ const mockedBoxes = [{
   width: 5,
   height: 4,
   depth: 8
-}, {
+}],
+[{
   x: 0,
   y: 4,
   z: 0,
@@ -40,7 +42,8 @@ const mockedBoxes = [{
   width: 6,
   height: 3,
   depth: 8
-}, {
+}],
+[{
   x: 0,
   y: 7,
   z: 0,
@@ -62,5 +65,6 @@ const mockedBoxes = [{
   height: 2,
   depth: 3
 }]
+]
 
-export default mockedBoxes
+export default boxes
