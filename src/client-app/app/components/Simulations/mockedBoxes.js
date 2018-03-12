@@ -1,0 +1,66 @@
+const mockedBoxes = [{
+  x: 0,
+  y: 0,
+  z: 0,
+  width: 7,
+  height: 4,
+  depth: 10
+}, {
+  x: 7,
+  y: 0,
+  z: 0,
+  width: 6,
+  height: 4,
+  depth: 9
+}, {
+  x: 13,
+  y: 0,
+  z: 0,
+  width: 5,
+  height: 4,
+  depth: 8
+}, {
+  x: 0,
+  y: 4,
+  z: 0,
+  width: 6,
+  height: 3,
+  depth: 8
+}, {
+  x: 6,
+  y: 4,
+  z: 0,
+  width: 6,
+  height: 3,
+  depth: 8
+}, {
+  x: 12,
+  y: 4,
+  z: 0,
+  width: 6,
+  height: 3,
+  depth: 8
+}, {
+  x: 0,
+  y: 7,
+  z: 0,
+  width: 10,
+  height: 2,
+  depth: 4
+}, {
+  x: 0,
+  y: 7,
+  z: 4,
+  width: 9,
+  height: 2,
+  depth: 3
+}, {
+  x: 10,
+  y: 7,
+  z: 0,
+  width: 5,
+  height: 2,
+  depth: 3
+}]
+
+export default mockedBoxes
