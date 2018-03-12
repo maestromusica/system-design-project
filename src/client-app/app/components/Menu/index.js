@@ -6,6 +6,7 @@ const Menu = () => (
   <MenuContainer>
     <MenuList>
       <MenuItem to="/">Dashboard</MenuItem>
+      <MenuItem to="/simulations">Simulations</MenuItem>
       <MenuItem to="/development">Development</MenuItem>
       <MenuItem to="/settings">Settings</MenuItem>
     </MenuList>

@@ -16,12 +16,15 @@
     "react-router": "^4.1.2",
     "react-router-dom": "^4.2.2",
     "react-router-redux": "^5.0.0-alpha.8",
+    "react-three": "^0.9.7",
     "redux": "^3.0.0",
     "redux-actions": "^2.2.1",
     "redux-localstorage": "^0.4.1",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.2.0",
-    "styled-components": "^3.1.6"
+    "styled-components": "^3.1.6",
+    "three": "^0.90.0",
+    "three-orbit-controls": "^82.1.0"
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",

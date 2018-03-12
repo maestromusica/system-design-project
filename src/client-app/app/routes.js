@@ -8,6 +8,7 @@ import Menu from './components/Menu'
 import Dashboard from './components/Dashboard'
 import Development from './components/Development'
 import Settings from './components/Settings'
+import Simulations from './components/Simulations'
 
 const App = () => (
   <AppStyle>
@@ -19,6 +20,7 @@ const App = () => (
           <Route exact path="/" component={Dashboard} />
           <Route exact path="/development" component={Development} />
           <Route exact path="/settings" component={Settings} />
+          <Route exact path="/simulations" component={Simulations} />
         </Switch>
       </Content>
     </Main>
