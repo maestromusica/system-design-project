@@ -19,13 +19,20 @@ class Box(object):
 
     def __init__(self,box):
         self.colour = box['colour']
-        (_, self.weight) = Boxes[self.colour]
+        self.weight = Boxes[self.colour]['weight']
         self.centrefrom = np.float32(box['centroid'])
         self.rotation = np.float32(box['rotation'])
         self.rotateto = False
         self.centreto = None
         self.packed = False
-        self.length, self.width, self.height = self.nearest(box['width'],box['length'])
+        if self.rotation == 90.00:
+            self.length = Boxes[self.colour]['l']
+            self.width = Boxes[self.colour]['w']
+        elif self.rotation == 0.00:
+            self.length = Boxes[self.colour]['w']
+            self.width = Boxes[self.colour]['l']
+        
+        self.height = Boxes[self.colour]['h']
         self.area = self.length*self.width
         self.volume = self.length*self.width*self.height
 

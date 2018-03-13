@@ -14,9 +14,10 @@ class MaskGenerator(object):
         self.params = params
         #self.low = np.array(params['Low'])
         #self.high = np.array(params['High'])
-        self.low = np.array([params['H_min'],params['S_min'],params['V_min']])
-        self.high = np.array([params['H_max'],params['S_max'],params['V_max']])
-    
+        self.low_l = np.array([params['H_min_l'],params['S_min'],params['V_min']])
+        self.high_l = np.array([params['H_max_l'],params['S_max'],params['V_max']])
+        self.low_h = np.array([params['H_min_h'],params['S_min'],params['V_min']])
+        self.high_h = np.array([params['H_max_h'],params['S_max'],params['V_max']])
         self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
         print('Created MaskGenerator object for {} colour.'.format(colour))
         print('\t Parameters : {}'.format(self.params))
@@ -73,8 +74,9 @@ class MaskGenerator(object):
         hsv = cv2.cvtColor(gammaCorrectedFrame,cv2.COLOR_BGR2HSV)
 
         # Filtering using set parameters
-        mask = cv2.inRange(hsv,self.low,self.high)
-
+        mask_l = cv2.inRange(hsv,self.low_l,self.high_l)
+        mask_h = cv2.inRange(hsv,self.low_h,self.high_h)
+        mask = cv2.bitwise_or(mask_l,mask_h)
         # Applying Morphological Operations
         mask = self.openOrClose(mask,self.kernel)
 
@@ -248,21 +250,21 @@ class Drawer(object):
 
         frame  = cv2.drawContours(frame,[np.array(corners)],0,self.colors[color],1)
         return frame
-    def putText(self,frame,colour,val):
+    def putText(self,frame,colour,val, angle):
         if colour == 'red':
-            cv2.putText(frame,colour + ' : {}'.format(val),(10,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}\t\t{:3f}'.format(val,angle),(10,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         elif colour == 'yellow':
-            cv2.putText(frame,colour + ' : {}'.format(val),(10,50),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}\t\t{:3f}'.format(val,angle),(10,50),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         elif colour == 'green':
-            cv2.putText(frame,colour + ' : {}'.format(val),(10,80),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}\t\t{:3f}'.format(val,angle),(10,80),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         elif colour == 'purple':
-            cv2.putText(frame,colour + ' : {}'.format(val),(10,110),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}\t\t{:3f}'.format(val,angle),(10,110),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         elif colour == 'blue':
-            cv2.putText(frame,colour + ' : {}'.format(val),(10,140),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}\t\t{:3f}'.format(val,angle),(10,140),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         return frame
 
@@ -343,7 +345,7 @@ class BoxExtractor(object):
                     #draw = self.drawer.drawBox(draw,corners,centroid,'r')
                     draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'b')
                     boxes.append(self.createDict(rect[0],rect[1],c,rect[2]))
-                draw = self.drawer.putText(draw,c,len(boxes))
+                draw = self.drawer.putText(draw,c,len(boxes),angle=boxes[0]['rotation'])
             #else:
                 #print('No Boxes')
 

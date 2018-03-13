@@ -30,7 +30,8 @@ def onProcess(client, userdata, msg, controller):
 
 def onAppRequestImg(client, userdata, msg, controller):
     va = VisionAdaptor(visionActionQueue)
-    img = va.getFrame()
+    img = va.execute()
+    del va
     retval, buffer = cv2.imencode('.jpg', img)
     jpg = base64.b64encode(buffer)
     client.publish(Topics.APP_RECIEVE_IMG, jpg)

@@ -15,7 +15,7 @@ logging.basicConfig(format='%(levelname)s: %(message)s', level=LOGLEVEL)
 ##everything goes width length
 
 
-class Algorithm(object):
+class StackingAlgorithm(object):
 
     def __init__(self, boxes, binSize, alg):
         self.timestamp = time()
@@ -41,7 +41,9 @@ class Algorithm(object):
         return unsorted_boxes    
        
         
-
+    def pack(self):
+        return self.packer.bins
+    
 
     def box_error(self, boxes, sorted_boxes):
         width_off = 0

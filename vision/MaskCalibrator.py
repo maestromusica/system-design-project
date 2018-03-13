@@ -27,7 +27,7 @@ from GlobalParams import GlobalParams
 
 global trackbars, colormodes, displaymodes
 trackbars = False
-colormodes = np.array(['red','yellow','green','blue','purple'])
+colormodes = np.array(['red','yellow','green','blue','pink'])
 displaymodes = np.array(['frame','gamma','hsv','mask','res'])
 
 # functions
@@ -38,8 +38,10 @@ def nothing(x):
 def createParameters():
     params = {}
     params['gamma'] = 0
-    params['H_min'] = 179
-    params['H_max'] = 179
+    params['H_min_l'] = 179
+    params['H_max_l'] = 179
+    params['H_min_h'] = 179
+    params['H_max_h'] = 179
     params['S_min'] = 255
     params['S_max'] = 255
     params['V_min'] = 255
@@ -171,11 +173,18 @@ def main():
         hsv = cv2.cvtColor(gamma,cv2.COLOR_BGR2HSV)
 
         # creating ranges
-        lower = np.array([params['H_min'],params['S_min'],params['V_min']])
-        upper = np.array([params['H_max'],params['S_max'],params['V_max']])
-    
+        lower_l = np.array([params['H_min_l'],params['S_min'],params['V_min']])
+        upper_l = np.array([params['H_max_l'],params['S_max'],params['V_max']])
+
+        lower_h = np.array([params['H_min_h'],params['S_min'],params['V_min']])
+        upper_h = np.array([params['H_max_h'],params['S_max'],params['V_max']])
+
         # filtering image.
-        mask = cv2.inRange(hsv,lower,upper)
+        mask_l = cv2.inRange(hsv,lower_l,upper_l)
+        mask_h  = cv2.inRange(hsv,lower_h,upper_h)
+        cv2.imshow('mask_l',mask_l)
+        cv2.imshow('mask_h',mask_h)
+        mask = cv2.bitwise_or(mask_l,mask_h)
 
         # Applying erosion and dilation
         mask = open_close(mask,kernel,params)

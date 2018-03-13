@@ -26,16 +26,19 @@ class Adaptor(object):
     def adaptBoxes(self,boxes):
         adaptedBoxes = []
         for b in boxes:
-            print("OriginalValues : from : {}\t to {}".format(b.centrefrom,b.centreto))
-            b.centrefrom = self.adaptPoints(b.centrefrom)
-            b.centreto = self.adaptPoints(b.centreto)
+            #print("OriginalValues : from : {}\t to {}".format(b.centrefrom,b.centreto))
+            #b.centrefrom = self.adaptPoints(b.centrefrom)
+            #b.centreto = self.adaptPoints(b.centreto)
+            b['centroid'] = self.adaptPoints(b['centroid'])
             
-            adaptedBoxes.append([b.centrefrom,b.centreto])
+            #adaptedBoxes.append([b.centrefrom,b.centreto])
+            adaptedBoxes.append([b['centroid'],np.array([200,100]),b['rotation']])
 
         return adaptedBoxes
     
     def transform(self,bins):
         layers = {}
-        for i, bin in enumerate(bins):
-            layers[i] = self.adaptBoxes(bin.boxes_packed)
+        #for i, bin in enumerate(bins):
+        #    layers[i] = self.adaptBoxes(bin.boxes_packed)
+        layers[0] = self.adaptBoxes(bins)
         return layers

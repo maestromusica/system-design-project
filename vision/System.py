@@ -13,8 +13,8 @@ class VisionAdaptor:
         self.actionQueue = actionQueue
         self.actionQueue.put(self.addResetAction('X'))
         self.actionQueue.put(self.addResetAction('Y'))
-        self.actionQueue.put(self.addResetAction('Z'))
-        self.actionQueue.put(self.addZAction(500))
+        #self.actionQueue.put(self.addResetAction('Z'))
+        self.actionQueue.put(self.addZAction(350))
         self.actionQueue.put(self.addGrabAction())
 
     def addXAction(self,payload):
@@ -63,6 +63,12 @@ class VisionAdaptor:
             "action": Topics.EV3_RESET_Z,
             "payload": None
             }
+
+    def addRotationAction(self,payload):
+        return{
+            "action": Topics.EV3_ROTATE,
+            "payload": payload
+        }
         
     def grab(self):
         self.actionQueue.put(self.addReleaseAction())
@@ -85,11 +91,15 @@ class VisionAdaptor:
         return
     '''
     
-    def createPickRoutine(self,pickupPoint,endPoint):
+    def createPickRoutine(self,pickupPoint,endPoint,rotation):
         #self.gotoStart()
         print('Heading to package at : {}'.format(pickupPoint))
         self.actionQueue.put(self.addXAction(int(pickupPoint[0])))
         self.actionQueue.put(self.addYAction(int(pickupPoint[1])))
+        if rotation = 90.00:
+            self.actionQueue.put(self.addRotateAction(220))
+        elif rotation = 0.00:
+            self.actionQueue.put(self.addRotateAction(0))
         self.grab()
         print('Package Recovered!')
         self.actionQueue.put(self.addXAction(int(endPoint[0])))
@@ -107,17 +117,21 @@ class VisionAdaptor:
             cv2.imshow('output',image)
             k = cv2.waitKey(1)
             if k == ord('c'):
+                # printing boxes
+                #print(boxes)                
+                
                 # Sending list of boxes to algorithm for stacking.
-                bins = StackingAlgorithm(boxes,(20,20),'BPOF').pack()
-
+                #bins = StackingAlgorithm(boxes,(20,20),'BPOF').pack()
+                
                 # Send these bins to Adaptor and transform pick and drop points.
                 layers = self.adaptor.transform(bins)
                 print(layers)
                 for l in layers.keys():
                     print("Creating pickup Routine for Layer: {}".format(l))
                     for b in layers[l]:
-                        self.createPickRoutine(b[0],b[1])
-                cv2.destroyAllWindows()
+                        self.createPickRoutine(b[0],b[1],b[2])
+                cv2.waitKey(0)
+                #cv2.destroyAllWindows()                
                 return image
 
 def main():

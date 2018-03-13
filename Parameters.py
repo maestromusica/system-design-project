@@ -1,5 +1,5 @@
 import numpy as np
 #dims are stored sorted lowest to highest
-Boxes = {'red':(np.float32([5,5,6]),15),'blue':(np.float32([3,3,4]),10),'green':(np.float32([2,4,6]),20),'yellow':(np.float32([3,5,6]),17),'pink':(np.float32([2,2,3]),12)}
+Boxes = {'red':{'l':6.45,'w':2.5,'h':3.5,'weight':10},'blue':{'l':4.25,'w':3.0,'h':3.5,'weight':10},'green':{'l':5.25,'w':3.75,'h':3.5,'weight':10},'yellow':{'l':7.0,'w':1.9,'h':3.5,'weight':10},'purple':{'l':3.0,'w':3.0,'h':3.5,'weight':10}}
 
 offset = 1

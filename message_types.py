@@ -46,7 +46,7 @@ class Topics:
     EV3_RESET_X = topics["EV3_RESET_X"]
     EV3_RESET_Y = topics["EV3_RESET_Y"]
     EV3_RESET_Z = topics["EV3_RESET_Z"]
-
+    EV3_ROTATE = topics["EV3_ROTATE"]
     EV3_PRINT_POS = topics["EV3_PRINT_POS"]
 
     APP_REQUEST = topics["APP_REQUEST"]
