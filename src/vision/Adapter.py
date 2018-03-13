@@ -54,7 +54,7 @@ class Adaptor(object):
             else:
                 off = 0
             print("centre before : {}".format(b.centreto))
-#            b.centreto[0] = i*0.5+off + b.centreto[0]
+            b.centreto[0] = i*0.5+off + b.centreto[0]
             print("centre after : {}".format(b.centreto))            
             adaptedBoxes.append([b.centrefrom,100*b.centreto,b.rotation,b.colour,b.rotateto])
             #adaptedBoxes.append([b['centroid'],np.array([200,100]),b['rotation']])

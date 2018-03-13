@@ -43,7 +43,7 @@ class StackingAlgorithm(object):
                 else:
                     w = box.width
                     l = box.length
-                rect = patches.Rectangle(((box.centreto[1]-l/2)*100,(box.centreto[0]-w/2)*100),l*100,w*100,linewidth=1,edgecolor='black',facecolor=box.colour)
+                rect = patches.Rectangle(((box.centreto[1]-l/2)*100,(box.centreto[1]-w/2)*100),w*100,l*100,linewidth=1,edgecolor='black',facecolor=box.colour)
                 ax.add_patch(rect)
             plt.show()
 
