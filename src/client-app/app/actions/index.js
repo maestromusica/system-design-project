@@ -116,3 +116,8 @@ export const connectEV3 = () => ({
   type: topics.APP_CONNECT_EV3,
   topic: topics.APP_CONNECT_EV3
 })
+
+export const requestBoxes = () => ({
+  type: topics.APP_REQUEST_BOXES,
+  topic: topics.APP_REQUEST_BOXES
+})

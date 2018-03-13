@@ -60,6 +60,7 @@ subscribedTopics = {
 
     topics["APP_REQUEST"]: onAppRequestData,
     topics["APP_REQUEST_IMG"]: onAppRequestImg,
+    topics["APP_REQUEST_BOXES"]: onAppRequestBoxes,
     topics["EV3_CONNECTED"]: onEV3Connected,
 
     topics["APP_CONNECT_EV3"]: onAppConnectEV3,

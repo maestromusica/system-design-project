@@ -54,10 +54,11 @@
     "APP_RECEIVE_WAITING": "action/app/receive/data/waiting",
     "APP_RECEIVE_ACTIONS": "action/app/receive/data/actions",
     "APP_RECEIVE_CONNECTION": "aciton/app/receive/data/connection",
-    "APP_RECEIVE_BOXES": "/action/app/receive/data/sorted_boxes",
 
     "APP_RECEIVE_IMG": "action/app/receive/data/video_feed",
     "APP_REQUEST_IMG": "action/app/request/data/video_feed",
+    "APP_REQUEST_BOXES": "action/app/request/data/boxes",
+    "APP_RECEIVE_BOXES": "/action/app/receive/data/sorted_boxes",
 
     "CONTROLLER_SAVE_IP_11": "config/app/save/ip/INF_11",
     "CONTROLLER_SAVE_IP_31": "config/app/save/ip/INF_31",

@@ -4,6 +4,8 @@ import base64
 import numpy
 import os
 # from ..vision.System import VisionAdaptor
+from ..vision.Algorithm import StackingAlgorithm
+from ..config.index import boxes
 
 visionTag = "vision"
 controllerTag = "controller"
@@ -224,3 +226,33 @@ def onAppSaveEV31IP(client, ev3, msg, controller):
 def onAppConn(client, ev3, msg, controller):
     print("> App wants to connect to the controller!")
     client.publish(topics["CONN_ACK"])
+
+def onAppRequestBoxes(client, ev3, msg, controller):
+    sa = StackingAlgorithm(boxes,(20,20),'BPRF')
+    # have to adapt the sorted boxes
+    # into something parseable by JSON
+    sortedBoxes = []
+    for bin in sa.packer.bins:
+        sortedBin = []
+        for box in bin.boxes_packed:
+            # we need color, length, width, height, and centreTo
+            # invert if we rotate the box
+            length = box.length
+            width = box.width
+            if box.rotateto:
+                length = box.width
+                width = box.length
+
+            sBox = {
+                "length": length,
+                "width": width,
+                "color": box.colour,
+                "center": {
+                    "x": box.centreto[0],
+                    "y": box.centreto[1]
+                }
+            }
+            sortedBin.append(sBox)
+        sortedBoxes.append(sortedBin)
+    # now send the app the sortedBoxes
+    client.publish(topics["APP_RECEIVE_BOXES"], json.dumps(sortedBoxes))
