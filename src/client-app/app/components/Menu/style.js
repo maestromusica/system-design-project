@@ -1,6 +1,7 @@
 import {NavLink} from 'react-router-dom'
 import styled from 'styled-components'
 import {colors} from '../../styled/variables'
+import LogoSvgSnort from './logo-snortx.svg'
 
 export const MenuContainer = styled.div`
   flex: 0 220px;
@@ -15,13 +16,12 @@ export const MenuList = styled.ul`
 `
 
 export const MenuItem = styled(NavLink)`
-  font-family: Calibre;
-  font-weight: 800;
+  font-family: 'Circular';
   font-size: 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 400;
+  letter-spacing: 1px;
   display: block;
-  padding: 20px 20px 20px 16px;
+  padding: 10px 10px 10px 16px;
   margin: 6px;
   text-decoration: none;
   color: ${colors.grey["800"]};
@@ -34,4 +34,20 @@ export const MenuItem = styled(NavLink)`
   &.active {
 
   }
+
+  & svg {
+    height: 24px;
+    width: 24px;
+    margin-right: 8px;
+    margin-top: -4px;
+    color: ${colors.grey["500"]};
+    display: none;
+  }
+`
+export const LogoSnort = styled(LogoSvgSnort)`
+  height: 52px;
+  display: block;
+  margin-top: 40px;
+  padding-left: 20px;
+  margin-bottom: 20px;
 `

@@ -13,6 +13,8 @@ export const AppStyle = styled.div`
 export const Content = styled.div`
   flex: 1 auto;
   padding: 16px;
+  padding-top: 60px;
+  padding-left: 40px;
 `
 
 export const Main = styled.div`

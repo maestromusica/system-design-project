@@ -3,7 +3,6 @@ import {Switch, Route, withRouter, BrowserRouter} from 'react-router';
 
 import {AppStyle, Content, Main} from './styled/components'
 
-import AppBar from './components/AppBar'
 import Menu from './components/Menu'
 import Dashboard from './components/Dashboard'
 import Development from './components/Development'
@@ -12,7 +11,6 @@ import Simulations from './components/Simulations'
 
 const App = () => (
   <AppStyle>
-    <AppBar />
     <Main>
       <Menu />
       <Content>
