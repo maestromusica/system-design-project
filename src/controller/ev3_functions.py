@@ -115,6 +115,10 @@ class EV3Client():
         self.client31Connected = False
         self.connected = False
 
+    def restart(self):
+        self.client11 = mqtt.Client()
+        self.client31 = mqtt.Client()
+
     def connect(self):
         self.connect11()
         self.connect31()
@@ -124,8 +128,8 @@ class EV3Client():
         ev11 = {"ip": config["ips"]["INF_11"], "port": 1883, "keepalive": 60}
 
         try:
-            self.client11.connect(ev11["ip"], ev11["port"], ev11["keepalive"])
-            self.setConnected("11")
+            self.client11.connect_async(ev11["ip"], ev11["port"], ev11["keepalive"])
+            # self.setConnected("11")
         except OSError:
             self.client11Connected = False
             self.connected = False
@@ -135,8 +139,8 @@ class EV3Client():
         ev31 = {"ip": config["ips"]["INF_31"], "port": 1883, "keepalive": 60}
 
         try:
-            self.client31.connect(ev31["ip"], ev31["port"], ev31["keepalive"])
-            self.setConnected("31")
+            self.client31.connect_async(ev31["ip"], ev31["port"], ev31["keepalive"])
+            # self.setConnected("31")
         except OSError:
             self.client31Connected = False
             self.connected = False
@@ -164,11 +168,6 @@ class EV3Client():
     def on_message(self, function):
         self.client11.on_message = function
         self.client31.on_message = function
-
-    def deviceConnected(self):
-        self.devicesConnected += 1
-        if self.devicesConnected == 2:
-            self.controllerClient.publish(topics["EV3_CONNECTED"])
 
     def setConnected(self, tag):
         if tag == "11":

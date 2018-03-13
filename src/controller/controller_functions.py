@@ -3,7 +3,7 @@ import cv2
 import base64
 import numpy
 import os
-from ..vision.System import VisionAdaptor
+# from ..vision.System import VisionAdaptor
 
 visionTag = "vision"
 controllerTag = "controller"
@@ -12,11 +12,13 @@ topicsPath = os.path.join(os.path.dirname(__file__), "../config/topics.json")
 topics = json.load(open(topicsPath))
 
 configPath = os.path.join(os.path.dirname(__file__), "../config/config.json")
+
 global va
 va = None
+
 def onStartController(client, ev3, msg, controller):
     global va
-    va = VisionAdaptor(controller.actionQueues[visionTag])
+    # va = VisionAdaptor(controller.actionQueues[visionTag])
     print("> Controller started...")
 
 def onProcess(client, ev3, msg, controller):
@@ -26,12 +28,12 @@ def onProcess(client, ev3, msg, controller):
 
 def onProcessResponse(client, ev3, msg, controller):
     if msg.payload.decode() == "True":
-        #visionActionQueue = controller.actionQueues[visionTag]
-        #quantitative1(visionActionQueue)
+        visionActionQueue = controller.actionQueues[visionTag]
+        quantitative1(visionActionQueue)
         ## Populate the queue.
-        global va
-        va.execute()
-        print(controller.actionQueues[visionTag])
+        # global va
+        # va.execute()
+        # print(controller.actionQueues[visionTag])
         print("> Accepted")
     elif msg.payload.decode() == "False":
         print("> Not accepted")
@@ -165,21 +167,21 @@ def onAppRequestData(client, ev3, msg, controller):
         client.publish(topics["APP_REQUEST"], "connection")
 
 def onAppRequestImg(client, ev3, msg, controller):
-    #cap = cv2.VideoCapture(0)
-    #while True:
-    #    retval, img = cap.read()
-    #    if img is not None:
-    #        img = cv2.flip(img, 1)
-    #        retval, buffer = cv2.imencode('.jpg', img)
-    #        jpg = base64.b64encode(buffer)
-    #        client.publish(topics["APP_RECEIVE_IMG"], jpg)
-    #        cap.release()
-    #        break
-    global va
-    img = va.getFrame()
-    retval, buffer = cv2.imencode('.jpg', img)
-    jpg = base64.b64encode(buffer)
-    client.publish(topics["APP_RECEIVE_IMG"], jpg)
+    cap = cv2.VideoCapture(0)
+    while True:
+        retval, img = cap.read()
+        if img is not None:
+            img = cv2.flip(img, 1)
+            retval, buffer = cv2.imencode('.jpg', img)
+            jpg = base64.b64encode(buffer)
+            client.publish(topics["APP_RECEIVE_IMG"], jpg)
+            cap.release()
+            break
+    # global va
+    # img = va.getFrame()
+    # retval, buffer = cv2.imencode('.jpg', img)
+    # jpg = base64.b64encode(buffer)
+    # client.publish(topics["APP_RECEIVE_IMG"], jpg)
 
 def onPrintStates(client, ev3, msg, controller):
     print("> These are the current execution threads: ")
@@ -205,7 +207,7 @@ def onAppSaveEV11IP(client, ev3, msg, controller):
         json.dump(config, out)
     ev3.setDisconnected("11")
     ev3.client11.disconnect()
-    ev3.connect11()
+
     print("> EV3 INF_11 IP rewritten to {0}".format(ip))
 
 def onAppSaveEV31IP(client, ev3, msg, controller):
@@ -217,7 +219,6 @@ def onAppSaveEV31IP(client, ev3, msg, controller):
 
     ev3.setDisconnected("31")
     ev3.client31.disconnect()
-    ev3.connect31()
     print("> EV3 INF_31 IP rewritten to {0}".format(ip))
 
 def onAppConn(client, ev3, msg, controller):

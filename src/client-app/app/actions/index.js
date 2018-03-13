@@ -111,3 +111,8 @@ export const restartClient = () => {
     dispatch({type: "RESTART_CLIENT"})
   }
 }
+
+export const connectEV3 = () => ({
+  type: topics.APP_CONNECT_EV3,
+  topic: topics.APP_CONNECT_EV3
+})
