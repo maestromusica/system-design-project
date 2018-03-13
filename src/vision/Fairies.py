@@ -86,10 +86,8 @@ class boxFinder(object):
                                 if diff > diff_y:
                                     diff_y = diff
                         if diff_x > diff_y:
-                            print('horizontal')
                             angle = 0.00
                         elif diff_y > diff_x:
-                            print('vertical')
                             angle = 90.00
                     draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'b')
                     boxes.append(self.createDict(rect[0],rect[1],k,angle))

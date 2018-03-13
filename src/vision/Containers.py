@@ -8,6 +8,7 @@ class Bin(object):
         self.length = binSize[1]
         self.width = binSize[0]
         #2d array of bools, True is empty, False is full
+        
         self.area = np.ones((self.length,self.width),np.bool_)
         #list of box 
         self.boxes_packed = []
@@ -25,12 +26,12 @@ class Box(object):
         self.rotateto = False
         self.centreto = None
         self.packed = False
-        if self.rotation == 0.00:
-            self.length = Boxes[self.colour]['w']
-            self.width = Boxes[self.colour]['l']
-        else:
-            self.length = Boxes[self.colour]['l']
-            self.width = Boxes[self.colour]['w']
+        #if self.rotation == 0.00:
+        #    self.length = Boxes[self.colour]['w']
+        #    self.width = Boxes[self.colour]['l']
+        #else:
+        self.length = Boxes[self.colour]['l']
+        self.width = Boxes[self.colour]['w']
         self.height = Boxes[self.colour]['h']
         self.area = self.length*self.width
         self.volume = self.length*self.width*self.height

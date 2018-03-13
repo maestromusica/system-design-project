@@ -5,6 +5,9 @@ from time import time
 from Containers import Bin, Box
 import Parameters
 import Packer
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from PIL import Image
 
 #logging debug stuff
 LOGLEVEL = logging.DEBUG
@@ -24,6 +27,26 @@ class StackingAlgorithm(object):
         self.packer.sort()
         self.coords = self.packer.get_xy()
         self.log_error(boxes, new_boxes, alg)
+        for sbin in self.packer.bins:
+            im = np.array(Image.open('/home/abhishek/system-design-project/src/vision/Container2.png'), dtype=np.uint8)
+            fig,ax = plt.subplots(1)
+            ax.imshow(im)
+            for i, w in enumerate(sbin.area):
+                for j, l in enumerate(w):
+                    if l:
+                        rect = patches.Rectangle((i*100,j*100),100,100,linewidth=1,edgecolor='grey')
+                        ax.add_patch(rect)            
+            for box in sbin.boxes_packed:
+                if box.rotateto:
+                    w = box.length
+                    l = box.width
+                else:
+                    w = box.width
+                    l = box.length
+                rect = patches.Rectangle(((box.centreto[1]-l/2)*100,(box.centreto[0]-w/2)*100),l*100,w*100,linewidth=1,edgecolor='black',facecolor=box.colour)
+                ax.add_patch(rect)
+            plt.show()
+
     
 
         

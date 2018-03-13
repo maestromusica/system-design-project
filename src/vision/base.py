@@ -251,20 +251,24 @@ class Drawer(object):
         frame  = cv2.drawContours(frame,[np.array(corners)],0,self.colors[color],1)
         return frame
     def putText(self,frame,colour,val, angle):
+        if angle == 0.00:
+            ort = 'horizontal'
+        else:
+            ort = 'vertical'
         if colour == 'red':
-            cv2.putText(frame,colour + ' : {}\t\t{:3f}'.format(val,angle),(10,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}    {}'.format(val,ort),(10,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         elif colour == 'yellow':
-            cv2.putText(frame,colour + ' : {}\t\t{:3f}'.format(val,angle),(10,50),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}    {}'.format(val,ort),(10,50),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         elif colour == 'green':
-            cv2.putText(frame,colour + ' : {}\t\t{:3f}'.format(val,angle),(10,80),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}    {}'.format(val,ort),(10,80),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         elif colour == 'purple':
-            cv2.putText(frame,colour + ' : {}\t\t{:3f}'.format(val,angle),(10,110),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}    {}'.format(val,ort),(10,110),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         elif colour == 'blue':
-            cv2.putText(frame,colour + ' : {}\t\t{:3f}'.format(val,angle),(10,140),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}    {}'.format(val,ort),(10,140),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         return frame
 

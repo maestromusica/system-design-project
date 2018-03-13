@@ -11,13 +11,14 @@ class VisionAdaptor:
         self.vision = Vision()
         #self.stackAlg = StackingAlgorithm()
         self.actionQueue = actionQueue
-        self.up = 0
-        self.down = -350
-        #self.actionQueue.put(self.addResetAction('X'))
-        #self.actionQueue.put(self.addResetAction('Y'))
+        self.up = 200
+        self.down = -400
+        self.dropdown = self.down
+        self.actionQueue.put(self.addResetAction('X'))
+        self.actionQueue.put(self.addResetAction('Y'))
         #self.actionQueue.put(self.addResetAction('Z'))
-        #self.actionQueue.put(self.addZAction(350))
-        #self.actionQueue.put(self.addGrabAction())
+        self.actionQueue.put(self.addZAction(self.up))
+        self.actionQueue.put(self.addGrabAction())
 
     def addXAction(self,payload):
         return {
@@ -40,13 +41,13 @@ class VisionAdaptor:
     def addGrabAction(self):
         return {
             "action": topics["EV3_MOVE_GRAB"],
-            "payload": -10
+            "payload": 10
         }
 
     def addReleaseAction(self):
         return {
             "action": topics["EV3_MOVE_RELEASE"],
-            "payload": 50
+            "payload": 55
         }
 
     def addResetAction(self,axis):
@@ -82,7 +83,7 @@ class VisionAdaptor:
         return
 
     def drop(self):
-        self.actionQueue.put(self.addZAction(self.down))
+        self.actionQueue.put(self.addZAction(self.dropdown))
         self.actionQueue.put(self.addReleaseAction())
         self.actionQueue.put(self.addZAction(self.up))
         self.actionQueue.put(self.addGrabAction())
@@ -95,22 +96,28 @@ class VisionAdaptor:
         return
     '''
     
-    def createPickRoutine(self,pickupPoint,endPoint,rotation):
+    def createPickRoutine(self,pickupPoint,endPoint,rotation,endrotation):
         #self.gotoStart()
         print('Heading to package at : {}'.format(pickupPoint))
         if rotation == 90.00:
             self.actionQueue.put(self.addXAction(int(pickupPoint[0])-100))
-            self.actionQueue.put(self.addYAction(int(pickupPoint[1])))
-            self.actionQueue.put(self.addRotateAction(0))
+            self.actionQueue.put(self.addYAction(int(pickupPoint[1])+20))
+            self.actionQueue.put(self.addRotateAction(220))
         else:
             self.actionQueue.put(self.addXAction(int(pickupPoint[0])-100))
-            self.actionQueue.put(self.addYAction(int(pickupPoint[1])))
-            self.actionQueue.put(self.addRotateAction(-220))
+            self.actionQueue.put(self.addYAction(int(pickupPoint[1])+20))
+            self.actionQueue.put(self.addRotateAction(0))
         self.grab()
-        self.actionQueue.put(self.addRotateAction(-220))
+        #self.actionQueue.put(self.addRotateAction(-220))
         print('Package Recovered!')
-        self.actionQueue.put(self.addXAction(int(endPoint[0])))
-        self.actionQueue.put(self.addYAction(int(endPoint[1])))
+        if endrotation == 90.0:
+            self.actionQueue.put(self.addRotateAction(0))
+            self.actionQueue.put(self.addXAction(int(endPoint[0])))
+            self.actionQueue.put(self.addYAction(int(endPoint[1])))
+        else:
+            self.actionQueue.put(self.addRotateAction(220))
+            self.actionQueue.put(self.addXAction(int(pickupPoint[0])))
+            self.actionQueue.put(self.addYAction(int(pickupPoint[1])))
         self.drop()
         print('Package Delivered!')
 
@@ -119,16 +126,22 @@ class VisionAdaptor:
         return self.image
     
     def execute(self):
+        self.dropdown = self.down
         # Sending list of boxes to algorithm for stacking.
-        #bins = StackingAlgorithm(self.boxes,(20,20),'BPOF').pack()
-          
+        bins = StackingAlgorithm(self.boxes,(7,7),'BPOF').pack()
         # Send these bins to Adaptor and transform pick and drop points.
-        layers = self.adaptor.transform(self.boxes)
-        print(layers)
+        layers = self.adaptor.transform(bins)
         for l in layers.keys():
+            if l == 1:
+                self.dropdown = -200
+                self.up = 200
             print("Creating pickup Routine for Layer: {}".format(l))
             for b in layers[l]:
-                self.createPickRoutine(b[0],b[1],b[2])
+                #self.createPickRoutine(b[0],b[1],b[2])
+                #if b[4] == True:
+                #    self.createPickRoutine(b[0],b[1],b[2],0.0)
+                #else:
+                    self.createPickRoutine(b[0],b[1],b[2],90.0)
         return
 
 def main():
