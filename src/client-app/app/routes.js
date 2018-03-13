@@ -15,7 +15,7 @@ const App = () => (
       <Menu />
       <Content>
         <Switch>
-          <Route exact path="/" component={Dashboard} />
+          <Route exact path="/dashboard" component={Dashboard} />
           <Route exact path="/development" component={Development} />
           <Route exact path="/settings" component={Settings} />
           <Route exact path="/simulations" component={Simulations} />

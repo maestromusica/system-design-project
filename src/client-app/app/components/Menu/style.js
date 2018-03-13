@@ -5,7 +5,8 @@ import LogoSvgSnort from './logo-snortx.svg'
 
 export const MenuContainer = styled.div`
   width: 240px;
-  border-right: 4px solid ${colors.grey["300"]};
+  border-right: 1px solid ${colors.grey["300"]};
+  background-color: ${colors.grey["50"]};
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -34,7 +35,7 @@ export const MenuItem = styled(NavLink)`
   }
 
   &.active {
-
+    background-color: ${colors.grey["100"]}
   }
 
   & svg {
