@@ -3,6 +3,7 @@ import {MenuContainer, MenuList, MenuItem} from './style'
 import {NavLink} from 'react-router-dom'
 import {Logo} from '../AppBar/style'
 import {LogoSnort} from './style'
+import Connections from './Connections'
 
 import MdCode from 'react-icons/lib/md/code'
 import MdSettings from 'react-icons/lib/md/settings'
@@ -46,6 +47,7 @@ export default class Menu extends Component {
             Settings
           </MenuItem>
         </MenuList>
+        <Connections />
       </MenuContainer>
     )
   }

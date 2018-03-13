@@ -15,16 +15,13 @@ export const Content = styled.div`
   padding: 16px;
   padding-top: 60px;
   padding-left: 40px;
+  overflow: auto;
 `
 
 export const Main = styled.div`
   display: flex;
   flex-flow: row wrap;
   height: 100%;
-
-  & > * {
-    flex: 1 auto;
-  }
 `
 
 export const Button = styled(AntdButton)`
