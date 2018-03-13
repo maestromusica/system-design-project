@@ -1,4 +1,4 @@
-from Algorithm import Algorithm as a
+from .Algorithm import StackingAlgorithm as a
 import _pickle as pkl
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,12 +23,12 @@ boxes = [{'colour':'red','centroid':(1,1),'rotation':91.5,'width':4.1,'length':5
 {'colour':'yellow','centroid':(4,4),'rotation':12.6,'width':5.8,'length':3.2}, \
 {'colour':'yellow','centroid':(5,5),'rotation':12.6,'width':5.6,'length':5.2}, \
 {'colour':'yellow','centroid':(6,6),'rotation':12.6,'width':4.7,'length':3.1}, \
-{'colour':'pink','centroid':(1,1),'rotation':0,'width':2.5,'length':2.5}, \
-{'colour':'pink','centroid':(2,2),'rotation':0,'width':2.5,'length':3.1}, \
-{'colour':'pink','centroid':(3,3),'rotation':0,'width':1.4,'length':2.8}, \
-{'colour':'pink','centroid':(4,4),'rotation':0,'width':1.9,'length':2.9}, \
-{'colour':'pink','centroid':(5,5),'rotation':0,'width':2.1,'length':3.4}, \
-{'colour':'pink','centroid':(6,6),'rotation':0,'width':2.1,'length':1.9}]
+{'colour':'purple','centroid':(1,1),'rotation':0,'width':2.5,'length':2.5}, \
+{'colour':'purple','centroid':(2,2),'rotation':0,'width':2.5,'length':3.1}, \
+{'colour':'purple','centroid':(3,3),'rotation':0,'width':1.4,'length':2.8}, \
+{'colour':'purple','centroid':(4,4),'rotation':0,'width':1.9,'length':2.9}, \
+{'colour':'purple','centroid':(5,5),'rotation':0,'width':2.1,'length':3.4}, \
+{'colour':'purple','centroid':(6,6),'rotation':0,'width':2.1,'length':1.9}]
 sa = a(boxes,(20,20),'BPRF')
 
 ##some sanity check output for sorting bit
@@ -52,9 +52,9 @@ f.close()
 print(error_mets)
 
 for sbin in sa.packer.bins:
-    im = np.array(Image.open('Container2.png'), dtype=np.uint8)
+    # im = np.array(Image.open('Container2.png'), dtype=np.uint8)
     fig,ax = plt.subplots(1)
-    ax.imshow(im)
+    # ax.imshow(im)
     for box in sbin.boxes_packed:
         if box.rotateto:
             w = box.length
@@ -70,5 +70,3 @@ for sbin in sa.packer.bins:
                 rect = patches.Rectangle((i*100,j*100),100,100,linewidth=1,edgecolor='grey')
                 ax.add_patch(rect)
     plt.show()
-
-

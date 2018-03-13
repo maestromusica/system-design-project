@@ -7,9 +7,9 @@ export const Header = styled.header`
   border-bottom: 4px solid ${colors.grey["300"]}
 `
 export const Logo = styled(LogoSvg)`
-  height: 44px;
+  height: 52px;
   display: block;
-  margin-left: auto;
-  margin-right: auto;
-  padding-top: 10px;
+  margin-top: 40px;
+  padding-left: 20px;
+  margin-bottom: 20px
 `

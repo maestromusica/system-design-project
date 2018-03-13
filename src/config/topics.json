@@ -57,9 +57,13 @@
 
     "APP_RECEIVE_IMG": "action/app/receive/data/video_feed",
     "APP_REQUEST_IMG": "action/app/request/data/video_feed",
+    "APP_REQUEST_BOXES": "action/app/request/data/boxes",
+    "APP_RECEIVE_BOXES": "/action/app/receive/data/sorted_boxes",
 
     "CONTROLLER_SAVE_IP_11": "config/app/save/ip/INF_11",
     "CONTROLLER_SAVE_IP_31": "config/app/save/ip/INF_31",
+
+    "APP_CONNECT_EV3": "action/app/connect/ev3",
 
     "EV3_CONNECTED": "info/ev3/connected",
     "APP_EV3_CONNECTED": "info/app/ev3/connected",

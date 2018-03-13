@@ -18,6 +18,19 @@ controller = Controller()
 controllerClient = mqtt.Client()
 ev3 = EV3Client(controllerClient)
 
+def connectEV3(restart=False):
+    # ev3 = EV3Client(controllerClient)
+    if restart:
+        ev3.restart()
+    ev3.on_connect(onEV3Connect)
+    ev3.on_message(onEV3Message)
+    ev3.connect()
+    ev3.loop_start()
+
+def onAppConnectEV3(client, ev3, msg, controller):
+    print("> App wants to connect the ev3s")
+    connectEV3(True)
+
 subscribedTopics = {
     # controller related
     topics["START_CONTROLLER"]: onStartController,
@@ -48,7 +61,10 @@ subscribedTopics = {
 
     topics["APP_REQUEST"]: onAppRequestData,
     topics["APP_REQUEST_IMG"]: onAppRequestImg,
+    topics["APP_REQUEST_BOXES"]: onAppRequestBoxes,
     topics["EV3_CONNECTED"]: onEV3Connected,
+
+    topics["APP_CONNECT_EV3"]: onAppConnectEV3,
 
     topics["CONTROLLER_SAVE_IP_11"]: onAppSaveEV11IP,
     topics["CONTROLLER_SAVE_IP_31"]: onAppSaveEV31IP,
@@ -96,6 +112,7 @@ ev3SubscribedTopics = {
 }
 
 def onEV3Connect(client, userdata, flags, rc):
+    print("hey there")
     for topic in ev3SubscribedTopics.keys():
         client.subscribe(topic)
     ev3.publish(topics["EV3_CONN"])

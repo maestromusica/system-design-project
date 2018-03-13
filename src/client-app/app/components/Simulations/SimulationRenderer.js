@@ -18,9 +18,9 @@ export default class SimulationRenderer extends Component {
     scene: undefined,
     camera: undefined,
     cameraSize: {
-      x: 20,
-      y: 10,
-      z: 14
+      x: 30,
+      y: 30,
+      z: 30
     },
     boxes: [],
     simulationOngoing: false,
@@ -146,6 +146,12 @@ export default class SimulationRenderer extends Component {
   }
 
   componentDidMount() {
+    let rendererWidth = (window.innerWidth - 280) / 1.5 - 80
+    if(rendererWidth > 700) {
+      rendererWidth = 700
+    }
+    const rendererHeight = rendererWidth / 1.5
+
     let scene = new THREE.Scene();
     let camera = new THREE.PerspectiveCamera( 75, 1.5, 0.1, 1000)
     let controls = new OrbitControls(camera, document.getElementById("graph-sim"))
@@ -154,7 +160,7 @@ export default class SimulationRenderer extends Component {
 
     let renderer = new THREE.WebGLRenderer();
     renderer.setClearColor( 0xf0f0f0 );
-    renderer.setSize( 750, 500 );
+    renderer.setSize( rendererWidth , rendererHeight );
     document.getElementById('graph-sim').appendChild( renderer.domElement );
 
     camera.position.z = 5;

@@ -22,7 +22,7 @@ export const SectionItem = styled.div`
 `
 
 export const SectionTitle = styled.h3`
-  font-family: Calibre;
+  font-family: 'Circular';
   font-weight: 800;
   font-size: 14px;
   padding: 0;

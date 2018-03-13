@@ -64,6 +64,9 @@ class Settings extends Component {
         <Button type="primary" onClick={ev => {
           this.props.actions.restartClient()
         }}>Connect</Button>
+        <Button onClick={ev => {this.props.actions.connectEV3()}}>
+          Connect EV3
+        </Button>
       </Section>
     )
   }

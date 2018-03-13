@@ -39,7 +39,7 @@ const boxes = [
   width: 6,
   height: 3,
   depth: 8,
-  color: "pink"
+  color: "purple"
 }, {
   x: 12,
   y: 4,
@@ -64,7 +64,7 @@ const boxes = [
   width: 9,
   height: 2,
   depth: 3,
-  color: "pink"
+  color: "purple"
 }, {
   x: 10,
   y: 7,
