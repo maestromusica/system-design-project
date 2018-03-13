@@ -3,7 +3,7 @@ import cv2
 import base64
 import numpy
 import os
-from ..utils.box_helper import quantitative1
+from ..vision.System import VisionAdaptor
 
 visionTag = "vision"
 controllerTag = "controller"
@@ -12,8 +12,11 @@ topicsPath = os.path.join(os.path.dirname(__file__), "../config/topics.json")
 topics = json.load(open(topicsPath))
 
 configPath = os.path.join(os.path.dirname(__file__), "../config/config.json")
-
+global va
+va = None
 def onStartController(client, ev3, msg, controller):
+    global va
+    va = VisionAdaptor(controller.actionQueues[visionTag])
     print("> Controller started...")
 
 def onProcess(client, ev3, msg, controller):
@@ -23,8 +26,12 @@ def onProcess(client, ev3, msg, controller):
 
 def onProcessResponse(client, ev3, msg, controller):
     if msg.payload.decode() == "True":
-        visionActionQueue = controller.actionQueues[visionTag]
-        quantitative1(visionActionQueue)
+        #visionActionQueue = controller.actionQueues[visionTag]
+        #quantitative1(visionActionQueue)
+        ## Populate the queue.
+        global va
+        va.execute()
+        print(controller.actionQueues[visionTag])
         print("> Accepted")
     elif msg.payload.decode() == "False":
         print("> Not accepted")
@@ -158,21 +165,21 @@ def onAppRequestData(client, ev3, msg, controller):
         client.publish(topics["APP_REQUEST"], "connection")
 
 def onAppRequestImg(client, ev3, msg, controller):
-    cap = cv2.VideoCapture(0)
-    while True:
-        retval, img = cap.read()
-        if img is not None:
-            img = cv2.flip(img, 1)
-            retval, buffer = cv2.imencode('.jpg', img)
-            jpg = base64.b64encode(buffer)
-            client.publish(topics["APP_RECEIVE_IMG"], jpg)
-            cap.release()
-            break
-    # va = VisionAdaptor(visionActionQueue)
-    # img = va.getFrame()
-    # retval, buffer = cv2.imencode('.jpg', img)
-    # jpg = base64.b64encode(buffer)
-    # client.publish(Topics.APP_RECIEVE_IMG, jpg)
+    #cap = cv2.VideoCapture(0)
+    #while True:
+    #    retval, img = cap.read()
+    #    if img is not None:
+    #        img = cv2.flip(img, 1)
+    #        retval, buffer = cv2.imencode('.jpg', img)
+    #        jpg = base64.b64encode(buffer)
+    #        client.publish(topics["APP_RECEIVE_IMG"], jpg)
+    #        cap.release()
+    #        break
+    global va
+    img = va.getFrame()
+    retval, buffer = cv2.imencode('.jpg', img)
+    jpg = base64.b64encode(buffer)
+    client.publish(topics["APP_RECEIVE_IMG"], jpg)
 
 def onPrintStates(client, ev3, msg, controller):
     print("> These are the current execution threads: ")

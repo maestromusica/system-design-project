@@ -25,13 +25,12 @@ class Box(object):
         self.rotateto = False
         self.centreto = None
         self.packed = False
-        if self.rotation == 90.00:
-            self.length = Boxes[self.colour]['l']
-            self.width = Boxes[self.colour]['w']
-        elif self.rotation == 0.00:
+        if self.rotation == 0.00:
             self.length = Boxes[self.colour]['w']
             self.width = Boxes[self.colour]['l']
-        
+        else:
+            self.length = Boxes[self.colour]['l']
+            self.width = Boxes[self.colour]['w']
         self.height = Boxes[self.colour]['h']
         self.area = self.length*self.width
         self.volume = self.length*self.width*self.height

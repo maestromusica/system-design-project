@@ -35,10 +35,10 @@ class Vision(object):
 
         gp = GlobalParams()
         #get values for parameters
+        self.cap = cv2.VideoCapture(1)
         self.camParams = gp.getCamParams(cam)
         self.workspace = gp.getWorkSpace(wkspc)
         self.maskVals = gp.getMaskVals(maskv)
-        self.cap = cv2.VideoCapture(1)
         self.processor = Gods.ImageProcessor(self.camParams,self.workspace,self.maskVals)
         self.camcal = Gods.CamCalibrator(gp.boardSize)
         self.maskcal = Gods.MaskValueCalibrator()

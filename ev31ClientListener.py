@@ -19,7 +19,7 @@ stop = False
 
 def onResetX(client, uesrdata, msg):
     resetXAxis()
-    client.publish(Topics.EV3_ACTION_COMPLETED)
+    client.publish(topics["EV3_ACTION_COMPLETED"])
 
 def onMoveX(client, userdata, msg):
     global flag
@@ -42,20 +42,32 @@ def onResume(client, userdata, msg):
 
     stop = False
 
+def onRotate(client,userdata, msg):
+    rotate(msg.payload.decode(),300)
+
+def onGrab(client, userdata, msg):
+    grab(msg.payload.decode(),300)
+
+def onRelease(client, userdata, msg):
+    grab(msg.payload.decode(),300)
+
 def onPause(client, userdata, msg):
     pass
 
 def onPrint(client, userdata, msg):
-    client.publish(Topics.CONTROLLER_PRINT, "xax1: {0}".format(xax1.position_sp))
-    client.publish(Topics.CONTROLLER_PRINT, "xax2: {0}".format(xax2.position_sp))
+    client.publish(topics["CONTROLLER_PRINT"], "xax1: {0}".format(xax1.position_sp))
+    client.publish(topics["CONTROLLER_PRINT"], "xax2: {0}".format(xax2.position_sp))
 
 subscribedTopics = {
-    Topics.EV3_MOVE_X: onMoveX,
-    Topics.EV3_STOP: onStop,
-    Topics.EV3_RESUME: onResume,
-    Topics.EV3_PAUSE: onPause,
-    Topics.EV3_RESET_X: onResetX,
-    Topics.EV3_PRINT_POS: onPrint
+    topics["EV3_MOVE_X"]: onMoveX,
+    topics["EV3_STOP"]: onStop,
+    topics["EV3_RESUME"]: onResume,
+    topics["EV3_PAUSE"]: onPause,
+    topics["EV3_RESET_X"]: onResetX,
+    topics["EV3_PRINT_POS"]: onPrint,
+    topics["EV3_ROTATE"] : onRotate,
+    topics["EV3_MOVE_GRAB"] : onGrab,
+    topics["EV3_MOVE_RELEASE"] : onRelease
 }
 
 def onConnect(client, userdata, flags, rc):
@@ -80,6 +92,6 @@ while True:
         if stop:
             stop = False
         else:
-            client.publish(Topics.EV3_ACTION_COMPLETED)
+            client.publish(topics["EV3_ACTION_COMPLETED"])
         flag = 0
     time.sleep(.01)

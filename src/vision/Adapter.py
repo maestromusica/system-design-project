@@ -20,7 +20,7 @@ class Adaptor(object):
     def adaptPoints(self, centroid):
         centroid = np.array([list(centroid)],np.int0)
         y = self.AdapterY.predict(centroid)
-        x = self.AdapterX.predict(centroid) - 100
+        x = self.AdapterX.predict(centroid)
         return (x.flatten()[0],y.flatten()[0])
     
     def adaptBoxes(self,boxes):

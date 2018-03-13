@@ -73,11 +73,11 @@ class boxFinder(object):
                 for box, rect in contours:
                     #corners, centroid = self.cornersDetector.detectCorners(img, m, box)
                     #draw = self.drawer.drawBox(img,corners,centroid,'r')
-                    if(rect[2] < 0 and rect[2] > -2):
+                    angle = rect[2]
+                    if(rect[2] < 2 and rect[2] > -10 or (rect[2] > -90 and rect[2] < -80) ):
                         diff_x = 0
                         diff_y = 0
                         for i,b in enumerate(box):
-                            
                             for c in box[i+1:]:
                                 diff = np.abs(b[0] - c[0])
                                 if diff > diff_x:
@@ -85,16 +85,15 @@ class boxFinder(object):
                                 diff = np.abs(b[1] - c[1])
                                 if diff > diff_y:
                                     diff_y = diff
-                                    
-                                print(diff_x,diff_y)
-                            print(b,c)
                         if diff_x > diff_y:
-                            rect[2] = 0.00
+                            print('horizontal')
+                            angle = 0.00
                         elif diff_y > diff_x:
-                            rect[2] = 90.00
+                            print('vertical')
+                            angle = 90.00
                     draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'b')
-                    boxes.append(self.createDict(rect[0],rect[1],k,rect[2]))
-                    draw = self.drawer.putText(draw,k,len(contours),rect[2])                    
+                    boxes.append(self.createDict(rect[0],rect[1],k,angle))
+                    draw = self.drawer.putText(draw,k,len(contours),angle)                    
                 #self.boxDict.update({k:boxes})
 
         return draw, boxes
