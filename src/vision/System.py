@@ -12,7 +12,7 @@ class VisionAdaptor:
         #self.stackAlg = StackingAlgorithm()
         self.actionQueue = actionQueue
         self.up = 350
-        self.down = 0
+        self.down = 200
         self.actionQueue.put(self.addResetAction('X'))
         self.actionQueue.put(self.addResetAction('Y'))
         #self.actionQueue.put(self.addResetAction('Z'))
@@ -40,7 +40,7 @@ class VisionAdaptor:
     def addGrabAction(self):
         return {
             "action": topics["EV3_MOVE_GRAB"],
-            "payload": 15
+            "payload": 5
         }
 
     def addReleaseAction(self):
@@ -99,12 +99,15 @@ class VisionAdaptor:
         #self.gotoStart()
         print('Heading to package at : {}'.format(pickupPoint))
         if rotation == 90.00:
-            self.actionQueue.put(self.addXAction(int(pickupPoint[0])-100))
-            self.actionQueue.put(self.addYAction(int(pickupPoint[1])+20))
+            self.actionQueue.put(self.addXAction(int(pickupPoint[0])))
+            self.actionQueue.put(self.addYAction(int(pickupPoint[1])))
             self.actionQueue.put(self.addRotateAction(220))
         else:
-            self.actionQueue.put(self.addXAction(int(pickupPoint[0])-100))
-            self.actionQueue.put(self.addYAction(int(pickupPoint[1])+20))
+            if pickupPoint[0] > 1200:
+                self.actionQueue.put(self.addXAction(int(pickupPoint[0])))
+            else:
+                self.actionQueue.put(self.addXAction(int(pickupPoint[0])))
+            self.actionQueue.put(self.addYAction(int(pickupPoint[1])))
             self.actionQueue.put(self.addRotateAction(0))
         self.grab()
         #self.actionQueue.put(self.addRotateAction(-220))

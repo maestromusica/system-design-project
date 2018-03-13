@@ -90,9 +90,9 @@ class BPOF(object):
         for i in range(0,np.int8(con.length-box.length+1-offset)):
             for j in cols:
                 logging.debug("Packing from corner: {},{} with rtl: {}".format(j,i,rtl))
-                if np.all(con.area[i:np.int8(i+box.length)+offset,j:np.int8(j+box.width)+offset]):
+                if np.all(con.area[i:np.int8(i+box.length)+offset+1,j:np.int8(j+box.width)+offset+1]):
                     logging.debug("Packing in area: \n{}".format(con.area[i:np.int8(i+box.length+offset),j:np.int8(j+box.width+offset)]))
-                    con.area[i:np.int8(i+box.length)+offset,j:np.int8(j+box.width)+offset] = False
+                    con.area[i:np.int8(i+box.length)+offset+1,j:np.int8(j+box.width)+offset+1] = False
                     vec = np.float32([box.width/2,box.length/2])
                     logging.debug("Box Vector: {}".format(vec))
                     box.centreto = np.array(([j+offset/2+vec[0],i+offset/2+vec[1]]),dtype=np.float32)# + vec
