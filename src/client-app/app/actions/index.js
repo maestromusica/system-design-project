@@ -119,5 +119,5 @@ export const connectEV3 = () => ({
 
 export const requestBoxes = () => ({
   type: topics.APP_REQUEST_BOXES,
-  topic: topics.APP_REQUEST_BOXES
+  topic: topics.APP_REQUEST_BOXES,
 })

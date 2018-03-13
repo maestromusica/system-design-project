@@ -18,7 +18,7 @@ class BPOF(object):
             self.bins.append(Bin(self.binSize))
             L -= 1
 
-        
+
     def get_xy(self):
         coord_sets = []
         for b in self.bins:
@@ -27,7 +27,7 @@ class BPOF(object):
                 coords.append((box.centrefrom,box.centreto))
             coord_sets.append(coords)
         return coord_sets
-            
+
     def sort(self):
         #PHASE ONE
         n_packed = 0
@@ -43,7 +43,7 @@ class BPOF(object):
                     n_packed += 1
                     i = bns
                 else: i += 1
-        
+
         #PHASE TWO
         logging.debug("PHASE TWO:")
         i = 0
@@ -90,25 +90,25 @@ class BPOF(object):
         for i in range(0,np.int8(con.length-box.length+1-offset)):
             for j in cols:
                 logging.debug("Packing from corner: {},{} with rtl: {}".format(j,i,rtl))
-                if np.all(con.area[i:np.int8(i+box.length)+offset,j:np.int8(j+box.width)+offset]):
+                if np.all(con.area[i:np.int8(i+box.length)+offset+1,j:np.int8(j+box.width)+offset+1]):
                     logging.debug("Packing in area: \n{}".format(con.area[i:np.int8(i+box.length+offset),j:np.int8(j+box.width+offset)]))
-                    con.area[i:np.int8(i+box.length)+offset,j:np.int8(j+box.width)+offset] = False
+                    con.area[i:np.int8(i+box.length)+offset+1,j:np.int8(j+box.width)+offset+1] = False
                     vec = np.float32([box.width/2,box.length/2])
                     logging.debug("Box Vector: {}".format(vec))
-                    box.centreto = np.array(([j+offset/2+vec[0],i+offset/2+vec[1]]),dtype=np.float32)# + vec
+                    box.centreto = np.array(([i+offset/2+vec[1],j+offset/2+vec[0]]),dtype=np.float32)# + vec
                     logging.debug("Centre Point: {}".format(box.centreto))
                     con.boxes_packed.append(box)
                     box.packed = True
                     return box.packed
         return box.packed
 
-            
+
 
     def get_error(self):
         self.error.update({"Bins Used":len(self.bins)})
         self.calculate_waste()
         return self.error
-        
+
     def calculate_waste(self):
         total_area_available = np.float32(0)
         total_area_packed = np.float32(0)
@@ -122,8 +122,8 @@ class BPOF(object):
             tot += np.sum(b.area)
         self.error.update({"Measured Area Wastage": tot})
 
-        
-        
+
+
 class BPRF(object):
     def __init__(self, boxes, binSize):
         self.binSize = binSize
@@ -136,9 +136,9 @@ class BPRF(object):
         while L > 0:
             self.bins.append(Bin(self.binSize))
             L -= 1
-        
-            
-            
+
+
+
     def sort(self):
         for box in self.boxes:
             logging.debug("packing box colour: {}, centre: {}".format(box.colour,box.centrefrom))
@@ -170,7 +170,7 @@ class BPRF(object):
             except IndexError:
                 self.bins.append(Bin(self.binSize))
                 self.pack(packto[0],packto[1],packto[2], box)
-    
+
     def pack(self, bn, cor, rot, box):
         #bn is the bin object, cor is tuple bottom left corner, rot is bool rotated or not, box is the box object
         (cw,cl) = cor
@@ -181,11 +181,11 @@ class BPRF(object):
         else:
             bw = np.int8(box.width+offset)
             bl = np.int8(box.length+offset)
-           
+
         self.bins[bn].area[cw:cw+bw,cl:cl+bl] = False
         box.centreto = (cw+bw/2,cl+bl/2)
         self.bins[bn].boxes_packed.append(box)
-    
+
     #returns a list of coordinates centroid from, to, and whether it needs to be rotated on the way
     def get_xy(self):
         coord_sets = []
@@ -197,7 +197,7 @@ class BPRF(object):
             coord_sets.append(coords)
             logging.debug("box coordinates: {}".format(coord_sets))
         return coord_sets
-    
+
     #score assumes that the boxdims include the offset
     def score(self, corner , w, l, bid):
         logging.debug("Calculating score for bin {}".format(bid))
@@ -253,7 +253,7 @@ class BPRF(object):
         score = np.float32(total/(2*(w+l)))
         logging.debug("score: {}".format(score))
         return score
-                    
+
     def getPositions(self, w, l, bid):
         #list of tuples: positions by bottom left corner
         poslist = []
@@ -272,13 +272,13 @@ class BPRF(object):
                     if not self.binSize[0]-1 < cor[0]+w+offset and not self.binSize[1]-1 < cor[1]+l+offset:
                         if np.all(self.bins[bid].area[cor[0]:cor[0]+w+offset,cor[1]:cor[1]+l+offset]):
                             poslist.append(cor)
-        
+
         else:
             poslist.append((0,0))
         logging.debug("poslist: {}".format(poslist))
         return poslist
-        
-        
+
+
     def compute_L(self):
         total_area = np.float32(0)
         bin_area = np.float32(self.binSize[0]*self.binSize[1])
@@ -288,12 +288,12 @@ class BPRF(object):
         L = np.int8(np.ceil(total_area/bin_area))
         logging.debug("Type check L: {}".format(L.__class__))
         return L
-        
+
     def get_error(self):
         self.error.update({"Bins Used":len(self.bins)})
         self.calculate_waste()
         return self.error
-        
+
     def calculate_waste(self):
         total_area_available = np.float32(0)
         total_area_packed = np.float32(0)
@@ -306,4 +306,3 @@ class BPRF(object):
         for b in self.bins:
             tot += np.sum(b.area)
         self.error.update({"Measured Area Wastage": tot})
-

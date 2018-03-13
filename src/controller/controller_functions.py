@@ -232,8 +232,10 @@ def onAppRequestBoxes(client, ev3, msg, controller):
     # have to adapt the sorted boxes
     # into something parseable by JSON
     sortedBoxes = []
+    lvl = -1
     for bin in sa.packer.bins:
         sortedBin = []
+        lvl += 1
         for box in bin.boxes_packed:
             # we need color, length, width, height, and centreTo
             # invert if we rotate the box
@@ -244,13 +246,13 @@ def onAppRequestBoxes(client, ev3, msg, controller):
                 width = box.length
 
             sBox = {
-                "length": length,
-                "width": width,
+                "height": 2 * 2,
+                "width": width * 2,
+                "depth": length * 2,
                 "color": box.colour,
-                "center": {
-                    "x": box.centreto[0],
-                    "y": box.centreto[1]
-                }
+                "x": box.centreto[0] * 2,
+                "y": lvl * 2 * 2,
+                "z": box.centreto[1] * 2
             }
             sortedBin.append(sBox)
         sortedBoxes.append(sortedBin)

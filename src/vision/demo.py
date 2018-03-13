@@ -52,9 +52,9 @@ f.close()
 print(error_mets)
 
 for sbin in sa.packer.bins:
-    im = np.array(Image.open('Container2.png'), dtype=np.uint8)
+    # im = np.array(Image.open('Container2.png'), dtype=np.uint8)
     fig,ax = plt.subplots(1)
-    ax.imshow(im)
+    # ax.imshow(im)
     for box in sbin.boxes_packed:
         if box.rotateto:
             w = box.length

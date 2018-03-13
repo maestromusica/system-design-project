@@ -18,9 +18,9 @@ export default class SimulationRenderer extends Component {
     scene: undefined,
     camera: undefined,
     cameraSize: {
-      x: 20,
-      y: 10,
-      z: 14
+      x: 30,
+      y: 30,
+      z: 30
     },
     boxes: [],
     simulationOngoing: false,

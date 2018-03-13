@@ -8,13 +8,36 @@ import {Button} from '../../styled/components'
 import * as actions from '../../actions'
 
 class Simulations extends Component {
+  state = {
+    waiting: false,
+    boxes: boxes
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if(
+      this.props.simulation.boxesRequested
+      && !nextProps.simulation.boxesRequested
+      && this.state.waiting
+    ) {
+      // this means we requested boxes and now we received them!
+      this.setState({
+        waiting: false,
+        boxes: nextProps.simulation.boxes
+      })
+      console.log(nextProps.simulation.boxes)
+    }
+  }
+
   render() {
     return (
       <div>
-        <SimulationRenderer boxes={boxes} />
+        <SimulationRenderer boxes={this.state.boxes} />
         <Button onClick={ev => {
           this.props.actions.requestBoxes()
-        }}>Request boxes</Button>
+          this.setState({
+            waiting: true
+          })
+        }} loading={this.state.waiting}>Request boxes</Button>
       </div>
     )
   }
@@ -22,7 +45,8 @@ class Simulations extends Component {
 
 const mapStateToProps = state => ({
   meta: state.meta,
-  thread: state.thread
+  thread: state.thread,
+  simulation: state.simulation
 })
 
 const mapDispatchToProps = dispatch => ({

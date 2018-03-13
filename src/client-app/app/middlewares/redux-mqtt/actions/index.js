@@ -60,3 +60,10 @@ export const saveClient = client => ({
     client: client
   }
 })
+
+export const receivedBoxes = data => ({
+  type: topics.APP_RECEIVE_BOXES,
+  data: {
+    boxes: JSON.parse(data)
+  }
+})

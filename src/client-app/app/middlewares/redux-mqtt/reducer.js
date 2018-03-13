@@ -79,7 +79,31 @@ const meta = (state = metaInitialState, action) => {
   }
 }
 
+const simulationInitialState = {
+  boxesRequested: false,
+  boxes: []
+}
+
+const simulation = (state = simulationInitialState, action) => {
+  switch(action.type) {
+    case topics.APP_REQUEST_BOXES:
+      return {
+        ...state,
+        boxesRequested: true
+      }
+    case topics.APP_RECEIVE_BOXES:
+      return {
+        ...state,
+        boxesRequested: false,
+        boxes: action.data.boxes
+      }
+    default:
+      return state
+  }
+}
+
 export default {
   meta,
-  thread
+  thread,
+  simulation
 }

@@ -9,7 +9,8 @@ import {
   appReceivePending,
   appReceiveWaiting,
   appReceiveActions,
-  saveClient
+  saveClient,
+  receivedBoxes
 } from './actions'
 
 const initClient = (client, dispatch, state) => {
@@ -25,6 +26,7 @@ const initClient = (client, dispatch, state) => {
     client.subscribe(topics.APP_RECEIVE_WAITING)
     client.subscribe(topics.APP_RECEIVE_ACTIONS)
     client.subscribe(topics.APP_RECEIVE_CONNECTION)
+    client.subscribe(topics.APP_RECEIVE_BOXES)
     client.subscribe(topics.CONN_ACK)
 
     client.publish(topics.CONN)
@@ -59,6 +61,9 @@ const initClient = (client, dispatch, state) => {
       case topics.CONN_ACK:
         dispatch(clientConnected())
         client.publish(topics.APP_REQUEST, "all")
+        break
+      case topics.APP_RECEIVE_BOXES:
+        dispatch(receivedBoxes(data))
         break
     }
   })
