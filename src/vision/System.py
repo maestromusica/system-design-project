@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 from Adapter import Adaptor
 from Algorithm import StackingAlgorithm
-from message_types import Topics
+from ..config.index import topics
 from Vision import Vision
 import cv2
 
@@ -19,54 +19,54 @@ class VisionAdaptor:
 
     def addXAction(self,payload):
         return {
-            "action": Topics.EV3_MOVE_X,
+            "action": topics["EV3_MOVE_X"],
             "payload": payload
         }
 
     def addYAction(self,payload):
         return {
-            "action": Topics.EV3_MOVE_Y,
+            "action": topics["EV3_MOVE_Y"],
             "payload": payload
         }
 
     def addZAction(self,payload):
         return {
-            "action": Topics.EV3_MOVE_Z,
+            "action": topics["EV3_MOVE_Z"],
             "payload": payload
         }
 
     def addGrabAction(self):
         return {
-            "action": Topics.EV3_MOVE_GRAB,
+            "action": topics["EV3_MOVE_GRAB"],
             "payload": 0
         }
 
     def addReleaseAction(self):
         return {
-            "action": Topics.EV3_MOVE_RELEASE,
+            "action": topics["EV3_MOVE_RELEASE"],
             "payload": 20
         }
 
     def addResetAction(self,axis):
         if axis == 'X':
             return {
-            "action": Topics.EV3_RESET_X,
+            "action": topics["EV3_RESET_X"],
             "payload": None
             }
         elif axis == 'Y':
             return {
-            "action": Topics.EV3_RESET_Y,
+            "action": topics["EV3_RESET_Y"],
             "payload": None
             }
         elif axis == 'Z':
             return {
-            "action": Topics.EV3_RESET_Z,
+            "action": topics["EV3_RESET_Z"],
             "payload": None
             }
 
     def addRotationAction(self,payload):
         return{
-            "action": Topics.EV3_ROTATE,
+            "action": topics["EV3_ROTATE"],
             "payload": payload
         }
         
