@@ -83,7 +83,7 @@ class BPOF(object):
 
     def pack(self, con, box, rtl):
         logging.debug("Packing Box:: Colour: {}, Centre: {}, Length: {}, Width, {}".format(box.colour,box.centrefrom,box.length,box.width))
-        cols = range(0,np.int8(con.width-box.width+1-offset))
+        cols = list(range(0,np.int8(con.width-box.width+1-offset)))
         logging.debug("Cols Range Before Reverse: {}".format(cols))
         if rtl: cols.reverse()
         logging.debug("Cols Range After Reverse: {}".format(cols))
@@ -95,7 +95,7 @@ class BPOF(object):
                     con.area[i:np.int8(i+box.length)+offset,j:np.int8(j+box.width)+offset] = False
                     vec = np.float32([box.width/2,box.length/2])
                     logging.debug("Box Vector: {}".format(vec))
-                    box.centreto = np.float32([j+offset/2,i+offset/2]) + vec
+                    box.centreto = np.array(([j+offset/2+vec[0],i+offset/2+vec[1]]),dtype=np.float32)# + vec
                     logging.debug("Centre Point: {}".format(box.centreto))
                     con.boxes_packed.append(box)
                     box.packed = True

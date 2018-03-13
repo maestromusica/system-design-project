@@ -67,14 +67,32 @@ class boxFinder(object):
         draw = img.copy()
         boxes = []
         for k, m in masks.items():
+            cv2.imshow('mask-'+k,m)
             contours = self.contourExtractor.segmentation(m)
             if len(contours) > 0:
                 for box, rect in contours:
                     #corners, centroid = self.cornersDetector.detectCorners(img, m, box)
                     #draw = self.drawer.drawBox(img,corners,centroid,'r')
+                    angle = rect[2]
+                    if(rect[2] < 2 and rect[2] > -10 or (rect[2] > -90 and rect[2] < -80) ):
+                        diff_x = 0
+                        diff_y = 0
+                        for i,b in enumerate(box):
+                            for c in box[i+1:]:
+                                diff = np.abs(b[0] - c[0])
+                                if diff > diff_x:
+                                    diff_x = diff
+                                diff = np.abs(b[1] - c[1])
+                                if diff > diff_y:
+                                    diff_y = diff
+                        if diff_x > diff_y:
+                            angle = 0.00
+                        elif diff_y > diff_x:
+                            angle = 90.00
                     draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'b')
-                    boxes.append(self.createDict(rect[0],rect[1],k,rect[2]))
+                    boxes.append(self.createDict(rect[0],rect[1],k,angle))
+                    draw = self.drawer.putText(draw,k,len(contours),angle)                    
                 #self.boxDict.update({k:boxes})
-                draw = self.drawer.putText(draw,k,len(boxes))
+
         return draw, boxes
 

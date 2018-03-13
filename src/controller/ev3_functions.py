@@ -38,7 +38,8 @@ def onEV3ActionCompleted(client, ev3, msg, controller):
         return
     if currentExecThread.pending():
         if not currentExecThread.empty():
-            client.publish(topics["EV3_REQUEST_NEXT"])
+            print("> WTFFFFF")
+            ev3.publish(topics["EV3_REQUEST_NEXT"])
         else:
             print("> No actions left in the execution queue")
     client.publish(topics["APP_REQUEST"], "all")
@@ -67,7 +68,7 @@ def onRequestNextEV3Action(client, ev3, msg, controller):
             nextAction = controller.nextAction()
             ev3.publish(nextAction["action"], nextAction["payload"])
             currentExecThread.state.waiting = True
-            print("> Next action sent to ev3")
+            print("> Next action sent to ev3!!!!!!!!")
         else:
             print("> No actions in execution thread!")
     client.publish(topics["APP_REQUEST"], "all")
@@ -111,7 +112,7 @@ class EV3Client():
         self.client31 = mqtt.Client()
         self.controllerClient = controllerClient
         self.client11Connected = False
-        self.client31Connected = True # testing purposes
+        self.client31Connected = False
         self.connected = False
 
     def connect(self):
@@ -141,31 +142,32 @@ class EV3Client():
             self.connected = False
 
     def publish(self, topic, message=None):
+        print("{0} Snort {1}".format(topic, message))
         if topic == topics["EV3_REQUEST_NEXT"]:
             self.client11.publish(topic, message)
         else:
             self.client11.publish(topic, message)
-            # self.client31.publish(topic, message)
+            self.client31.publish(topic, message)
 
     def subscribe(self, topic):
         self.client11.subscribe(topic)
-        # self.client31.subscribe(topic)
+        self.client31.subscribe(topic)
 
     def loop_start(self):
         self.client11.loop_start()
-        # self.client31.loop_start()
+        self.client31.loop_start()
 
     def on_connect(self, function):
         self.client11.on_connect = function
-        # self.client31.on_connect = function
+        self.client31.on_connect = function
 
     def on_message(self, function):
         self.client11.on_message = function
-        # self.client31.on_message = function
+        self.client31.on_message = function
 
     def deviceConnected(self):
         self.devicesConnected += 1
-        if self.devicesConnected == 1:
+        if self.devicesConnected == 2:
             self.controllerClient.publish(topics["EV3_CONNECTED"])
 
     def setConnected(self, tag):

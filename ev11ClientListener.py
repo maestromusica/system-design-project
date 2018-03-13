@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 import paho.mqtt.client as mqtt
-from message_types import Topics
+from config.index import topics
 from motors11 import *
 from utils.motors import waitFor, waitForStalled
 import time
@@ -13,11 +13,11 @@ stop = False
 
 def onResetY(client, userdata, msg):
     resetYAxis() # reset axis doesn't need stop function
-    client.publish(Topics.EV3_ACTION_COMPLETED)
+    client.publish(topics["EV3_ACTION_COMPLETED"])
 
 def onResetZ(client, userdata, msg):
     resetZAxis()
-    client.publish(Topics.EV3_ACTION_COMPLETED)
+    client.publish(topics["EV3_ACTION_COMPLETED"])
 
 def onMoveY(client, userdata, msg):
     global flag
@@ -35,7 +35,7 @@ def onMoveZ(client, userdata, msg):
 
     moveZ(position, speed)
     flag = 2
-
+'''
 def onGrab(client, userdata, msg):
     global flag
     position = int(msg.payload.decode())
@@ -51,7 +51,7 @@ def onRelease(client, userdata, msg):
 
     moveGrabber(position, speed)
     flag = 3
-
+'''
 def onStop(client, userdata, msg):
     global stop
 
@@ -70,22 +70,22 @@ def onPause(client, userdata, msg):
     pass
 
 def onPrint(client, userdata, msg):
-    client.publish(Topics.CONTROLLER_PRINT, "yax1: {0}".format(yax1.position_sp))
-    client.publish(Topics.CONTROLLER_PRINT, "yax2: {0}".format(yax2.position_sp))
-    client.publish(Topics.CONTROLLER_PRINT, "zax: {0}".format(zax.position_sp))
-    client.publish(Topics.CONTROLLER_PRINT, "grabber: {0}".format(grabber.position_sp))
+    client.publish(topics["CONTROLLER_PRINT"], "yax1: {0}".format(yax1.position_sp))
+    client.publish(topics["CONTROLLER_PRINT"], "yax2: {0}".format(yax2.position_sp))
+    client.publish(topics["CONTROLLER_PRINT"], "zax: {0}".format(zax.position_sp))
+    client.publish(topics["CONTROLLER_PRINT"], "grabber: {0}".format(grabber.position_sp))
 
 subscribedTopics = {
-    Topics.EV3_MOVE_Y: onMoveY,
-    Topics.EV3_MOVE_Z: onMoveZ,
-    Topics.EV3_MOVE_GRAB: onGrab,
-    Topics.EV3_MOVE_RELEASE: onRelease,
-    Topics.EV3_STOP: onStop,
-    Topics.EV3_RESUME: onResume,
-    Topics.EV3_PAUSE: onPause,
-    Topics.EV3_RESET_Y: onResetY,
-    Topics.EV3_RESET_Z: onResetZ,
-    Topics.EV3_PRINT_POS: onPrint
+    topics["EV3_MOVE_Y"]: onMoveY,
+    topics["EV3_MOVE_Z"]: onMoveZ,
+    #topics["EV3_MOVE_GRAB"]: onGrab,
+    #topics["EV3_MOVE_RELEASE"]: onRelease,
+    topics["EV3_STOP"]: onStop,
+    topics["EV3_RESUME"]: onResume,
+    topics["EV3_PAUSE"]: onPause,
+    topics["EV3_RESET_Y"]: onResetY,
+    topics["EV3_RESET_Z"]: onResetZ,
+    topics["EV3_PRINT_POS"]: onPrint
 }
 
 def onConnect(client, userdata, flags, rc):
@@ -110,7 +110,7 @@ while True:
         if stop:
             stop = False
         else:
-            client.publish(Topics.EV3_ACTION_COMPLETED)
+            client.publish(topics["EV3_ACTION_COMPLETED"])
         flag = 0
     elif flag == 2:
         while "running" in zax.state and not stop:
@@ -118,7 +118,7 @@ while True:
         if stop:
             stop = False
         else:
-            client.publish(Topics.EV3_ACTION_COMPLETED)
+            client.publish(topics["EV3_ACTION_COMPLETED"])
         flag = 0
     elif flag == 3:
         while "running" in grabber.state and "stalled" not in grabber.state and not stop:
@@ -126,6 +126,6 @@ while True:
         if stop:
             stop = False
         else:
-            client.publish(Topics.EV3_ACTION_COMPLETED)
+            client.publish(topics["EV3_ACTION_COMPLETED"])
         flag = 0
     time.sleep(.01)

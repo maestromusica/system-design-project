@@ -75,6 +75,7 @@ def onConnect(client, userdata, flags, rc):
     ev3.on_message(onEV3Message)
     ev3.connect()
     ev3.loop_start()
+    onStartController(controllerClient,ev3,"",controller)
 
 def onMessage(client, userdata, msg):
     if msg.topic in subscribedTopics.keys():
