@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My App</title>
+  <link rel="stylesheet" href="../node_modules/antd/dist/antd.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <style>
+  /*reset*/
+  html {
+    width: 100%;
+    height: 100%;
+  }
+  body {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+  }
+  #app {
+    width: 100%;
+    height: 100%;
+  }
+  </style>
+  <script src="./app.js" data-container="#app"></script>
+  <script>
+  if (process.env.BROWSER_SYNC_CLIENT_URL) {
+    const current = document.currentScript;
+    const script = document.createElement('script');
+    script.src = process.env.BROWSER_SYNC_CLIENT_URL;
+    script.async = true;
+    current.parentNode.insertBefore(script, current);
+  }
+  </script>
+</body>
+</html>
