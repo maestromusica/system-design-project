@@ -82,6 +82,9 @@ class BPOF(object):
 
 
     def pack(self, con, box, rtl):
+        '''
+        #STUPID CODE
+
         logging.debug("Packing Box:: Colour: {}, Centre: {}, Length: {}, Width, {}".format(box.colour,box.centrefrom,box.length,box.width))
         cols = list(range(0,np.int8(con.width-box.width+1-offset)))
         logging.debug("Cols Range Before Reverse: {}".format(cols))
@@ -90,16 +93,94 @@ class BPOF(object):
         for i in range(0,np.int8(con.length-box.length+1-offset)):
             for j in cols:
                 logging.debug("Packing from corner: {},{} with rtl: {}".format(j,i,rtl))
-                if np.all(con.area[i:np.int8(i+box.length)+offset+1,j:np.int8(j+box.width)+offset+1]):
+                if np.all(con.area[i:np.int8(i+box.length)+offset + 1,j:np.int8(j+box.width)+offset + 1]):
                     logging.debug("Packing in area: \n{}".format(con.area[i:np.int8(i+box.length+offset),j:np.int8(j+box.width+offset)]))
-                    con.area[i:np.int8(i+box.length)+offset+1,j:np.int8(j+box.width)+offset+1] = False
+                    con.area[i:np.int8(i+box.length)+offset + 1,j:np.int8(j+box.width)+offset + 1] = False
                     vec = np.float32([box.width/2,box.length/2])
                     logging.debug("Box Vector: {}".format(vec))
-                    box.centreto = np.array(([i+offset/2+vec[1],j+offset/2+vec[0]]),dtype=np.float32)# + vec
+                    box.centreto = np.array(([j+offset/2+vec[0],i+offset/2+vec[1]]),dtype=np.float32)# + vec
                     logging.debug("Centre Point: {}".format(box.centreto))
                     con.boxes_packed.append(box)
                     box.packed = True
                     return box.packed
+
+        '''
+
+        '''
+        #TRIVIL
+
+        vec = np.float32([box.width/2,box.length/2])
+
+        boxes_packed = con.boxes_packed
+        l = 0
+
+        for b in boxes_packed:
+            l = l + b.width
+        box.centreto = np.array(([l+vec[0],vec[1]]),dtype=np.float32)
+        con.boxes_packed.append(box)
+        box.packed = True
+        '''
+
+        '''
+        BETTER ALGORITHM
+        for x in con.corners:
+            w = x[0]
+            l = x[1]
+            b_w = box.width
+            b_l = box.length
+            ## inside bin and bot overlap
+            inside = con.inside(box,x)
+            overlap = False
+            c_w = w + b_w/2
+            c_l = l + b_l/2
+            for y in con.boxes_packed :
+                c0 = y.centreto[0]
+                c1 = y.centreto[1]
+                if y.width + b_w > 2*( np.abs( c0 - c_w) + 0.001 ) and y.length + b_l > 2*( np.abs( c1 - c_l) + 0.001 ) :
+                    overlap = True
+                    break
+            if inside and not overlap:
+                box.centreto = np.array(([ c_w ,c_l ]))
+                con.corners.append([w + b_w ,l + b_l] )
+                con.corners.append([w ,l + b_l] )
+                con.corners.append([w + b_w ,l] )
+                con.corners.sort(key=lambda x: x[0] + x[1])
+                con.boxes_packed.append(box)
+                box.packed = True
+                break
+        '''
+
+        offset = 0
+        for w in con.ws:
+            t = False
+            for l in con.ls:
+                x = [w,l]
+                b_w = box.width
+                b_l = box.length
+                ## inside bin and bot overlap
+                inside = con.inside(box,x)
+                overlap = False
+                c_w = w + b_w/2
+                c_l = l + b_l/2
+                for y in con.boxes_packed :
+                    c0 = y.centreto[0]
+                    c1 = y.centreto[1]
+                    if y.width + b_w + offset > 2*( np.abs( c0 - c_w) + 0.001 ) and y.length + b_l + offset > 2*( np.abs( c1 - c_l) + 0.001 ) :
+                        overlap = True
+                        break
+                if inside and not overlap:
+                    print(con.ws)
+                    box.centreto = np.array(([ c_w + offset/2 ,c_l + offset/2 ]))
+                    con.ws.append(w + b_w + offset )
+                    con.ls.append(l + b_l + offset )
+                    con.ws.sort()
+                    con.ls.sort()
+                    con.boxes_packed.append(box)
+                    box.packed = True
+                    t = True
+                    break
+            if t :
+                break
         return box.packed
 
 

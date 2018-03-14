@@ -3,7 +3,7 @@ import cv2
 import base64
 import numpy
 import os
-# from ..vision.System import VisionAdaptor
+from ..vision.System import VisionAdaptor
 from ..vision.Algorithm import StackingAlgorithm
 from ..config.index import boxes
 
@@ -20,7 +20,7 @@ va = None
 
 def onStartController(client, ev3, msg, controller):
     global va
-    # va = VisionAdaptor(controller.actionQueues[visionTag])
+    va = VisionAdaptor(controller.actionQueues[visionTag])
     print("> Controller started...")
 
 def onProcess(client, ev3, msg, controller):
@@ -30,12 +30,13 @@ def onProcess(client, ev3, msg, controller):
 
 def onProcessResponse(client, ev3, msg, controller):
     if msg.payload.decode() == "True":
-        visionActionQueue = controller.actionQueues[visionTag]
-        quantitative1(visionActionQueue)
-        ## Populate the queue.
-        # global va
-        # va.execute()
-        # print(controller.actionQueues[visionTag])
+        # visionActionQueue = controller.actionQueues[visionTag]
+        # quantitative1(visionActionQueue)
+
+        # Populate the queue.
+        global va
+        va.execute()
+        print(controller.actionQueues[visionTag])
         print("> Accepted")
     elif msg.payload.decode() == "False":
         print("> Not accepted")
@@ -169,21 +170,21 @@ def onAppRequestData(client, ev3, msg, controller):
         client.publish(topics["APP_REQUEST"], "connection")
 
 def onAppRequestImg(client, ev3, msg, controller):
-    cap = cv2.VideoCapture(0)
-    while True:
-        retval, img = cap.read()
-        if img is not None:
-            img = cv2.flip(img, 1)
-            retval, buffer = cv2.imencode('.jpg', img)
-            jpg = base64.b64encode(buffer)
-            client.publish(topics["APP_RECEIVE_IMG"], jpg)
-            cap.release()
-            break
-    # global va
-    # img = va.getFrame()
-    # retval, buffer = cv2.imencode('.jpg', img)
-    # jpg = base64.b64encode(buffer)
-    # client.publish(topics["APP_RECEIVE_IMG"], jpg)
+    # cap = cv2.VideoCapture(0)
+    # while True:
+    #     retval, img = cap.read()
+    #     if img is not None:
+    #         img = cv2.flip(img, 1)
+    #         retval, buffer = cv2.imencode('.jpg', img)
+    #         jpg = base64.b64encode(buffer)
+    #         client.publish(topics["APP_RECEIVE_IMG"], jpg)
+    #         cap.release()
+    #         break
+    global va
+    img = va.getFrame()
+    retval, buffer = cv2.imencode('.jpg', img)
+    jpg = base64.b64encode(buffer)
+    client.publish(topics["APP_RECEIVE_IMG"], jpg)
 
 def onPrintStates(client, ev3, msg, controller):
     print("> These are the current execution threads: ")
@@ -228,7 +229,7 @@ def onAppConn(client, ev3, msg, controller):
     client.publish(topics["CONN_ACK"])
 
 def onAppRequestBoxes(client, ev3, msg, controller):
-    sa = StackingAlgorithm(boxes,(20,20),'BPRF')
+    sa = StackingAlgorithm(boxes,(20,20),'BPOF')
     # have to adapt the sorted boxes
     # into something parseable by JSON
     sortedBoxes = []
@@ -241,19 +242,17 @@ def onAppRequestBoxes(client, ev3, msg, controller):
             # invert if we rotate the box
             length = box.length
             width = box.width
-            if box.rotateto:
-                length = box.width
-                width = box.length
 
             sBox = {
-                "height": 2 * 2,
-                "width": width * 2,
-                "depth": length * 2,
+                "height": 4,
+                "width": box.width * 2,
+                "depth": box.length * 2,
                 "color": box.colour,
-                "x": box.centreto[0] * 2,
-                "y": lvl * 2 * 2,
-                "z": box.centreto[1] * 2
+                "x": (box.centreto[0] - (box.width / 2)) * 2,
+                "y": lvl * 4,
+                "z": (box.centreto[1] - (box.length / 2)) * 2
             }
+            print(sBox)
             sortedBin.append(sBox)
         sortedBoxes.append(sortedBin)
     # now send the app the sortedBoxes
