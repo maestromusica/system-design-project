@@ -29,7 +29,7 @@ boxes = [{'colour':'red','centroid':(1,1),'rotation':91.5,'width':4.1,'length':5
 {'colour':'purple','centroid':(4,4),'rotation':0,'width':1.9,'length':2.9}, \
 {'colour':'purple','centroid':(5,5),'rotation':0,'width':2.1,'length':3.4}, \
 {'colour':'purple','centroid':(6,6),'rotation':0,'width':2.1,'length':1.9}]
-sa = a(boxes,(20,20),'BPRF')
+sa = a(boxes,(20,20),'BPOF')
 
 ##some sanity check output for sorting bit
 print(":: Boxes ::")
@@ -52,9 +52,9 @@ f.close()
 print(error_mets)
 
 for sbin in sa.packer.bins:
-    # im = np.array(Image.open('Container2.png'), dtype=np.uint8)
+    im = np.array(Image.open('/Users/ali404/Projects/system-design-project/src/vision/Container2.png'), dtype=np.uint8)
     fig,ax = plt.subplots(1)
-    # ax.imshow(im)
+    ax.imshow(im)
     for box in sbin.boxes_packed:
         if box.rotateto:
             w = box.length

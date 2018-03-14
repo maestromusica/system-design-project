@@ -30,9 +30,10 @@ def onProcess(client, ev3, msg, controller):
 
 def onProcessResponse(client, ev3, msg, controller):
     if msg.payload.decode() == "True":
-        #visionActionQueue = controller.actionQueues[visionTag]
-        #quantitative1(visionActionQueue)
-        ## Populate the queue.
+        # visionActionQueue = controller.actionQueues[visionTag]
+        # quantitative1(visionActionQueue)
+
+        # Populate the queue.
         global va
         va.execute()
         print(controller.actionQueues[visionTag])
@@ -230,7 +231,7 @@ def onAppConn(client, ev3, msg, controller):
     client.publish(topics["CONN_ACK"])
 
 def onAppRequestBoxes(client, ev3, msg, controller):
-    sa = StackingAlgorithm(boxes,(20,20),'BPRF')
+    sa = StackingAlgorithm(boxes,(20,20),'BPOF')
     # have to adapt the sorted boxes
     # into something parseable by JSON
     sortedBoxes = []
@@ -243,19 +244,17 @@ def onAppRequestBoxes(client, ev3, msg, controller):
             # invert if we rotate the box
             length = box.length
             width = box.width
-            if box.rotateto:
-                length = box.width
-                width = box.length
 
             sBox = {
-                "height": 2 * 2,
-                "width": width * 2,
-                "depth": length * 2,
+                "height": 4,
+                "width": box.width * 2,
+                "depth": box.length * 2,
                 "color": box.colour,
-                "x": box.centreto[0] * 2,
-                "y": lvl * 2 * 2,
-                "z": box.centreto[1] * 2
+                "x": (box.centreto[0] - (box.width / 2)) * 2,
+                "y": lvl * 4,
+                "z": (box.centreto[1] - (box.length / 2)) * 2
             }
+            print(sBox)
             sortedBin.append(sBox)
         sortedBoxes.append(sortedBin)
     # now send the app the sortedBoxes

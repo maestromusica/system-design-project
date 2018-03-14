@@ -91,7 +91,7 @@ export default class AxisSection extends Component {
               this._sendMoveY()
             }
           }}/>
-          <SectionOptionButton onClick={ev => this._setMoveY()} disabled={disabledY}>
+          <SectionOptionButton onClick={ev => this._sendMoveY()} disabled={disabledY}>
             Send Command
           </SectionOptionButton>
         </SectionOption>
@@ -156,7 +156,7 @@ export default class AxisSection extends Component {
               }
             }}
           />
-          <SectionOptionButton 
+          <SectionOptionButton
             onClick={ev => this._sendMoveRotate()}
             disabled={disabledRotate}
           >
