@@ -5,11 +5,11 @@ from ..config.index import topics
 from Vision import Vision
 import cv2
 
-grabVals = {'red':{'grab':-140,'pickrelease':-100,'droprelease':-110},\
-            'yellow':{'grab':-140,'pickrelease':-110,'droprelease':-120},\
-            'blue':{'grab':-140,'pickrelease':-110,'droprelease':-110},\
-            'green':{'grab':-120,'pickrelease':-90,'droprelease':-110},\
-            'purple':{'grab':-140,'pickrelease':-110,'droprelease':-120}\
+grabVals = {'red':{'grab':0,'pickrelease':45,'droprelease':35},\
+            'yellow':{'grab':0,'pickrelease':35,'droprelease':25},\
+            'blue':{'grab':0,'pickrelease':35,'droprelease':35},\
+            'green':{'grab':25,'pickrelease':55,'droprelease':35},\
+            'purple':{'grab':0,'pickrelease':45,'droprelease':25}\
             }
 
 class VisionAdaptor:
@@ -18,13 +18,13 @@ class VisionAdaptor:
         self.vision = Vision()
         #self.stackAlg = StackingAlgorithm()
         self.actionQueue = actionQueue
-        self.up = 350
-        self.down = 120
+        self.up = 80
+        self.down = -195
         self.actionQueue.put(self.addResetAction('X'))
         self.actionQueue.put(self.addResetAction('Y'))
         #self.actionQueue.put(self.addResetAction('Z'))
         self.actionQueue.put(self.addZAction(self.up))
-        self.actionQueue.put(self.addGrabAction(-140))
+        self.actionQueue.put(self.addGrabAction(0))
 
     def addXAction(self,payload):
         return {
@@ -92,7 +92,7 @@ class VisionAdaptor:
         self.actionQueue.put(self.addZAction(self.down))
         self.actionQueue.put(self.addReleaseAction(grabVals[colour]['droprelease']))
         self.actionQueue.put(self.addZAction(self.up))
-        self.actionQueue.put(self.addGrabAction(-140))
+        self.actionQueue.put(self.addGrabAction(0))
         return
     '''
     def gotoStart(self):
@@ -104,26 +104,27 @@ class VisionAdaptor:
     
     def createPickRoutine(self,box):
         #self.gotoStart()
+        self.actionQueue.put(self.addZAction(self.up))
         print('Heading to package at : {}'.format(box.centrefrom))
         if box.rotation == 90.00:
-            self.actionQueue.put(self.addXAction(int(box.centrefrom[0])-50))
-            self.actionQueue.put(self.addYAction(int(box.centrefrom[1])))
-            self.actionQueue.put(self.addRotateAction(220))
-        else:
-            self.actionQueue.put(self.addXAction(int(box.centrefrom[0])-50))
+            self.actionQueue.put(self.addXAction(int(box.centrefrom[0])-75))
             self.actionQueue.put(self.addYAction(int(box.centrefrom[1])))
             self.actionQueue.put(self.addRotateAction(0))
+        else:
+            self.actionQueue.put(self.addXAction(int(box.centrefrom[0])-75))
+            self.actionQueue.put(self.addYAction(int(box.centrefrom[1])))
+            self.actionQueue.put(self.addRotateAction(-220))
         self.grab(box.colour)
         #self.actionQueue.put(self.addRotateAction(-220))
         #print('Package Recovered!')
         if True:
             self.actionQueue.put(self.addRotateAction(0))
-            self.actionQueue.put(self.addXAction(int(box.centreto[0])))
-            self.actionQueue.put(self.addYAction(int(box.centreto[1])))
+            self.actionQueue.put(self.addXAction(int(box.centreto[1])))
+            self.actionQueue.put(self.addYAction(int(box.centreto[0])))
         else:
-            self.actionQueue.put(self.addRotateAction(220))
-            self.actionQueue.put(self.addXAction(int(box.centreto[0])))
-            self.actionQueue.put(self.addYAction(int(box.centreto[1])))
+            self.actionQueue.put(self.addRotateAction(0))
+            self.actionQueue.put(self.addXAction(int(box.centreto[1])))
+            self.actionQueue.put(self.addYAction(int(box.centreto[0])))
         self.drop(box.colour)
         print('Package Delivered!')
 
@@ -134,9 +135,9 @@ class VisionAdaptor:
     def execute(self):
         # Sending list of boxes to algorithm for stacking.
         bins = StackingAlgorithm(self.boxes,(10,7),'BPOF').pack()
-        
+        x = bins.copy()
         # Send these bins to Adaptor and transform pick and drop points.
-        layers = self.adaptor.transform(bins)
+        layers = self.adaptor.transform(x)
         for l in layers.keys():
             print("Creating pickup Routine for Layer: {}".format(l))
             for b in layers[l]:
@@ -145,6 +146,8 @@ class VisionAdaptor:
                 #    self.createPickRoutine(b[0],b[1],b[2],0.0)
                 #else:
                     self.createPickRoutine(b)
+                    b.centreto=b.centreto/100
+        
         return bins
 
 def main():

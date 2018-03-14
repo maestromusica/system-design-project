@@ -37,6 +37,7 @@ def onProcessResponse(client, ev3, msg, controller):
         global va
         bins = va.execute()
         sortedBoxes = adaptPackingBoxes(bins)
+        client.publish(topics["APP_RECEIVE_VISION_BOXES"], json.dumps(sortedBoxes))          
         print(controller.actionQueues[visionTag])
         print("> Accepted")
     elif msg.payload.decode() == "False":
@@ -237,7 +238,7 @@ def onAppRequestBoxes(client, ev3, msg, controller):
     # into something parseable by JSON
     # now send the app the sortedBoxes
     sortedBoxes = adaptPackingBoxes(sa.packer.bins)
-    client.publish(topics["APP_RECEIVE_BOXES"], json.dumps(sortedBoxes))
+    client.publish(topics["APP_RECEIVE_BOXES"], json.dumps(sortedBoxes))  
 
 def adaptPackingBoxes(bins):
     sortedBoxes = []
