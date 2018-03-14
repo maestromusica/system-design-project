@@ -6,7 +6,7 @@ import _pickle as pickle
 global corners, modes, mode
 corners = []
 modes = ['TopLeft','TopRight','BottomLeft','BottomRight']
-show = ['(780,0)','(0,0)','(780,1700)','(0,1700)']
+show = ['(680,0)','(0,0)','(780,1700)','(0,1700)']
 mode = 0
 
 def returnCoordinate(event,x,y,flags,param):
@@ -34,7 +34,7 @@ def returnCoordinate(event,x,y,flags,param):
             
 def main():
     global modes, mode
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     print(cap.isOpened())
     _ , frame = cap.read()
     cv2.imshow('frame',frame)

@@ -17,7 +17,7 @@ def printPoint(events,x,y,flags,params):
         del YPoints[-1]
 
 if __name__=='__main__':
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     ret , frame = cap.read()
     cv2.imshow('frame',cv2.flip(frame,1))
     cv2.setMouseCallback('frame',printPoint)

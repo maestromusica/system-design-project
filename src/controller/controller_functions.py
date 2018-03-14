@@ -3,7 +3,7 @@ import cv2
 import base64
 import numpy
 import os
-# from ..vision.System import VisionAdaptor
+from ..vision.System import VisionAdaptor
 from ..vision.Algorithm import StackingAlgorithm
 from ..config.index import boxes
 
@@ -20,7 +20,7 @@ va = None
 
 def onStartController(client, ev3, msg, controller):
     global va
-    # va = VisionAdaptor(controller.actionQueues[visionTag])
+    va = VisionAdaptor(controller.actionQueues[visionTag])
     print("> Controller started...")
 
 def onProcess(client, ev3, msg, controller):
@@ -30,12 +30,12 @@ def onProcess(client, ev3, msg, controller):
 
 def onProcessResponse(client, ev3, msg, controller):
     if msg.payload.decode() == "True":
-        visionActionQueue = controller.actionQueues[visionTag]
-        quantitative1(visionActionQueue)
+        #visionActionQueue = controller.actionQueues[visionTag]
+        #quantitative1(visionActionQueue)
         ## Populate the queue.
-        # global va
-        # va.execute()
-        # print(controller.actionQueues[visionTag])
+        global va
+        va.execute()
+        print(controller.actionQueues[visionTag])
         print("> Accepted")
     elif msg.payload.decode() == "False":
         print("> Not accepted")
@@ -169,6 +169,7 @@ def onAppRequestData(client, ev3, msg, controller):
         client.publish(topics["APP_REQUEST"], "connection")
 
 def onAppRequestImg(client, ev3, msg, controller):
+    '''
     cap = cv2.VideoCapture(0)
     while True:
         retval, img = cap.read()
@@ -179,11 +180,12 @@ def onAppRequestImg(client, ev3, msg, controller):
             client.publish(topics["APP_RECEIVE_IMG"], jpg)
             cap.release()
             break
-    # global va
-    # img = va.getFrame()
-    # retval, buffer = cv2.imencode('.jpg', img)
-    # jpg = base64.b64encode(buffer)
-    # client.publish(topics["APP_RECEIVE_IMG"], jpg)
+    '''
+    global va
+    img = va.getFrame()
+    retval, buffer = cv2.imencode('.jpg', img)
+    jpg = base64.b64encode(buffer)
+    client.publish(topics["APP_RECEIVE_IMG"], jpg)
 
 def onPrintStates(client, ev3, msg, controller):
     print("> These are the current execution threads: ")

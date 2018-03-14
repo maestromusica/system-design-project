@@ -85,14 +85,14 @@ def onConnect(client, userdata, flags, rc):
 
     for key in subscribedTopics.keys():
         client.subscribe(key)
-    client.publish(topics["APP_REQUEST"], "all")
 
     ev3.on_connect(onEV3Connect)
     ev3.on_message(onEV3Message)
     ev3.connect()
     ev3.loop_start()
     onStartController(controllerClient,ev3,"",controller)
-
+    client.publish(topics["APP_REQUEST"], "all")
+    
 def onMessage(client, userdata, msg):
     if msg.topic in subscribedTopics.keys():
         subscribedTopics[msg.topic](controllerClient, ev3, msg, controller)
@@ -113,6 +113,7 @@ ev3SubscribedTopics = {
 
 def onEV3Connect(client, userdata, flags, rc):
     print("hey there")
+    controllerClient.publish(topics["APP_REQUEST"], "all")
     for topic in ev3SubscribedTopics.keys():
         client.subscribe(topic)
     ev3.publish(topics["EV3_CONN"])

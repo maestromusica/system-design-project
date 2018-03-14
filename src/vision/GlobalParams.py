@@ -26,9 +26,10 @@ class GlobalParams(object):
         if k == 'BottomLeft':
             return [0,800]
         if k == 'TopRight':
-            return [325,0]
+            return [340,0]
+
         if k == 'BottomRight':
-            return [325,800]
+            return [340,800]
 
     def getMaskVals(self,filename):
         if filename is None:
