@@ -35,7 +35,8 @@ def onProcessResponse(client, ev3, msg, controller):
 
         # Populate the queue.
         global va
-        va.execute()
+        bins = va.execute()
+        sortedBoxes = adaptPackingBoxes(bins)
         print(controller.actionQueues[visionTag])
         print("> Accepted")
     elif msg.payload.decode() == "False":
@@ -234,9 +235,14 @@ def onAppRequestBoxes(client, ev3, msg, controller):
     sa = StackingAlgorithm(boxes,(20,20),'BPOF')
     # have to adapt the sorted boxes
     # into something parseable by JSON
+    # now send the app the sortedBoxes
+    sortedBoxes = adaptPackingBoxes(sa.packer.bins)
+    client.publish(topics["APP_RECEIVE_BOXES"], json.dumps(sortedBoxes))
+
+def adaptPackingBoxes(bins):
     sortedBoxes = []
     lvl = -1
-    for bin in sa.packer.bins:
+    for bin in bins:
         sortedBin = []
         lvl += 1
         for box in bin.boxes_packed:
@@ -257,5 +263,5 @@ def onAppRequestBoxes(client, ev3, msg, controller):
             print(sBox)
             sortedBin.append(sBox)
         sortedBoxes.append(sortedBin)
-    # now send the app the sortedBoxes
-    client.publish(topics["APP_RECEIVE_BOXES"], json.dumps(sortedBoxes))
+    return sortedBoxes
+    
