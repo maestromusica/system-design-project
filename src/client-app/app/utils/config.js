@@ -60,6 +60,7 @@ export const topics = {
     "APP_REQUEST_IMG": "action/app/request/data/video_feed",
     "APP_REQUEST_BOXES": "action/app/request/data/boxes",
     "APP_RECEIVE_BOXES": "/action/app/receive/data/sorted_boxes",
+    "APP_RECEIVE_VISION_BOXES": "/action/app/receive/data/vision_boxes",
 
     "CONTROLLER_SAVE_IP_11": "config/app/save/ip/INF_11",
     "CONTROLLER_SAVE_IP_31": "config/app/save/ip/INF_31",

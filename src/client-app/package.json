@@ -1,6 +1,6 @@
 {
   "name": "sortX",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Sortx client app",
   "main": "init.js",
   "author": {

@@ -6,6 +6,7 @@ import os
 from ..vision.System import VisionAdaptor
 from ..vision.Algorithm import StackingAlgorithm
 from ..config.index import boxes
+from random import randrange
 
 visionTag = "vision"
 controllerTag = "controller"
@@ -26,17 +27,25 @@ def onStartController(client, ev3, msg, controller):
 def onProcess(client, ev3, msg, controller):
     print("> On process called")
     controller.changeExecutionQueue(visionTag)
+    client.publish(topics["CONTROLLER_DELETE"], "all")
     client.publish(topics["APP_REQUEST_IMG"])
 
 def onProcessResponse(client, ev3, msg, controller):
     if msg.payload.decode() == "True":
-        # visionActionQueue = controller.actionQueues[visionTag]
-        # quantitative1(visionActionQueue)
+        #visionActionQueue = controller.actionQueues[visionTag]
+        #quantitative1(visionActionQueue)
 
         # Populate the queue.
         global va
         bins = va.execute()
         sortedBoxes = adaptPackingBoxes(bins)
+        # sa = StackingAlgorithm(boxes,(20,20),'BPOF')
+        # sortedBoxes = adaptPackingBoxes(sa.packer.bins)
+
+        client.publish(
+            topics["APP_RECEIVE_VISION_BOXES"],
+            json.dumps(sortedBoxes)
+        )
         print(controller.actionQueues[visionTag])
         print("> Accepted")
     elif msg.payload.decode() == "False":
@@ -171,18 +180,16 @@ def onAppRequestData(client, ev3, msg, controller):
         client.publish(topics["APP_REQUEST"], "connection")
 
 def onAppRequestImg(client, ev3, msg, controller):
-    '''
-    cap = cv2.VideoCapture(0)
-    while True:
-        retval, img = cap.read()
-        if img is not None:
-            img = cv2.flip(img, 1)
-            retval, buffer = cv2.imencode('.jpg', img)
-            jpg = base64.b64encode(buffer)
-            client.publish(topics["APP_RECEIVE_IMG"], jpg)
-            cap.release()
-            break
-    '''
+    # cap = cv2.VideoCapture(0)
+    # while True:
+    #     retval, img = cap.read()
+    #     if img is not None:
+    #         img = cv2.flip(img, 1)
+    #         retval, buffer = cv2.imencode('.jpg', img)
+    #         jpg = base64.b64encode(buffer)
+    #         client.publish(topics["APP_RECEIVE_IMG"], jpg)
+    #         cap.release()
+    #         break
     global va
     img = va.getFrame()
     retval, buffer = cv2.imencode('.jpg', img)
@@ -232,6 +239,7 @@ def onAppConn(client, ev3, msg, controller):
     client.publish(topics["CONN_ACK"])
 
 def onAppRequestBoxes(client, ev3, msg, controller):
+    boxes = generateRandBoxes()
     sa = StackingAlgorithm(boxes,(20,20),'BPOF')
     # have to adapt the sorted boxes
     # into something parseable by JSON
@@ -264,4 +272,19 @@ def adaptPackingBoxes(bins):
             sortedBin.append(sBox)
         sortedBoxes.append(sortedBin)
     return sortedBoxes
-    
+
+def generateRandBoxes():
+    numOfBoxes = randrange(20, 100)
+    numOfBoxesForColor = numOfBoxes / 5
+    boxes = []
+    colours = ['red', 'blue', 'green', 'yellow', 'purple']
+    for iteration in range(5):
+        for i in range(int(numOfBoxesForColor)):
+            boxes.append({
+                "colour": colours[iteration],
+                "centroid": (i+1, i+1),
+                "rotation": 0,
+                "width": randrange(1, 10),
+                "length": randrange(1, 10)
+            })
+    return boxes

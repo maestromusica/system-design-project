@@ -18,9 +18,9 @@ export default class SimulationRenderer extends Component {
     scene: undefined,
     camera: undefined,
     cameraSize: {
-      x: 30,
-      y: 30,
-      z: 30
+      x: 40,
+      y: 20,
+      z: 40
     },
     boxes: [],
     simulationOngoing: false,
@@ -239,7 +239,7 @@ export default class SimulationRenderer extends Component {
 
     return (
       <Section>
-        <SectionTitle>Simulations</SectionTitle>
+        <SectionTitle>Simulation</SectionTitle>
         <SectionItem id="graph-sim"></SectionItem>
         <Button onClick={ev => {
           this._cleanRenderer(() => {
@@ -251,7 +251,7 @@ export default class SimulationRenderer extends Component {
             this._addBoxesToRenderer()
           })
         }} disabled={this.state.simulationOngoing}>
-          Start mocked simulation
+          Start simulation
         </Button>
         {this.state.simulationFinished ? (
           <RadioGroup value={this.state.level}>

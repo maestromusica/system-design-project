@@ -37,3 +37,12 @@ export const RadioAligned = styled(AntdRadio)`
   display: block;
   margin-bottom: 8px;
 `
+
+export const FloatingButtons = styled.div`
+  float: left;
+  margin-left: 16px;
+
+  & button {
+    display: block;
+  }
+`
