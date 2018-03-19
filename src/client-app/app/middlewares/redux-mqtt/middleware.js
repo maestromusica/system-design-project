@@ -12,7 +12,8 @@ import {
   saveClient,
   receivedBoxes,
   receiveVisionBoxes,
-  appReceiveImg
+  appReceiveImg,
+  boxSortCompleted
 } from './actions'
 
 const initClient = (client, dispatch, state) => {
@@ -31,6 +32,7 @@ const initClient = (client, dispatch, state) => {
     client.subscribe(topics.APP_RECEIVE_BOXES)
     client.subscribe(topics.APP_RECEIVE_IMG)
     client.subscribe(topics.APP_RECEIVE_VISION_BOXES)
+    client.subscribe(topics.BOX_SORT_COMPLETED)
     client.subscribe(topics.CONN_ACK)
 
     client.publish(topics.CONN)
@@ -74,6 +76,9 @@ const initClient = (client, dispatch, state) => {
         break
       case topics.APP_RECEIVE_VISION_BOXES:
         dispatch(receiveVisionBoxes(data))
+        break
+      case topics.BOX_SORT_COMPLETED:
+        dispatch(boxSortCompleted())
         break
     }
   })

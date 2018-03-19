@@ -82,3 +82,7 @@ export const appReceiveImg = data => ({
     waiting: false
   }
 })
+
+export const boxSortCompleted = () => ({
+  type: topics.BOX_SORT_COMPLETED
+})

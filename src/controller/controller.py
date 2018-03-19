@@ -68,7 +68,11 @@ subscribedTopics = {
 
     topics["CONTROLLER_SAVE_IP_11"]: onAppSaveEV11IP,
     topics["CONTROLLER_SAVE_IP_31"]: onAppSaveEV31IP,
-    topics["CONN"]: onAppConn
+    topics["CONN"]: onAppConn,
+
+    topics["RESUME_SORTING"]: onResumeSorting,
+    topics["PAUSE_SORTING"]: onPauseSorting,
+    topics["END_SORTING"]: onEndSorting
 }
 
 def onConnect(client, userdata, flags, rc):
@@ -92,7 +96,7 @@ def onConnect(client, userdata, flags, rc):
     ev3.loop_start()
     onStartController(controllerClient,ev3,"",controller)
     client.publish(topics["APP_REQUEST"], "all")
-    
+
 def onMessage(client, userdata, msg):
     if msg.topic in subscribedTopics.keys():
         subscribedTopics[msg.topic](controllerClient, ev3, msg, controller)

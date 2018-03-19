@@ -84,7 +84,25 @@ class Dashboard extends Component {
           thread={this.props.thread}
           actions={this.props.actions}
         />
-        {state.processingDone && state.sorting ? (
+        {this.props.vision.processing && !this.props.vision.waiting ? (
+          <Section>
+            <img
+              src={"data:image/jpeg;base64," + state.img}
+              style={{float: 'left'}}
+            />
+            <FloatingButtons>
+              <Button onClick={ev => {
+                actions.processResponse("True")
+              }} type="primary">Accept Capture</Button>
+              <Button onClick={ev => {
+                actions.processResponse("False")
+              }} type="danger">Reject Capture</Button>
+            </FloatingButtons>
+          </Section>
+            ) : (
+          null
+        )}
+        {this.props.vision.processingDone && this.props.vision.sorting ? (
           <SimulationRenderer boxes={state.boxes} />
         ) : (
           null

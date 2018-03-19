@@ -24,7 +24,7 @@ const Controls = ({vision, thread, actions}) => {
 
   const endSorting = (
     <Button onClick={ev => {
-
+      actions.endSorting()
     }} type="danger">
       End current sorting
     </Button>
@@ -32,7 +32,7 @@ const Controls = ({vision, thread, actions}) => {
 
   const startSortingBtn = (
     <Button onClick={ev => {
-
+      actions.resumeSorting()
     }}>
       Start
     </Button>
@@ -40,7 +40,7 @@ const Controls = ({vision, thread, actions}) => {
 
   const pauseSortingBtn = (
     <Button onClick={ev => {
-
+      actions.pauseSorting()
     }}>
       Pause
     </Button>
@@ -50,6 +50,9 @@ const Controls = ({vision, thread, actions}) => {
     <Section>
       {vision.sorting ? (
         <div>
+          {thread.name == "vision" && !thread.locked ? (
+            <Button loading disabled type="primary">Sorting</Button>
+          ) : (null)}
           {thread.name == "vision" && !thread.locked
             ? pauseSortingBtn
             : startSortingBtn
@@ -58,11 +61,10 @@ const Controls = ({vision, thread, actions}) => {
         </div>
       ) : (
         <div>
-          {!vision.processing || vision.waiting ? (
-            {startCapturingBtn}
-          ) : (
-            null
-          )}
+          {!vision.processing || vision.waiting
+            ? startCapturingBtn
+            : null
+          }
         </div>
       )}
     </Section>

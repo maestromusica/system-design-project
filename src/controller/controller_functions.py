@@ -288,3 +288,20 @@ def generateRandBoxes():
                 "length": randrange(1, 10)
             })
     return boxes
+
+def onResumeSorting(client, ev3, msg, controller):
+    controller.changeExecutionQueue(visionTag)
+    currentExecThread = controller.currentExecutionThread()
+    currentExecThread.state.pending = True
+    currentExecThread.state.locked = False
+    client.publish(topics["RESUME_CONTROLLER"])
+
+def onPauseSorting(client, ev3, msg, controller):
+    controller.changeExecutionQueue(visionTag)
+    client.publish(topics["STOP_CONTROLLER"])
+
+def onEndSorting(client, ev3, msg, controller):
+    controller.changeExecutionQueue(visionTag)
+    currentExecThread = controller.currentExecutionThread()
+    currentExecThread.state.locked = True
+    client.publish(topics["CONTROLLER_DELETE"], "all")

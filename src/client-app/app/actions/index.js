@@ -137,3 +137,18 @@ export const requestImg = () => ({
   type: topics.APP_REQUEST_IMG,
   topic: topics.APP_REQUEST_IMG
 })
+
+export const resumeSorting = () => ({
+  type: topics.RESUME_SORTING,
+  topic: topics.RESUME_SORTING
+})
+
+export const pauseSorting = () => ({
+  type: topics.PAUSE_SORTING,
+  topic: topics.PAUSE_SORTING
+})
+
+export const endSorting = () => ({
+  type: topics.END_SORTING,
+  topic: topics.END_SORTING
+})

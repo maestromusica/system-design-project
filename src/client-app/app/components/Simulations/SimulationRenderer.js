@@ -1,7 +1,9 @@
 import React, {Component} from 'react'
 import * as THREE from 'three'
 const OrbitControls = require('three-orbit-controls')(THREE)
+const uuidv4 = require('uuid/v4')
 import {adaptCoordinates, createMeshMaterial} from '../../utils/simulation'
+
 import {
   Button,
   RadioGroup,
@@ -25,7 +27,8 @@ export default class SimulationRenderer extends Component {
     boxes: [],
     simulationOngoing: false,
     simulationFinished: false,
-    level: -1
+    level: -1,
+    id: uuidv4()
   }
 
   _resetLevel(level) {
@@ -154,14 +157,14 @@ export default class SimulationRenderer extends Component {
 
     let scene = new THREE.Scene();
     let camera = new THREE.PerspectiveCamera( 75, 1.5, 0.1, 1000)
-    let controls = new OrbitControls(camera, document.getElementById("graph-sim"))
+    let controls = new OrbitControls(camera, document.getElementById(this.state.id))
     camera.position.set(0, 20, 10)
     controls.update()
 
     let renderer = new THREE.WebGLRenderer();
     renderer.setClearColor( 0xf0f0f0 );
     renderer.setSize( rendererWidth , rendererHeight );
-    document.getElementById('graph-sim').appendChild( renderer.domElement );
+    document.getElementById(this.state.id).appendChild( renderer.domElement );
 
     camera.position.z = 5;
     renderer.render(scene, camera);
@@ -200,7 +203,7 @@ export default class SimulationRenderer extends Component {
 
   componentWillUnmount() {
     window.clearInterval(this.state.intervalID)
-    let el = document.getElementById("graph-sim")
+    let el = document.getElementById(this.state.id)
     el.outerHTML = ""
   }
 
@@ -240,7 +243,7 @@ export default class SimulationRenderer extends Component {
     return (
       <Section>
         <SectionTitle>Simulation</SectionTitle>
-        <SectionItem id="graph-sim"></SectionItem>
+        <SectionItem id={this.state.id}></SectionItem>
         <Button onClick={ev => {
           this._cleanRenderer(() => {
             this.setState({

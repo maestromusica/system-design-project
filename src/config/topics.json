@@ -74,5 +74,8 @@
     "EV3_CONN": "info/ev3/check/connection",
     "EV3_CONN_ACK": "info/ev3/ack/connection",
 
-    "BOX_SORT_COMPLETED": "info/controller/sort/completed"
+    "BOX_SORT_COMPLETED": "info/controller/sort/completed",
+    "RESUME_SORTING": "action/controller/resume/sort",
+    "PAUSE_SORTING": "action/controller/pause/sort",
+    "END_SORTING": "action/controller/end/sort"
 }

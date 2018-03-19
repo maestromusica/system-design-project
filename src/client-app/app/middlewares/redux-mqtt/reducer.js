@@ -142,6 +142,31 @@ const vision = (state = visionInitialState, action) => {
         boxes: [],
         sorting: false
       }
+    case topics.BOX_SORT_COMPLETED:
+      return {
+        ...state,
+        sorting: false,
+        processingDone: false,
+        processing: false,
+        img: "",
+        boxes: [],
+        history: [
+          ...state.history.slice(0, state.history.length),
+          {
+            boxes: state.boxes,
+            dateCompleted: Date.now()
+          }
+        ]
+      }
+    case topics.END_SORTING:
+      return {
+        ...state,
+        sorting: false,
+        processingDone: false,
+        processing: false,
+        img: "",
+        boxes: []
+      }
     default:
       return state
   }
