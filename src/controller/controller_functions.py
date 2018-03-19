@@ -39,9 +39,6 @@ def onProcessResponse(client, ev3, msg, controller):
         global va
         bins = va.execute()
         sortedBoxes = adaptPackingBoxes(bins)
-        # sa = StackingAlgorithm(boxes,(20,20),'BPOF')
-        # sortedBoxes = adaptPackingBoxes(sa.packer.bins)
-
         client.publish(
             topics["APP_RECEIVE_VISION_BOXES"],
             json.dumps(sortedBoxes)

@@ -150,7 +150,7 @@ class BPOF(object):
                 break
         '''
 
-        offset = 0
+        offset = 0.3
         for w in con.ws:
             t = False
             for l in con.ls:
