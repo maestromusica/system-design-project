@@ -67,3 +67,18 @@ export const receivedBoxes = data => ({
     boxes: JSON.parse(data)
   }
 })
+
+export const receiveVisionBoxes = data => ({
+  type: topics.APP_RECEIVE_VISION_BOXES,
+  data: {
+    boxes: JSON.parse(data)
+  }
+})
+
+export const appReceiveImg = data => ({
+  type: topics.APP_RECEIVE_IMG,
+  data: {
+    img: data,
+    waiting: false
+  }
+})

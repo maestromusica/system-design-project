@@ -102,8 +102,54 @@ const simulation = (state = simulationInitialState, action) => {
   }
 }
 
+const visionInitialState = {
+  boxes: [],
+  history: [],
+  waiting: false,
+  processing: false,
+  img: "",
+  processingDone: false,
+  sorting: false
+}
+
+const vision = (state = visionInitialState, action) => {
+  switch(action.type) {
+    case topics.APP_RECEIVE_IMG:
+      return {
+        ...state,
+        img: action.data.img,
+        waiting: action.data.waiting
+      }
+    case topics.APP_RECEIVE_VISION_BOXES:
+      return {
+        ...state,
+        boxes: action.data.boxes
+      }
+    case topics.PROCESS_RESPONSE_CONTROLLER:
+      return {
+        ...state,
+        processing: false,
+        img: "",
+        processingDone: action.data == "True",
+        sorting: action.data == "True"
+      }
+    case topics.PROCESS_CONTROLLER:
+      return {
+        ...state,
+        processing: true,
+        waiting: true,
+        processingDone: false,
+        boxes: [],
+        sorting: false
+      }
+    default:
+      return state
+  }
+}
+
 export default {
   meta,
   thread,
-  simulation
+  simulation,
+  vision
 }

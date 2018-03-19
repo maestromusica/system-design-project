@@ -72,5 +72,7 @@
     "CONN": "info/controller/check/connection",
     "CONN_ACK": "info/controller/ack/connection",
     "EV3_CONN": "info/ev3/check/connection",
-    "EV3_CONN_ACK": "info/ev3/ack/connection"
+    "EV3_CONN_ACK": "info/ev3/ack/connection",
+
+    "BOX_SORT_COMPLETED": "info/controller/sort/completed"
 }

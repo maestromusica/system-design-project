@@ -10,7 +10,9 @@ import {
   appReceiveWaiting,
   appReceiveActions,
   saveClient,
-  receivedBoxes
+  receivedBoxes,
+  receiveVisionBoxes,
+  appReceiveImg
 } from './actions'
 
 const initClient = (client, dispatch, state) => {
@@ -27,6 +29,8 @@ const initClient = (client, dispatch, state) => {
     client.subscribe(topics.APP_RECEIVE_ACTIONS)
     client.subscribe(topics.APP_RECEIVE_CONNECTION)
     client.subscribe(topics.APP_RECEIVE_BOXES)
+    client.subscribe(topics.APP_RECEIVE_IMG)
+    client.subscribe(topics.APP_RECEIVE_VISION_BOXES)
     client.subscribe(topics.CONN_ACK)
 
     client.publish(topics.CONN)
@@ -64,6 +68,12 @@ const initClient = (client, dispatch, state) => {
         break
       case topics.APP_RECEIVE_BOXES:
         dispatch(receivedBoxes(data))
+        break
+      case topics.APP_RECEIVE_IMG:
+        dispatch(appReceiveImg(data))
+        break
+      case topics.APP_RECEIVE_VISION_BOXES:
+        dispatch(receiveVisionBoxes(data))
         break
     }
   })

@@ -121,3 +121,19 @@ export const requestBoxes = () => ({
   type: topics.APP_REQUEST_BOXES,
   topic: topics.APP_REQUEST_BOXES,
 })
+
+export const processResponse = verdict => ({
+  type: topics.PROCESS_RESPONSE_CONTROLLER,
+  topic: topics.PROCESS_RESPONSE_CONTROLLER,
+  data: verdict
+})
+
+export const processRequest = () => ({
+  type: topics.PROCESS_CONTROLLER,
+  topic: topics.PROCESS_CONTROLLER
+})
+
+export const requestImg = () => ({
+  type: topics.APP_REQUEST_IMG,
+  topic: topics.APP_REQUEST_IMG
+})

@@ -27,10 +27,13 @@ def onStartController(client, ev3, msg, controller):
 def onProcess(client, ev3, msg, controller):
     print("> On process called")
     controller.changeExecutionQueue(visionTag)
+    currentExecThread = controller.currentExecutionThread()
+    currentExecThread.lock()
     client.publish(topics["CONTROLLER_DELETE"], "all")
     client.publish(topics["APP_REQUEST_IMG"])
 
 def onProcessResponse(client, ev3, msg, controller):
+    print("Hello world")
     if msg.payload.decode() == "True":
         #visionActionQueue = controller.actionQueues[visionTag]
         #quantitative1(visionActionQueue)
