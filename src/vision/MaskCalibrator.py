@@ -119,12 +119,12 @@ def dumpConfiguration(params,filename):
     
 
 def display(colormode,mode,images,gamma):
-    cv2.putText(images[mode],colormode,(5,20),cv2.FONT_HERSHEY_COMPLEX,1,\
-                    (200,200,200),2)
-    cv2.putText(images[mode],displaymodes[mode],(500,20),cv2.FONT_HERSHEY_COMPLEX,1,\
-                    (200,200,200),2)
-    cv2.putText(images[mode],str(gamma),(250,20),cv2.FONT_HERSHEY_COMPLEX,1,\
-                    (200,200,200),2)
+    cv2.putText(images[mode],colormode,(5,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+                    (200,200,200),1)
+    cv2.putText(images[mode],displaymodes[mode],(5,40),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+                    (200,200,200),1)
+    cv2.putText(images[mode],'gamma: {:.1f}'.format(gamma),(5,60),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+                    (200,200,200),1)
     cv2.imshow('calibrate',images[mode])
 
 def gamma_correct(img,gamma):
@@ -149,7 +149,7 @@ def main():
     
     # Creating Trackbars for Calibration.
     createTrackbars(params)
-    
+    params['gamma'] = 1;
     # creatin camera object
     cap = cv2.VideoCapture(1)
 
