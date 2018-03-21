@@ -27,7 +27,7 @@ from GlobalParams import GlobalParams
 
 global trackbars, colormodes, displaymodes
 trackbars = False
-colormodes = np.array(['red','yellow','green','blue','pink'])
+colormodes = ['red','yellow','green','blue','pink']
 displaymodes = np.array(['frame','gamma','hsv','mask','res'])
 
 # functions
@@ -142,7 +142,7 @@ def main():
     # Varibale to represent current colour mode:
     colorMode = 'red'
     displayMode = 0
-
+    colorMode = 0
     # dictionary to store params for each color
     color_conf = {}
     params = createParameters()
@@ -151,7 +151,7 @@ def main():
     createTrackbars(params)
     params['gamma'] = 1;
     # creatin camera object
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 
     # Creating kernel element for erosion/dilation
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
@@ -195,16 +195,20 @@ def main():
 
         images = [frame,gamma,hsv,mask,res]
         # displaying images
-        display(colorMode,displayMode,images,params['gamma'])
+        display(colormodes[colorMode],displayMode,images,params['gamma'])
         
         # Adding text to frame to represent current filtering mode.
         k = cv2.waitKey(1)
         if k == ord(' '):
             break
         elif k == ord('t'):
-            colorMode = toggleMode(colorMode)
+            if colorMode == len(colormodes) - 1:
+                colorMode = 0;
+            else:
+                colorMode += 1
+            
         elif k == ord('c'):
-            color_conf[colorMode] = params.copy()
+            color_conf[colormodes[colorMode]] = params.copy()
             print(color_conf)
         elif k == ord('s'):
             ret, incomplete = checkParams(color_conf)
@@ -221,14 +225,18 @@ def main():
         elif k == ord('b'):
             return color_conf
 
+        elif k == ord('a'):
+            new_color = str(input('Enter name of new Color : '))
+            colormodes.append(new_color)
+
         elif k == ord('<'):
             if displayMode == 0:
-                displayMode = 4
+                displayMode = len(displaymodes) -1
             else:
                 displayMode -= 1
 
         elif k == ord('>'):
-            if displayMode == 4:
+            if displayMode == len(displaymodes)-1:
                 displayMode = 0
             else:
                 displayMode += 1
@@ -237,7 +245,7 @@ def main():
         elif k == ord('o'):
             params['gamma'] -= 0.1
         elif k == ord('q'):
-            filename = str(raw_input('Enter filename: '))
+            filename = str(input('Enter filename: '))
             cv2.imwrite(filename,images[displayMode])
             
     cv2.destroyAllWindows()
