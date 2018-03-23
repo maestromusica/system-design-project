@@ -50,7 +50,7 @@ class Vision(object):
         #cv2.imshow('img',img)
         #cv2.waitKey(0)
         bimg, boxes = self.processor.process(img)
-        return bimg, boxes        
+        return bimg, boxes
 
     def calibrateCamera(self):
         data = self.camcal.calibrate()
@@ -71,7 +71,7 @@ class Vision(object):
         f = open(filename,'wb')
         pkl.dump(data,f)
         f.close()
-        
+
     def usenow(self):
         yn = input('Would you like to use these settings now? [Y/n]')
         if yn.lower() == 'n':
