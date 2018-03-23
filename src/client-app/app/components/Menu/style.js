@@ -35,7 +35,7 @@ export const MenuItem = styled(NavLink)`
   }
 
   &.active {
-    background-color: ${colors.grey["100"]}
+    background-color: ${colors.grey["200"]}
   }
 
   & svg {
@@ -63,8 +63,14 @@ export const ConnectionSection = styled.div`
 
 export const ConnectionIcon = styled.span`
   margin-right: 8px;
+
   & svg {
     height: 24px;
     width: 24px;
-    color: ${props => props.active ? colors.grey['800'] : colors.grey['400'] }
+    color: ${props => props.active ? colors.grey['800'] : colors.grey['400']};
+  }
+
+  & span {
+    margin-left: 6px;
+  }
 `

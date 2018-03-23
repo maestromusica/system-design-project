@@ -13,18 +13,24 @@ import MdCastConnected from 'react-icons/lib/md/cast-connected'
 const Connections = ({meta}) => (
   <ConnectionSection>
     <ConnectionIcon active={meta.connected}>
-      {meta.connected ? (
-        <MdBluetooth />
-      ) : (
-        <MdBluetoothDisabled />
-      )}
+      <div>
+        {meta.connected ? (
+          <MdBluetooth />
+        ) : (
+          <MdBluetoothDisabled />
+        )}
+        <span>Controller</span>
+      </div>
     </ConnectionIcon>
     <ConnectionIcon active={meta.connected && meta.ev3Connected}>
-      {meta.ev3Connected && meta.connected ? (
-        <MdCastConnected />
-      ) : (
-        <MdCast />
-      )}
+      <div>
+        {meta.ev3Connected && meta.connected ? (
+          <MdCastConnected />
+        ) : (
+          <MdCast />
+        )}
+        <span>EV3</span>
+      </div>
     </ConnectionIcon>
   </ConnectionSection>
 )

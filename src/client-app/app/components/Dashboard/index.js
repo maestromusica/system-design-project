@@ -10,10 +10,40 @@ import SimulationRenderer from '../Simulations/SimulationRenderer'
 import SortingHistory from './SortingHistory'
 import Controls from './Controls'
 
+const boxes = [[
+  {
+    height: 6,
+    width: 9,
+    depth: 18,
+    x: 0,
+    y: 0,
+    z: 0,
+    color: 'yellow'
+  }, {
+    height: 6,
+    width: 12,
+    depth: 12,
+    x: 9,
+    y: 0,
+    z: 0,
+    color: 'blue'
+  }, {
+    height: 6,
+    width: 9,
+    depth: 9,
+    x: 21,
+    y: 0,
+    z: 0,
+    color: 'purple'
+  }
+]]
+
 class Dashboard extends Component {
 
   componentWillUpdate(nextProps) {
-    if(nextProps.vision.processing) {
+    console.log(2)
+    if(nextProps.vision.processing && !nextProps.vision.processingDone) {
+      console.log(1)
       this.props.actions.requestImg()
     }
   }
@@ -99,11 +129,11 @@ class Dashboard extends Component {
               }} type="danger">Reject Capture</Button>
             </FloatingButtons>
           </Section>
-            ) : (
+        ) : (
           null
         )}
         {this.props.vision.processingDone && this.props.vision.sorting ? (
-          <SimulationRenderer boxes={state.boxes} />
+          <SimulationRenderer boxes={boxes} />
         ) : (
           null
         )}

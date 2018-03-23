@@ -29,42 +29,27 @@ class Settings extends Component {
         <SectionOption>
           <SectionOptionTitle>Client IP</SectionOptionTitle>
           <SectionOptionInput onChange={ev => {
-            this.setState({
-              CLIENT: ev.target.value
-            })
-          }} value={this.state.CLIENT} />
-          <SectionOptionButton onClick={ev => {
-            this.props.actions.addControllerIP(this.state.CLIENT)
-          }}>Save IP</SectionOptionButton>
+            this.props.actions.addControllerIP(ev.target.value)
+          }} value={this.props.ips.CLIENT} />
         </SectionOption>
         <SectionOption>
           <SectionOptionTitle>EV3 INF_11</SectionOptionTitle>
           <SectionOptionInput onChange={ev => {
-            this.setState({
-              INF_11: ev.target.value
-            })
-          }} value={this.state.INF_11} />
-          <SectionOptionButton onClick={ev => {
-            this.props.actions.add11IP(this.state.INF_11)
-          }}>Save IP</SectionOptionButton>
+            this.props.actions.add11IP(ev.target.value)
+          }} value={this.props.ips.INF_11} />
         </SectionOption>
         <SectionOption>
           <SectionOptionTitle>EV3 INF_31</SectionOptionTitle>
           <SectionOptionInput onChange={ev => {
-            this.setState({
-              INF_31: ev.target.value
-            })
-          }} value={this.state.INF_31} />
-          <SectionOptionButton onClick={ev => {
-            this.props.actions.add31IP(this.state.INF_31)
-          }}>
-            Save IP
-          </SectionOptionButton>
+            this.props.actions.add31IP(ev.target.value)
+          }} value={this.props.ips.INF_31} />
         </SectionOption>
         <Button type="primary" onClick={ev => {
           this.props.actions.restartClient()
-        }}>Connect</Button>
-        <Button onClick={ev => {this.props.actions.connectEV3()}}>
+        }}>Connect controller</Button>
+        <Button onClick={ev => {
+          this.props.actions.connectEV3()
+        }}>
           Connect EV3
         </Button>
       </Section>

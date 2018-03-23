@@ -34,14 +34,20 @@ export default class Menu extends Component {
             <MdDashboard />
             Dashboard
           </MenuItem>
-          <MenuItem to="/simulations">
-            <MdDonutSmall />
-            Simulations
-          </MenuItem>
-          <MenuItem to="/development">
-            <MdCode />
-            Development
-          </MenuItem>
+          {this.state.useSnort ? (
+            <div>
+              <MenuItem to="/simulations">
+                <MdDonutSmall />
+                Simulations
+              </MenuItem>
+              <MenuItem to="/development">
+                <MdCode />
+                Development
+              </MenuItem>
+            </div>
+          ) : (
+            null
+          )}
           <MenuItem to="/settings">
             <MdSettings />
             Settings
