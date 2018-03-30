@@ -5,6 +5,10 @@ class Controller:
         self.actionQueues = {}
         # keeps information about the current execution thread
         self.currentExecThreadTag = None
+        self.visionState = {
+            "processingImg": False,
+            "sorting": False
+        }
 
     def addActionQueue(self, tag, actionQueue):
         if tag in self.actionQueues:

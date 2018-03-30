@@ -8,6 +8,11 @@ import Dashboard from './components/Dashboard'
 import Development from './components/Development'
 import Settings from './components/Settings'
 import Simulations from './components/Simulations'
+import withConnection from './hocs/withConnection'
+
+const dash = withConnection(Dashboard)
+const dev = withConnection(Development)
+const sims = withConnection(Simulations)
 
 const App = () => (
   <AppStyle>
@@ -15,10 +20,10 @@ const App = () => (
       <Menu />
       <Content>
         <Switch>
-          <Route exact path="/dashboard" component={Dashboard} />
-          <Route exact path="/development" component={Development} />
+          <Route exact path="/dashboard" component={dash} />
+          <Route exact path="/development" component={dev} />
+          <Route exact path="/simulations" component={sims} />
           <Route exact path="/settings" component={Settings} />
-          <Route exact path="/simulations" component={Simulations} />
         </Switch>
       </Content>
     </Main>

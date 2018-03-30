@@ -136,7 +136,7 @@ class EV3Client():
         try:
             self.client11.connect_async(ev11["ip"], ev11["port"], ev11["keepalive"])
             # self.setConnected("11")
-        except OSError:
+        except:
             self.client11Connected = False
             self.connected = False
 
@@ -147,7 +147,7 @@ class EV3Client():
         try:
             self.client31.connect_async(ev31["ip"], ev31["port"], ev31["keepalive"])
             # self.setConnected("31")
-        except OSError:
+        except:
             self.client31Connected = False
             self.connected = False
 

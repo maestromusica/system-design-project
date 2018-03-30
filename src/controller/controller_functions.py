@@ -171,6 +171,8 @@ def onAppRequestData(client, ev3, msg, controller):
         client.publish(topics["APP_RECEIVE_ACTIONS"], json.dumps(actions))
     elif whatToSend == "connection":
         client.publish(topics["APP_RECEIVE_CONNECTION"], ev3.connected)
+    elif whatToSend == "vision":
+        client.publish(topics["APP_RECEIVE_VISION_STATE"], json.dumps(controller.visionState))
     elif whatToSend == "all":
         client.publish(topics["APP_REQUEST"], "thread")
         client.publish(topics["APP_REQUEST"], "locked")
@@ -178,6 +180,7 @@ def onAppRequestData(client, ev3, msg, controller):
         client.publish(topics["APP_REQUEST"], "waiting")
         client.publish(topics["APP_REQUEST"], "actions")
         client.publish(topics["APP_REQUEST"], "connection")
+        client.publish(topics["APP_REQUEST"], "vision")
 
 def onAppRequestImg(client, ev3, msg, controller):
     # cap = cv2.VideoCapture(0)
