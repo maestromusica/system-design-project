@@ -5,11 +5,11 @@ from ..config.index import topics
 from Vision import Vision
 import cv2
 
-grabVals = {'red':{'grab':0,'pickrelease':45,'droprelease':35},\
-            'yellow':{'grab':0,'pickrelease':35,'droprelease':25},\
-            'blue':{'grab':0,'pickrelease':35,'droprelease':35},\
-            'green':{'grab':25,'pickrelease':55,'droprelease':35},\
-            'purple':{'grab':0,'pickrelease':45,'droprelease':25}\
+grabVals = {'red':{'grab':0,'pickrelease':55,'droprelease':45},\
+            'yellow':{'grab':0,'pickrelease':45,'droprelease':35},\
+            'blue':{'grab':0,'pickrelease':45,'droprelease':45},\
+            'green':{'grab':35,'pickrelease':65,'droprelease':45},\
+            'purple':{'grab':0,'pickrelease':55,'droprelease':35}\
             }
 
 class VisionAdaptor:
@@ -108,11 +108,11 @@ class VisionAdaptor:
         print('Heading to package at : {}'.format(box.centrefrom))
         if box.rotation == 90.00:
             self.actionQueue.put(self.addXAction(int(box.centrefrom[0])-75))
-            self.actionQueue.put(self.addYAction(int(box.centrefrom[1])))
+            self.actionQueue.put(self.addYAction(int(box.centrefrom[1])-20))
             self.actionQueue.put(self.addRotateAction(0))
         else:
             self.actionQueue.put(self.addXAction(int(box.centrefrom[0])-75))
-            self.actionQueue.put(self.addYAction(int(box.centrefrom[1])))
+            self.actionQueue.put(self.addYAction(int(box.centrefrom[1])-20))
             self.actionQueue.put(self.addRotateAction(-220))
         self.grab(box.colour)
         #self.actionQueue.put(self.addRotateAction(-220))
