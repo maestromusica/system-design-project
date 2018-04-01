@@ -45,6 +45,10 @@ def onEV3ActionCompleted(client, ev3, msg, controller):
     if controller.currentExecThreadTag == visionTag and currentExecThread.empty():
         print(">>> Sorting boxes completed")
         client.publish(topics["BOX_SORT_COMPLETED"])
+        controller.sorting = False
+        controller.sortedBoxes = []
+        client.publish(topics["APP_REQUEST"], "vision")
+        client.publish(topics["APP_REQUEST"], "visionBoxes")
 
 def onRequestNextEV3Action(client, ev3, msg, controller):
     """Sends the next action to the ev3's.
@@ -72,6 +76,12 @@ def onRequestNextEV3Action(client, ev3, msg, controller):
             client.publish(topics["APP_REQUEST"], "waiting")
             print("> Next action sent to ev3!!!!!!!!")
         else:
+            if controller.currentExecThreadTag == "vision" and controller.sorting == True:
+                client.publish(topics["BOX_SORT_COMPLETED"])
+                controller.sorting = False
+                controller.sortedBoxes = []
+                client.publish(topics["APP_REQUEST"], "vision")
+                client.publish(topics["APP_REQUEST"], "visionBoxes")
             print("> No actions in execution thread!")
 
 def onEV3Stop(client, ev3, msg, controller):

@@ -29,12 +29,15 @@ def onProcess(client, ev3, msg, controller):
     controller.changeExecutionQueue(visionTag)
     currentExecThread = controller.currentExecutionThread()
     currentExecThread.lock()
+    controller.sorting = False
+    controller.sortedBoxes = []
     client.publish(topics["CONTROLLER_DELETE"], "all")
     client.publish(topics["APP_REQUEST_IMG"])
     sendData("executionQueue", client, controller, ev3)
+    sendData("vision", client, controller, ev3)
+    sendData("visionBoxes", client, controller, ev3)
 
 def onProcessResponse(client, ev3, msg, controller):
-    print("Hello world")
     if msg.payload.decode() == "True":
         #visionActionQueue = controller.actionQueues[visionTag]
         #quantitative1(visionActionQueue)
@@ -43,15 +46,20 @@ def onProcessResponse(client, ev3, msg, controller):
         global va
         bins = va.execute()
         sortedBoxes = adaptPackingBoxes(bins)
-        client.publish(
-            topics["APP_RECEIVE_VISION_BOXES"],
-            json.dumps(sortedBoxes)
-        )
+        controller.sortedBoxes = sortedBoxes
+        controller.sorting = True
+
+        sendData("visionBoxes", client, controller, ev3)
+        sendData("vision", client, controller, ev3)
+        sendData("actions", client, controller, ev3)
         print(controller.actionQueues[visionTag])
         print("> Accepted")
     elif msg.payload.decode() == "False":
+        controller.sorting = False
+        controller.sortedBoxes = []
+        sendData("vision", client, controller, ev3)
+        sendData("visionBoxes", client, controller, ev3)
         print("> Not accepted")
-    sendData("actions", client, controller, ev3)
 
 def onSwitchExecutionThread(client, ev3, msg, controller):
     tag = msg.payload.decode()
@@ -168,34 +176,38 @@ def sendData(whatToSend, client, controller, ev3):
     if whatToSend == "thread":
         client.publish(topics["APP_RECEIVE_THREAD"], controller.currentExecThreadTag)
     elif whatToSend == "locked":
-        client.publish(topics["APP_RECEIVE_LOCKED"], currentExecThread.state.locked)
+        client.publish(topics["APP_RECEIVE_LOCKED"], json.dumps(currentExecThread.state.locked))
     elif whatToSend == "pending":
-        client.publish(topics["APP_RECEIVE_PENDING"], currentExecThread.state.pending)
+        client.publish(topics["APP_RECEIVE_PENDING"], json.dumps(currentExecThread.state.pending))
     elif whatToSend == "waiting":
-        client.publish(topics["APP_RECEIVE_WAITING"], currentExecThread.state.waiting)
+        client.publish(topics["APP_RECEIVE_WAITING"], json.dumps(currentExecThread.state.waiting))
     elif whatToSend == "actions":
         actions = numpy.array(currentExecThread.queue).tolist()
         client.publish(topics["APP_RECEIVE_ACTIONS"], json.dumps(actions))
     elif whatToSend == "connection":
-        client.publish(topics["APP_RECEIVE_CONNECTION"], ev3.connected)
+        client.publish(topics["APP_RECEIVE_CONNECTION"], json.dumps(ev3.connected))
     elif whatToSend == "vision":
-        client.publish(topics["APP_RECEIVE_VISION_STATE"], json.dumps(controller.visionState))
+        client.publish(topics["APP_RECEIVE_VISION_STATE"], json.dumps(controller.sorting))
+    elif whatToSend == "visionBoxes":
+        client.publish(topics["APP_RECEIVE_VISION_BOXES"], json.dumps(controller.sortedBoxes))
     elif whatToSend == "executionQueue":
         sendData("thread", client, controller, ev3)
         sendData("locked", client, controller, ev3)
         sendData("pending", client, controller, ev3)
         sendData("waiting", client, controller, ev3)
         sendData("actions", client, controller, ev3)
+        sendData("vision", client, controller, ev3)
     elif whatToSend == "all":
-        client.publish(topics["APP_REQUEST"], "thread")
-        client.publish(topics["APP_REQUEST"], "locked")
-        client.publish(topics["APP_REQUEST"], "pending")
-        client.publish(topics["APP_REQUEST"], "waiting")
-        client.publish(topics["APP_REQUEST"], "actions")
-        client.publish(topics["APP_REQUEST"], "connection")
-        client.publish(topics["APP_REQUEST"], "vision")
+        sendData("thread", client, controller, ev3)
+        sendData("locked", client, controller, ev3)
+        sendData("pending", client, controller, ev3)
+        sendData("waiting", client, controller, ev3)
+        sendData("actions", client, controller, ev3)
+        sendData("connection", client, controller, ev3)
+        sendData("vision", client, controller, ev3)
+        sendData("visionBoxes", client, controller, ev3)
     else:
-        raise Error
+        raise Error()
 
 def onAppRequestData(client, ev3, msg, controller):
     whatToSend = msg.payload.decode()
@@ -321,10 +333,14 @@ def onEndSorting(client, ev3, msg, controller):
     controller.changeExecutionQueue(visionTag)
     currentExecThread = controller.currentExecutionThread()
     currentExecThread.state.locked = True
+    controller.sorting = False
+    controller.sortedBoxes = []
     client.publish(topics["CONTROLLER_DELETE"], "all")
     sendData("thread", client, controller, ev3)
     sendData("pending", client, controller, ev3)
     sendData("waiting", client, controller, ev3)
     sendData("locked", client, controller, ev3)
+    sendData("vision", client, controller, ev3)
+    sendData("visionBoxes", client, controller, ev3)
     # don't send actions because we previously send to delete all acitons
     # let that function send the app the action Queue

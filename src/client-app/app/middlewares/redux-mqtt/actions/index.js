@@ -4,6 +4,7 @@ export const CLIENT_CONNECTED = 'CLIENT_CONNECTED'
 export const CLIENT_DISCONNECTED = 'CLIENT_DISCONNECTED'
 export const SAVE_CLIENT = 'SAVE_CLIENT'
 export const RESET_MIDDLEWARE = 'RESET_MIDDLEWARE'
+export const RESET_VISION_STATE = 'RESET_VISION_STATE'
 
 export const clientConnected = () => ({
   type: CLIENT_CONNECTED
@@ -16,7 +17,7 @@ export const clientDisconnected = () => ({
 export const appReceiveEV3Connection = data => ({
   type: topics.APP_RECEIVE_CONNECTION,
   data: {
-    connected: data == "True"
+    connected: data
   }
 })
 
@@ -30,28 +31,28 @@ export const appReceiveThread = data => ({
 export const appReceiveLocked = data => ({
   type: topics.APP_RECEIVE_LOCKED,
   data: {
-    locked: data === "True"
+    locked: data
   }
 })
 
 export const appReceivePending = data => ({
   type: topics.APP_RECEIVE_PENDING,
   data: {
-    pending: data === "True"
+    pending: data
   }
 })
 
 export const appReceiveWaiting = data => ({
   type: topics.APP_RECEIVE_WAITING,
   data: {
-    waiting: data === "True"
+    waiting: data
   }
 })
 
 export const appReceiveActions = data => ({
   type: topics.APP_RECEIVE_ACTIONS,
   data: {
-    actions: JSON.parse(data)
+    actions: data
   }
 })
 
@@ -65,14 +66,21 @@ export const saveClient = client => ({
 export const receivedBoxes = data => ({
   type: topics.APP_RECEIVE_BOXES,
   data: {
-    boxes: JSON.parse(data)
+    boxes: data
   }
 })
 
 export const receiveVisionBoxes = data => ({
   type: topics.APP_RECEIVE_VISION_BOXES,
   data: {
-    boxes: JSON.parse(data)
+    boxes: data
+  }
+})
+
+export const receiveVisionState = data => ({
+  type: topics.APP_RECEIVE_VISION_STATE,
+  data: {
+    sorting: data
   }
 })
 
@@ -94,4 +102,8 @@ export const disableConnection = () => ({
 
 export const resetMiddleware = () => ({
   type: RESET_MIDDLEWARE
+})
+
+export const resetVisionState = () => ({
+  type: RESET_VISION_STATE
 })

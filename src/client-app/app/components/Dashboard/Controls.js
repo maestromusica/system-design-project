@@ -38,6 +38,14 @@ const Controls = ({vision, thread, actions}) => {
     </Button>
   )
 
+  const resumeSortingBtn = (
+    <Button onClick={ev => {
+      actions.resumeSorting()
+    }}>
+      Resume
+    </Button>
+  )
+
   const pauseSortingBtn = (
     <Button onClick={ev => {
       actions.pauseSorting()
@@ -50,13 +58,22 @@ const Controls = ({vision, thread, actions}) => {
     <Section>
       {vision.sorting ? (
         <div>
-          {thread.name == "vision" && !thread.locked ? (
+          {!thread.locked ? (
             <Button loading disabled type="primary">Sorting</Button>
           ) : (null)}
-          {thread.name == "vision" && !thread.locked
-            ? pauseSortingBtn
-            : startSortingBtn
-          }
+          {(() => {
+            if(!thread.locked) {
+              return pauseSortingBtn
+            }
+            else {
+              if(thread.locked && vision.startBtnPressed) {
+                return resumeSortingBtn
+              }
+              else {
+                return startSortingBtn
+              }
+            }
+          })()}
           {endSorting}
         </div>
       ) : (

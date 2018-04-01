@@ -43,38 +43,41 @@ class Dashboard extends Component {
     const state = this.props.vision
     const actions = this.props.actions
 
-    const ConnectedControls = withConnection(() => <Controls
-      vision={this.props.vision}
-      thread={this.props.thread}
-      actions={this.props.actions} />
-    )
+    const ConnectedControls = withConnection(() => (
+        <Controls
+          vision={this.props.vision}
+          thread={this.props.thread}
+          actions={this.props.actions} />
+    ))
 
     return (
       <div>
         <ConnectedControls />
-        {this.props.vision.processing && !this.props.vision.waiting ? (
-          <Section>
-            <img
-              src={"data:image/jpeg;base64," + state.img}
-              style={{float: 'left'}}
-            />
-            <FloatingButtons>
-              <Button onClick={ev => {
-                actions.processResponse("True")
-              }} type="primary">Accept Capture</Button>
-              <Button onClick={ev => {
-                actions.processResponse("False")
-              }} type="danger">Reject Capture</Button>
-            </FloatingButtons>
-          </Section>
-        ) : (
-          null
-        )}
-        {this.props.vision.processingDone && this.props.vision.sorting ? (
-          <SimulationRenderer boxes={this.props.vision.boxes} />
-        ) : (
-          null
-        )}
+        {this.props.vision.processing && !this.props.vision.waiting
+          && this.props.meta.connected && this.props.meta.ev3Connected ? (
+            <Section>
+              <img
+                src={"data:image/jpeg;base64," + state.img}
+                style={{float: 'left'}}
+              />
+              <FloatingButtons>
+                <Button onClick={ev => {
+                  actions.processResponse("True")
+                }} type="primary">Accept Capture</Button>
+                <Button onClick={ev => {
+                  actions.processResponse("False")
+                }} type="danger">Reject Capture</Button>
+              </FloatingButtons>
+            </Section>
+          ) : (
+            null
+          )}
+        {this.props.vision.sorting
+          && this.props.meta.connected && this.props.meta.ev3Connected ? (
+            <SimulationRenderer boxes={this.props.vision.boxes} />
+          ) : (
+            null
+          )}
         <SortingHistory />
       </div>
     )
@@ -83,7 +86,8 @@ class Dashboard extends Component {
 
 const mapStateToProps = state => ({
   vision: state.vision,
-  thread: state.thread
+  thread: state.thread,
+  meta: state.meta
 })
 
 const mapDispatchToAction = dispatch => ({

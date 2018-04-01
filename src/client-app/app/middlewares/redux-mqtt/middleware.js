@@ -12,10 +12,12 @@ import {
   saveClient,
   receivedBoxes,
   receiveVisionBoxes,
+  receiveVisionState,
   appReceiveImg,
   boxSortCompleted,
   disableConnection,
-  resetMiddleware
+  resetMiddleware,
+  resetVisionState
 } from './actions'
 
 const initClient = (client, dispatch, state) => {
@@ -23,6 +25,7 @@ const initClient = (client, dispatch, state) => {
   // dispatch(saveClient(client))
   dispatch(clientDisconnected())
   dispatch(resetMiddleware())
+  dispatch(resetVisionState())
 
   client.on('connect', () => {
     console.log("on connect called")
@@ -34,6 +37,7 @@ const initClient = (client, dispatch, state) => {
     client.subscribe(topics.APP_RECEIVE_CONNECTION)
     client.subscribe(topics.APP_RECEIVE_BOXES)
     client.subscribe(topics.APP_RECEIVE_IMG)
+    client.subscribe(topics.APP_RECEIVE_VISION_STATE)
     client.subscribe(topics.APP_RECEIVE_VISION_BOXES)
     client.subscribe(topics.BOX_SORT_COMPLETED)
     client.subscribe(topics.CONN_ACK)
@@ -51,41 +55,49 @@ const initClient = (client, dispatch, state) => {
     const data = msg.toString()
     switch(topic) {
       case topics.APP_RECEIVE_THREAD:
+        console.log(data)
         dispatch(appReceiveThread(data))
         break
       case topics.APP_RECEIVE_LOCKED:
-        dispatch(appReceiveLocked(data))
+        dispatch(appReceiveLocked(data == "true"))
         break
       case topics.APP_RECEIVE_PENDING:
-        dispatch(appReceivePending(data))
+        dispatch(appReceivePending(data == "true"))
         break
       case topics.APP_RECEIVE_WAITING:
-        dispatch(appReceiveWaiting(data))
+        dispatch(appReceiveWaiting(data == "true"))
         break
       case topics.APP_RECEIVE_ACTIONS:
-        dispatch(appReceiveActions(data))
+        dispatch(appReceiveActions(JSON.parse(data)))
         break
       case topics.APP_RECEIVE_CONNECTION:
-        dispatch(appReceiveEV3Connection(data))
+        dispatch(appReceiveEV3Connection(data == "true"))
         break
       case topics.CONN_ACK:
         dispatch(clientConnected())
         client.publish(topics.APP_REQUEST, "all")
+        dispatch(resetVisionState())
         break
       case topics.APP_RECEIVE_BOXES:
-        dispatch(receivedBoxes(data))
+        dispatch(receivedBoxes(JSON.parse(data)))
         break
       case topics.APP_RECEIVE_IMG:
         dispatch(appReceiveImg(data))
         break
       case topics.APP_RECEIVE_VISION_BOXES:
-        dispatch(receiveVisionBoxes(data))
+        dispatch(receiveVisionBoxes(JSON.parse(data)))
+        break
+      case topics.APP_RECEIVE_VISION_STATE:
+        console.log("Connection", data)
+        dispatch(receiveVisionState(data == "true"))
         break
       case topics.BOX_SORT_COMPLETED:
         dispatch(boxSortCompleted())
         break
       case topics.CONN_DISABLE:
         dispatch(disableConnection())
+        dispatch(resetVisionState())
+        dispatch(resetMiddleware())
         break
     }
   })

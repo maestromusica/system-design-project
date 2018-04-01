@@ -2,7 +2,8 @@ import {
   CLIENT_CONNECTED,
   CLIENT_DISCONNECTED,
   SAVE_CLIENT,
-  RESET_MIDDLEWARE
+  RESET_MIDDLEWARE,
+  RESET_VISION_STATE
 } from './actions'
 import {topics} from '../../utils/config'
 
@@ -125,7 +126,8 @@ const visionInitialState = {
   processing: false,
   img: "",
   processingDone: false,
-  sorting: false
+  sorting: false,
+  startBtnPressed: false
 }
 
 const vision = (state = visionInitialState, action) => {
@@ -141,13 +143,19 @@ const vision = (state = visionInitialState, action) => {
         ...state,
         boxes: action.data.boxes
       }
+    case topics.APP_RECEIVE_VISION_STATE:
+      return {
+        ...state,
+        sorting: action.data.sorting
+      }
     case topics.PROCESS_RESPONSE_CONTROLLER:
       return {
         ...state,
         processing: false,
         img: "",
         processingDone: action.data == "True",
-        sorting: action.data == "True"
+        sorting: action.data == "True",
+        startBtnPressed: false
       }
     case topics.PROCESS_CONTROLLER:
       return {
@@ -156,12 +164,14 @@ const vision = (state = visionInitialState, action) => {
         waiting: true,
         processingDone: false,
         boxes: [],
-        sorting: false
+        sorting: false,
+        startBtnPressed: false
       }
     case topics.BOX_SORT_COMPLETED:
       return {
         ...state,
         sorting: false,
+        startBtnPressed: false,
         processingDone: false,
         processing: false,
         img: "",
@@ -178,12 +188,24 @@ const vision = (state = visionInitialState, action) => {
       return {
         ...state,
         sorting: false,
+        startBtnPressed: false,
         processingDone: false,
         processing: false,
         img: "",
-        boxes: []
+        boxes: [],
+        startBtnPressed: true
+      }
+    case topics.RESUME_SORTING:
+      return {
+        ...state,
+        startBtnPressed: true
       }
     case RESET_MIDDLEWARE:
+      return {
+        ...visionInitialState,
+        history: state.history
+      }
+    case RESET_VISION_STATE:
       return {
         ...visionInitialState,
         history: state.history
