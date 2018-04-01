@@ -32,7 +32,7 @@ const Logo = styled(LogoSvg)`
   margin-left: auto;
   align-self: center;
   animation-name: ${leaveAnimation};
-  animation-duration: 0.8s;
+  animation-duration: 1s;
 `
 
 const Animated = styled(Main)`
@@ -58,7 +58,7 @@ export default class App extends Component {
           shouldRender: true
         })
       })
-    }, 700)
+    }, 900)
   }
 
   render() {
