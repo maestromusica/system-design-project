@@ -1,5 +1,7 @@
-import React from 'react';
-import {Switch, Route, withRouter, BrowserRouter} from 'react-router';
+import React, {Component} from 'react';
+import {Switch, Route} from 'react-router';
+import styled, {keyframes} from 'styled-components'
+import LogoSvg from './components/AppBar/logo-sortx.svg'
 
 import {AppStyle, Content, Main} from './styled/components'
 
@@ -9,24 +11,81 @@ import Development from './components/Development'
 import Settings from './components/Settings'
 import Simulations from './components/Simulations'
 import withConnection from './hocs/withConnection'
+import Transition from 'react-transition-group/Transition';
+
+const enterAnimation = keyframes`
+  0% {opacity: 0}
+  100% {opacity: 1}
+`
+
+const leaveAnimation = keyframes`
+  0% {opacity: 0}
+  40% {opacity: 1}
+  60% {opacity: 1}
+  100% {opacity: 0}
+`
+
+const Logo = styled(LogoSvg)`
+  height: 60px;
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
+  align-self: center;
+  animation-name: ${leaveAnimation};
+  animation-duration: 0.8s;
+`
+
+const Animated = styled(Main)`
+  animation-name: ${enterAnimation};
+  animation-duration: 0.4s;
+`
 
 const dev = withConnection(Development)
 const sims = withConnection(Simulations)
 
-const App = () => (
-  <AppStyle>
-    <Main>
-      <Menu />
-      <Content>
-        <Switch>
-          <Route exact path="/dashboard" component={Dashboard} />
-          <Route exact path="/development" component={dev} />
-          <Route exact path="/simulations" component={sims} />
-          <Route exact path="/settings" component={Settings} />
-        </Switch>
-      </Content>
-    </Main>
-  </AppStyle>
-)
+export default class App extends Component {
+  state = {
+    renderedLogo: true,
+    shouldRender: false
+  }
 
-export default App
+  componentDidMount() {
+    setTimeout(() => {
+      this.setState({
+        renderedLogo: false
+      }, () => {
+        this.setState({
+          shouldRender: true
+        })
+      })
+    }, 700)
+  }
+
+  render() {
+    let displayFlex = {}
+    if(!this.state.shouldRender) {
+      displayFlex = {
+        display: 'flex'
+      }
+    }
+    return (
+      <AppStyle style={displayFlex}>
+        {this.state.shouldRender ? (
+          <Animated>
+            <Menu />
+            <Content>
+              <Switch>
+                <Route exact path="/dashboard" component={Dashboard} />
+                <Route exact path="/development" component={dev} />
+                <Route exact path="/simulations" component={sims} />
+                <Route exact path="/settings" component={Settings} />
+              </Switch>
+            </Content>
+          </Animated>
+        ) : (
+          <Logo />
+        )}
+      </AppStyle>
+    )
+  }
+}

@@ -9,7 +9,7 @@ import {MQTT_IP, topics} from '../../utils/config'
 import SimulationRenderer from '../Simulations/SimulationRenderer'
 import SortingHistory from './SortingHistory'
 import Controls from './Controls'
-import withConnection from '../../hocs/withConnection'
+import DisconnectedComponent from '../DisconnectedComponent'
 
 class Dashboard extends Component {
 
@@ -43,16 +43,17 @@ class Dashboard extends Component {
     const state = this.props.vision
     const actions = this.props.actions
 
-    const ConnectedControls = withConnection(() => (
-        <Controls
-          vision={this.props.vision}
-          thread={this.props.thread}
-          actions={this.props.actions} />
-    ))
-
     return (
       <div>
-        <ConnectedControls />
+        {this.props.meta.connected && this.props.meta.ev3Connected ? (
+          <Controls
+            vision={this.props.vision}
+            thread={this.props.thread}
+            actions={this.props.actions}
+          />
+        ) : (
+          <DisconnectedComponent />
+        )}
         {this.props.vision.processing && !this.props.vision.waiting
           && this.props.meta.connected && this.props.meta.ev3Connected ? (
             <Section>
