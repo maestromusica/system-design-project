@@ -9,43 +9,22 @@ import {MQTT_IP, topics} from '../../utils/config'
 import SimulationRenderer from '../Simulations/SimulationRenderer'
 import SortingHistory from './SortingHistory'
 import Controls from './Controls'
-
-const boxes = [[
-  {
-    height: 6,
-    width: 9,
-    depth: 18,
-    x: 0,
-    y: 0,
-    z: 0,
-    color: 'yellow'
-  }, {
-    height: 6,
-    width: 12,
-    depth: 12,
-    x: 9,
-    y: 0,
-    z: 0,
-    color: 'blue'
-  }, {
-    height: 6,
-    width: 9,
-    depth: 9,
-    x: 21,
-    y: 0,
-    z: 0,
-    color: 'purple'
-  }
-]]
+import withConnection from '../../hocs/withConnection'
 
 class Dashboard extends Component {
 
-  componentWillUpdate(nextProps) {
-    console.log(2)
-    if(nextProps.vision.processing && !nextProps.vision.processingDone) {
-      console.log(1)
+  _sendRequestImg = (props) => {
+    if(props.vision.processing && !props.vision.processingDone) {
       this.props.actions.requestImg()
     }
+  }
+
+  componentDidMount() {
+    this._sendRequestImg(this.props)
+  }
+
+  componentWillUpdate(nextProps) {
+    this._sendRequestImg(nextProps)
   }
 
   componentWillUnmount() {
@@ -64,56 +43,15 @@ class Dashboard extends Component {
     const state = this.props.vision
     const actions = this.props.actions
 
-    if(state.processing && !state.waiting) {
-      // should render a canvas with two buttons
-      rendered = (
-        <div>
-          <img
-            src={"data:image/jpeg;base64," + state.img}
-            style={{float: 'left'}}
-          />
-          <FloatingButtons>
-            <Button onClick={ev => {
-              actions.processResponse("True")
-            }} type="primary">Accept Capture</Button>
-            <Button onClick={ev => {
-              actions.processResponse("False")
-            }} type="danger">Reject Capture</Button>
-          </FloatingButtons>
-        </div>
-      )
-    }
-    else {
-      rendered = (
-        <div>
-          <Section>
-            <Button
-              onClick={ev => {
-                actions.processRequest()
-              }}
-              disabled={state.waiting}
-              loading={state.waiting}
-              type="primary"
-            >
-              Start capturing
-            </Button>
-          </Section>
-          {state.processingDone && state.boxes.length > 0 ? (
-            <SimulationRenderer boxes={state.boxes} />
-          ) : (
-            null
-          )}
-        </div>
-      )
-    }
+    const ConnectedControls = withConnection(() => <Controls
+      vision={this.props.vision}
+      thread={this.props.thread}
+      actions={this.props.actions} />
+    )
 
     return (
       <div>
-        <Controls
-          vision={this.props.vision}
-          thread={this.props.thread}
-          actions={this.props.actions}
-        />
+        <ConnectedControls />
         {this.props.vision.processing && !this.props.vision.waiting ? (
           <Section>
             <img
@@ -133,7 +71,7 @@ class Dashboard extends Component {
           null
         )}
         {this.props.vision.processingDone && this.props.vision.sorting ? (
-          <SimulationRenderer boxes={boxes} />
+          <SimulationRenderer boxes={this.props.vision.boxes} />
         ) : (
           null
         )}

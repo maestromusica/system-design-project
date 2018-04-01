@@ -1,7 +1,8 @@
 import {
   CLIENT_CONNECTED,
   CLIENT_DISCONNECTED,
-  SAVE_CLIENT
+  SAVE_CLIENT,
+  RESET_MIDDLEWARE
 } from './actions'
 import {topics} from '../../utils/config'
 
@@ -40,6 +41,8 @@ const thread = (state = initialState, action) => {
         ...state,
         waiting: action.data.waiting
       }
+    case RESET_MIDDLEWARE:
+      return initialState
     default:
       return state
   }
@@ -74,6 +77,17 @@ const meta = (state = metaInitialState, action) => {
         ...state,
         client: action.data.client
       }
+    case topics.CONN_DISABLE:
+      return {
+        ...state,
+        connected: false,
+        ev3Connected: false
+      }
+    case RESET_MIDDLEWARE:
+      return {
+        ...metaInitialState,
+        client: state.client // keep the current client IP
+      }
     default:
       return state
   }
@@ -97,6 +111,8 @@ const simulation = (state = simulationInitialState, action) => {
         boxesRequested: false,
         boxes: action.data.boxes
       }
+    case RESET_MIDDLEWARE:
+      return simulationInitialState
     default:
       return state
   }
@@ -166,6 +182,11 @@ const vision = (state = visionInitialState, action) => {
         processing: false,
         img: "",
         boxes: []
+      }
+    case RESET_MIDDLEWARE:
+      return {
+        ...visionInitialState,
+        history: state.history
       }
     default:
       return state

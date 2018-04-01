@@ -3,6 +3,7 @@ import {topics} from '../../../utils/config'
 export const CLIENT_CONNECTED = 'CLIENT_CONNECTED'
 export const CLIENT_DISCONNECTED = 'CLIENT_DISCONNECTED'
 export const SAVE_CLIENT = 'SAVE_CLIENT'
+export const RESET_MIDDLEWARE = 'RESET_MIDDLEWARE'
 
 export const clientConnected = () => ({
   type: CLIENT_CONNECTED
@@ -85,4 +86,12 @@ export const appReceiveImg = data => ({
 
 export const boxSortCompleted = () => ({
   type: topics.BOX_SORT_COMPLETED
+})
+
+export const disableConnection = () => ({
+  type: topics.CONN_DISABLE
+})
+
+export const resetMiddleware = () => ({
+  type: RESET_MIDDLEWARE
 })

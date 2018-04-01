@@ -29,19 +29,6 @@ class ActionQueue(Queue):
             waiting=waiting,
             pending=pending)
 
-
-    def locked(self):
-        return self.state.locked
-
-    def running(self):
-        return self.state.running
-
-    def pending(self):
-        return self.state.pending
-
-    def waiting(self):
-        return self.state.waiting
-
     def lock(self):
         self.state.locked = True
 

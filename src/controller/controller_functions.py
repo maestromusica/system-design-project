@@ -31,6 +31,7 @@ def onProcess(client, ev3, msg, controller):
     currentExecThread.lock()
     client.publish(topics["CONTROLLER_DELETE"], "all")
     client.publish(topics["APP_REQUEST_IMG"])
+    sendData("executionQueue", client, controller, ev3)
 
 def onProcessResponse(client, ev3, msg, controller):
     print("Hello world")
@@ -50,12 +51,14 @@ def onProcessResponse(client, ev3, msg, controller):
         print("> Accepted")
     elif msg.payload.decode() == "False":
         print("> Not accepted")
+    sendData("actions", client, controller, ev3)
 
 def onSwitchExecutionThread(client, ev3, msg, controller):
     tag = msg.payload.decode()
     switched = controller.changeExecutionQueue(tag)
     if switched:
         print("> Execution thread switched to {0}".format(tag))
+        sendData("executionQueue", client, controller, ev3)
     else:
         print("> Execution thread not switched to {0}".format(tag))
 
@@ -74,6 +77,7 @@ def onSwitchToPending(client, ev3, msg, controller):
 
     execThread.state.pending = True
     print("Execution thread was switched to pending")
+    sendData("pending", client, controller, ev3)
 
 def onSwitchToNotPending(client, ev3, msg, controller):
     tag = msg.payload.decode()
@@ -90,11 +94,11 @@ def onSwitchToNotPending(client, ev3, msg, controller):
 
     execThread.state.pending = False
     print("Execution thread was switched to pending")
+    sendData("pending", client, controller, ev3)
 
 def forwardAction(action):
     def curriedForwardedAction(client, ev3, msg, controller):
         controller.changeExecutionQueue(controllerTag)
-        client.publish(topics["APP_RECEIVE_THREAD"], controller.currentExecThreadTag)
         payload = msg.payload.decode()
         controller.actionQueues[controllerTag].put({
             "action": action,
@@ -104,6 +108,7 @@ def forwardAction(action):
         if currentExecThread.state.pending:
             ev3.publish(topics["EV3_REQUEST_NEXT"])
         print("> Next action added to the queue")
+        sendData("executionQueue", client, controller, ev3)
 
     return curriedForwardedAction
 
@@ -125,6 +130,7 @@ def onDelete(client, ev3, msg, controller):
         for i in range(len(currentExecThread)):
             currentExecThread.remove(0)
         print("> Deleted all actions in the queue")
+        sendData("actions", client, controller, ev3)
         return
     else:
         # asusmed it's an integer
@@ -135,10 +141,11 @@ def onDelete(client, ev3, msg, controller):
         if removed == None:
             print("> Action was not deleted!")
         else:
-            print("> Action WAS deleted.")
+            print("> Action was deleted.")
     else:
         print("Positional argument is not within queue boundary")
         return
+    sendData("actions", client, controller, ev3)
 
 def onNext(client, ev3, msg, controller):
     currentExecThread = controller.currentExecutionThread()
@@ -155,8 +162,8 @@ def onNext(client, ev3, msg, controller):
     ev3.publish(topics["EV3_REQUEST_NEXT"])
     print("> Next action should be sent to ev3.")
 
-def onAppRequestData(client, ev3, msg, controller):
-    whatToSend = msg.payload.decode()
+def sendData(whatToSend, client, controller, ev3):
+    print("Should see this: ", whatToSend)
     currentExecThread = controller.currentExecutionThread()
     if whatToSend == "thread":
         client.publish(topics["APP_RECEIVE_THREAD"], controller.currentExecThreadTag)
@@ -173,6 +180,12 @@ def onAppRequestData(client, ev3, msg, controller):
         client.publish(topics["APP_RECEIVE_CONNECTION"], ev3.connected)
     elif whatToSend == "vision":
         client.publish(topics["APP_RECEIVE_VISION_STATE"], json.dumps(controller.visionState))
+    elif whatToSend == "executionQueue":
+        sendData("thread", client, controller, ev3)
+        sendData("locked", client, controller, ev3)
+        sendData("pending", client, controller, ev3)
+        sendData("waiting", client, controller, ev3)
+        sendData("actions", client, controller, ev3)
     elif whatToSend == "all":
         client.publish(topics["APP_REQUEST"], "thread")
         client.publish(topics["APP_REQUEST"], "locked")
@@ -181,18 +194,15 @@ def onAppRequestData(client, ev3, msg, controller):
         client.publish(topics["APP_REQUEST"], "actions")
         client.publish(topics["APP_REQUEST"], "connection")
         client.publish(topics["APP_REQUEST"], "vision")
+    else:
+        raise Error
+
+def onAppRequestData(client, ev3, msg, controller):
+    whatToSend = msg.payload.decode()
+    currentExecThread = controller.currentExecutionThread()
+    sendData(whatToSend, client, controller, ev3)
 
 def onAppRequestImg(client, ev3, msg, controller):
-    # cap = cv2.VideoCapture(0)
-    # while True:
-    #     retval, img = cap.read()
-    #     if img is not None:
-    #         img = cv2.flip(img, 1)
-    #         retval, buffer = cv2.imencode('.jpg', img)
-    #         jpg = base64.b64encode(buffer)
-    #         client.publish(topics["APP_RECEIVE_IMG"], jpg)
-    #         cap.release()
-    #         break
     global va
     img = va.getFrame()
     retval, buffer = cv2.imencode('.jpg', img)
@@ -225,6 +235,7 @@ def onAppSaveEV11IP(client, ev3, msg, controller):
     ev3.client11.disconnect()
 
     print("> EV3 INF_11 IP rewritten to {0}".format(ip))
+    sendData("connection", client, controller, ev3)
 
 def onAppSaveEV31IP(client, ev3, msg, controller):
     config = json.load(open(configPath))
@@ -236,6 +247,7 @@ def onAppSaveEV31IP(client, ev3, msg, controller):
     ev3.setDisconnected("31")
     ev3.client31.disconnect()
     print("> EV3 INF_31 IP rewritten to {0}".format(ip))
+    sendData("connection", client, controller, ev3)
 
 def onAppConn(client, ev3, msg, controller):
     print("> App wants to connect to the controller!")
@@ -298,13 +310,21 @@ def onResumeSorting(client, ev3, msg, controller):
     currentExecThread.state.pending = True
     currentExecThread.state.locked = False
     client.publish(topics["RESUME_CONTROLLER"])
+    sendData("executionQueue", client, controller, ev3)
 
 def onPauseSorting(client, ev3, msg, controller):
     controller.changeExecutionQueue(visionTag)
     client.publish(topics["STOP_CONTROLLER"])
+    sendData("executionQueue", client, controller, ev3)
 
 def onEndSorting(client, ev3, msg, controller):
     controller.changeExecutionQueue(visionTag)
     currentExecThread = controller.currentExecutionThread()
     currentExecThread.state.locked = True
     client.publish(topics["CONTROLLER_DELETE"], "all")
+    sendData("thread", client, controller, ev3)
+    sendData("pending", client, controller, ev3)
+    sendData("waiting", client, controller, ev3)
+    sendData("locked", client, controller, ev3)
+    # don't send actions because we previously send to delete all acitons
+    # let that function send the app the action Queue

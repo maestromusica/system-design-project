@@ -24,19 +24,20 @@ def onEV3ActionCompleted(client, ev3, msg, controller):
     nothing should be performed here. the execution thread is stopped
     """
     currentExecThread = controller.currentExecutionThread()
-    controller.removeFirstAction()
     if currentExecThread is None:
         print(">>> No execution thread found in the controller!")
-        client.publish(topics["APP_REQUEST"], "all")
         return
-    if currentExecThread.waiting():
+
+    controller.removeFirstAction()
+    client.publish(topics["APP_REQUEST"], "actions")
+    if currentExecThread.state.waiting:
         print(">>> Thread was waiting")
         currentExecThread.state.waiting = False
-    if currentExecThread.locked():
+        client.publish(topics["APP_REQUEST"], "waiting")
+    if currentExecThread.state.locked:
         print(">>> Execution thread is locked. Actions can't be performed")
-        client.publish(topics["APP_REQUEST"], "all")
         return
-    if currentExecThread.pending():
+    if currentExecThread.state.pending:
         if not currentExecThread.empty():
             ev3.publish(topics["EV3_REQUEST_NEXT"])
         else:
@@ -44,7 +45,6 @@ def onEV3ActionCompleted(client, ev3, msg, controller):
     if controller.currentExecThreadTag == visionTag and currentExecThread.empty():
         print(">>> Sorting boxes completed")
         client.publish(topics["BOX_SORT_COMPLETED"])
-    client.publish(topics["APP_REQUEST"], "all")
 
 def onRequestNextEV3Action(client, ev3, msg, controller):
     """Sends the next action to the ev3's.
@@ -58,22 +58,21 @@ def onRequestNextEV3Action(client, ev3, msg, controller):
     - ["LOCKED", *] => no action. current exec thread is locked
     """
     currentExecThread = controller.currentExecutionThread()
-    client.publish(topics["APP_REQUEST"], "all")
-    if currentExecThread.locked():
+    if currentExecThread.state.locked:
         print("> Current execution thread is locked")
         return
-    if currentExecThread.waiting():
+    if currentExecThread.state.waiting:
         print("> Action is not finished on EV3. Can't perform any actions!")
         return
-    if currentExecThread.running():
+    if currentExecThread.state.running:
         if not currentExecThread.empty():
             nextAction = controller.nextAction()
             ev3.publish(nextAction["action"], nextAction["payload"])
             currentExecThread.state.waiting = True
+            client.publish(topics["APP_REQUEST"], "waiting")
             print("> Next action sent to ev3!!!!!!!!")
         else:
             print("> No actions in execution thread!")
-    client.publish(topics["APP_REQUEST"], "all")
 
 def onEV3Stop(client, ev3, msg, controller):
     """This will stop execution on the ev3, and the current action performing
@@ -84,6 +83,8 @@ def onEV3Stop(client, ev3, msg, controller):
     currentExecThread.lock()
     currentExecThread.state.waiting = False
     ev3.publish(topics["EV3_STOP"])
+    client.publish(topics["APP_REQUEST"], "locked")
+    client.publish(topics["APP_REQUEST"], "waiting")
     print("> Action queue locked. Ev3s are STOPPED")
 
 def onEV3Resume(client, ev3, msg, controller):
@@ -92,20 +93,22 @@ def onEV3Resume(client, ev3, msg, controller):
     ev3.publish(topics["EV3_RESUME"])
     currentExecThread = controller.currentExecutionThread()
     currentExecThread.unlock()
+    client.publish(topics["APP_REQUEST"], "locked")
     print("> Execution thread unlocked and ready to resume")
-    if currentExecThread.pending:
+    if currentExecThread.state.pending:
         ev3.publish(topics["EV3_REQUEST_NEXT"])
 
 def onEV3Pause(client, ev3, msg, controller):
     currentExecThread = controller.currentExecutionThread()
     currentExecThread.lock()
     ev3.publish(topics["EV3_PAUSE"])
+    client.publish(topics["APP_REQUEST"], "locked")
     print("> Action queue is locked and ev3s are PAUSED")
-    return
 
 def onEV3ConnectionAck(client, ev3, msg, controller):
     tag = msg.payload.decode()
     ev3.setConnected(tag)
+    client.publish(topics["APP_REQUEST"], "connection")
     print("> EV3 {0} is connected!".format(tag))
 
 class EV3Client():
@@ -178,6 +181,10 @@ class EV3Client():
         self.client11.on_message = function
         # self.client31.on_message = function
 
+    def on_disconnect(self, function):
+        self.client11.on_disconnect = function
+        # self.client31.on_message = function
+
     def setConnected(self, tag):
         if tag == "11":
             self.client11Connected = True
@@ -193,4 +200,6 @@ class EV3Client():
             self.connected = False
         elif tag == "31":
             self.client31Connected = False
+            self.connected = False
+        else:
             self.connected = False

@@ -10,7 +10,13 @@ const withConnection = (Component) => {
 
   const func = ({meta}) => {
     if(meta.connected) {
-      return <Component />
+
+      if(typeof(Component) == "function") {
+        return <Component />
+      }
+      else if(typeof(Component) == "object") {
+        return <Component />
+      }
     }
     else {
       return <DisconnectedComponent />

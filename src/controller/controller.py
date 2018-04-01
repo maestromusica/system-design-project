@@ -3,6 +3,7 @@ import json
 import paho.mqtt.client as mqtt
 import time
 import os
+import atexit
 
 from ._controller import Controller
 from ..utils.action_queue import ActionQueue
@@ -24,12 +25,14 @@ def connectEV3(restart=False):
         ev3.restart()
     ev3.on_connect(onEV3Connect)
     ev3.on_message(onEV3Message)
+    ev3.on_disconnect(onEV3Disconnect)
     ev3.connect()
     ev3.loop_start()
 
 def onAppConnectEV3(client, ev3, msg, controller):
     print("> App wants to connect the ev3s")
     connectEV3(True)
+    sendData("connection", client, controller, ev3)
 
 subscribedTopics = {
     # controller related
@@ -92,16 +95,18 @@ def onConnect(client, userdata, flags, rc):
 
     ev3.on_connect(onEV3Connect)
     ev3.on_message(onEV3Message)
+    ev3.on_disconnect(onEV3Disconnect)
     ev3.connect()
     ev3.loop_start()
-    onStartController(controllerClient,ev3,"",controller)
-    client.publish(topics["APP_REQUEST"], "all")
+    onStartController(controllerClient, ev3, "", controller)
+    client.publish(topics["CONN_ACK"])
+
+def onDisconnect():
+    controllerClient.publish(topics["CONN_DISABLE"])
 
 def onMessage(client, userdata, msg):
     if msg.topic in subscribedTopics.keys():
         subscribedTopics[msg.topic](controllerClient, ev3, msg, controller)
-        if not msg.topic == topics["APP_REQUEST"]:
-            client.publish(topics["APP_REQUEST"], "all")
     else:
         print("Topic {0} is not subscribed".format(msg.topic))
 
@@ -116,11 +121,10 @@ ev3SubscribedTopics = {
 }
 
 def onEV3Connect(client, userdata, flags, rc):
-    print("hey there")
-    controllerClient.publish(topics["APP_REQUEST"], "all")
     for topic in ev3SubscribedTopics.keys():
         client.subscribe(topic)
     ev3.publish(topics["EV3_CONN"])
+    sendData("connection", controllerClient, controller, ev3)
 
 def onEV3Message(client, userdata, msg):
     if msg.topic in ev3SubscribedTopics.keys():
@@ -128,7 +132,14 @@ def onEV3Message(client, userdata, msg):
     else:
         print("Topic {0} is not subscribed".format(msg.topic))
 
+def onEV3Disconnect(client, userdata, rc):
+    print(">>> EV3 disconneted")
+    ev3.setDisconnected("all")
+    send("connection", controllerClient, controller, ev3)
+
 controllerClient.on_connect = onConnect
 controllerClient.on_message = onMessage
+controllerClient.on_disconnect = onDisconnect
+atexit.register(onDisconnect)
 controllerClient.connect(config["ips"]["CONTROLLER"], 1883, 60)
 controllerClient.loop_forever()

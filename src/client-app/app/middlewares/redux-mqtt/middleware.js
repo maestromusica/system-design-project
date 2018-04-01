@@ -13,13 +13,16 @@ import {
   receivedBoxes,
   receiveVisionBoxes,
   appReceiveImg,
-  boxSortCompleted
+  boxSortCompleted,
+  disableConnection,
+  resetMiddleware
 } from './actions'
 
 const initClient = (client, dispatch, state) => {
   console.log("INIT CALLED")
   // dispatch(saveClient(client))
   dispatch(clientDisconnected())
+  dispatch(resetMiddleware())
 
   client.on('connect', () => {
     console.log("on connect called")
@@ -34,6 +37,7 @@ const initClient = (client, dispatch, state) => {
     client.subscribe(topics.APP_RECEIVE_VISION_BOXES)
     client.subscribe(topics.BOX_SORT_COMPLETED)
     client.subscribe(topics.CONN_ACK)
+    client.subscribe(topics.CONN_DISABLE)
 
     client.publish(topics.CONN)
   })
@@ -79,6 +83,9 @@ const initClient = (client, dispatch, state) => {
         break
       case topics.BOX_SORT_COMPLETED:
         dispatch(boxSortCompleted())
+        break
+      case topics.CONN_DISABLE:
+        dispatch(disableConnection())
         break
     }
   })
