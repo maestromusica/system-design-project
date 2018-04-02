@@ -17,6 +17,25 @@ export const adaptCoordinates = (
   return obj
 }
 
+export const adaptBoxCoords = (bins) => {
+  bins = bins.map((bin, level) => {
+    return bin.map((box, idx) => {
+      console.log(box)
+      return {
+        height: 4,
+        width: box.width * 2,
+        depth: box.length * 2,
+        color: box.colour,
+        x: (box.centreto[0] - (box.width / 2)) * 2,
+        y: level * 4,
+        z: (box.centreto[1] - box.length / 2) * 2
+      }
+    })
+  })
+  console.log("Bins: ", bins)
+  return bins
+}
+
 export const adaptColor = color => {
   switch(color) {
     case "green":

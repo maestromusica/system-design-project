@@ -2,6 +2,7 @@ import React from 'react'
 import {connect} from 'react-redux'
 import {bindActionCreators} from 'redux'
 import SimulationRenderer from '../Simulations/SimulationRenderer'
+import {adaptBoxCoords} from '../../utils/simulation'
 
 import {
   Section,
@@ -49,7 +50,7 @@ const SortingHistory = ({vision}) => {
         dataSource={history}
         columns={columns}
         expandedRowRender={record => (
-          <SimulationRenderer boxes={record.originalBoxes} />
+          <SimulationRenderer boxes={adaptBoxCoords(record.originalBoxes)} />
         )}
         size="small"
         bordered

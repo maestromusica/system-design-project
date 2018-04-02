@@ -171,7 +171,6 @@ def onNext(client, ev3, msg, controller):
     print("> Next action should be sent to ev3.")
 
 def sendData(whatToSend, client, controller, ev3):
-    print("Should see this: ", whatToSend)
     currentExecThread = controller.currentExecutionThread()
     if whatToSend == "thread":
         client.publish(topics["APP_RECEIVE_THREAD"], controller.currentExecThreadTag)
@@ -281,21 +280,18 @@ def adaptPackingBoxes(bins):
         sortedBin = []
         lvl += 1
         for box in bin.boxes_packed:
+            print("Box: ", box.colour)
             # we need color, length, width, height, and centreTo
             # invert if we rotate the box
             length = box.length
             width = box.width
 
             sBox = {
-                "height": 4,
-                "width": box.width * 2,
-                "depth": box.length * 2,
-                "color": box.colour,
-                "x": (box.centreto[0] - (box.width / 2)) * 2,
-                "y": lvl * 4,
-                "z": (box.centreto[1] - (box.length / 2)) * 2
+                "width": box.width,
+                "length": box.length,
+                "colour": box.colour,
+                "centreto": box.centreto.tolist()
             }
-            print(sBox)
             sortedBin.append(sBox)
         sortedBoxes.append(sortedBin)
     return sortedBoxes

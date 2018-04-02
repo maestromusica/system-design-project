@@ -4,6 +4,8 @@ import {bindActionCreators} from 'redux'
 
 import boxes from './boxes'
 import SimulationRenderer from './SimulationRenderer'
+import {adaptBoxCoords} from '../../utils/simulation'
+
 import {Button} from '../../styled/components'
 import * as actions from '../../actions'
 
@@ -24,14 +26,13 @@ class Simulations extends Component {
         waiting: false,
         boxes: nextProps.simulation.boxes
       })
-      console.log(nextProps.simulation.boxes)
     }
   }
 
   render() {
     return (
       <div>
-        <SimulationRenderer boxes={this.state.boxes} />
+        <SimulationRenderer boxes={adaptBoxCoords(this.state.boxes)} />
         <Button onClick={ev => {
           this.props.actions.requestBoxes()
           this.setState({
