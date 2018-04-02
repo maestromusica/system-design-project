@@ -2,6 +2,24 @@ import cv2
 import numpy as np
 from base import MaskGenerator, ContourExtractor, CornersDetector, Drawer
 
+global data
+
+def flipX(point,shape):
+    return (int(shape[1] - point[0]-1),int(point[1]))
+
+def findRoi(frame, box):
+    min_x = np.min(box[:,0])
+    max_x = np.max(box[:,0])
+    min_y = np.min(box[:,1])
+    max_y = np.max(box[:,1])
+    h,w,c = frame.shape
+    mask = np.zeros((h,w),np.uint8)
+    mask[min_y:max_y, min_x:max_x] = 255
+    frame = cv2.bitwise_and(frame,frame,mask=mask)
+    return frame
+    
+
+
 #class for finding the workspace out of a big image thing
 class wsFinder(object):
 
@@ -45,11 +63,44 @@ class maskFinder(object):
             masks.update({k:m.extractMask(img)})
         return masks
 
+# class for finding aruco markers
+class ArucoFinder(object):
+    def __init__(self):
+        self.dict_val = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+        
+    def findMarkers(self,frame):
+        
+        # Need to flip the frame because aruco markers are not immune to lateral
+        # inversion.
+        
+        flip = cv2.flip(frame,1)        
+        res = cv2.aruco.detectMarkers(flip,self.dict_val)
+
+        # if aruco markers found
+        if (len(res[0])  > 0):
+            for x in range(len(res[1])):
+                aruco_id = res[1][x][0]
+                # extracting corners
+                corners = res[0][x][0]
+
+                # flipping corners again 
+                for i,p in enumerate(corners):                    
+                    p = flipX(p,frame.shape)
+                    corners[i]=p
+                # calculating centroid
+                centroid = np.sum(corners,axis=0)/4
+
+                return corners, centroid, aruco_id
+
+        return None,None, None
+
+
 #class for finding boxes in the workspace img
 class boxFinder(object):
     def __init__(self, quality):
         self.contourExtractor = ContourExtractor()
         self.cornersDetector = CornersDetector(quality=quality)
+        self.arucoFinder = ArucoFinder()
         self.drawer = Drawer()
         #self.boxDict = {}
 
@@ -66,13 +117,28 @@ class boxFinder(object):
     def find(self, img, masks):
         draw = img.copy()
         boxes = []
+
         for k, m in masks.items():
-            cv2.imshow('mask-'+k,m)
+            #cv2.imshow('mask-'+k,m)
             contours = self.contourExtractor.segmentation(m)
             if len(contours) > 0:
                 for box, rect in contours:
-                    #corners, centroid = self.cornersDetector.detectCorners(img, m, box)
-                    #draw = self.drawer.drawBox(img,corners,centroid,'r')
+                    # extracting roi
+                    roi = findRoi(img,box)
+                    cv2.imshow('roi',roi)
+                    corners_aruco, centroid_aruco, aruco_id = self.arucoFinder.findMarkers(roi)
+                    if corners_aruco is not None:
+                        cv2.circle(draw,tuple(corners_aruco[0]),3,(0,255,0),2)
+                        cv2.circle(draw,tuple(corners_aruco[1]),3,(0,0,255),2)
+                        cv2.circle(draw,tuple(corners_aruco[2]),3,(255,0,0),2)
+                        cv2.circle(draw,tuple(corners_aruco[3]),3,(0,255,255),2)
+                        cv2.circle(draw,tuple(centroid_aruco),3,(255,255,255),2)
+                    else:
+                        # if aruco marker not find. Detection is noise. continue with other boxes.
+                        # drawing false positives with red.
+                        draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'r')
+                        continue
+                    
                     angle = rect[2]
                     if(rect[2] < 2 and rect[2] > -10 or (rect[2] > -90 and rect[2] < -80) ):
                         diff_x = 0
@@ -89,10 +155,13 @@ class boxFinder(object):
                             angle = 0.00
                         elif diff_y > diff_x:
                             angle = 90.00
+                    
                     draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'b')
+                    
                     boxes.append(self.createDict(rect[0],rect[1],k,angle))
                     draw = self.drawer.putText(draw,k,len(contours),angle)                    
                 #self.boxDict.update({k:boxes})
 
         return draw, boxes
+
 
