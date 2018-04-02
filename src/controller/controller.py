@@ -39,6 +39,7 @@ subscribedTopics = {
     topics["START_CONTROLLER"]: onStartController,
     topics["PROCESS_CONTROLLER"]: onProcess,
     topics["PROCESS_RESPONSE_CONTROLLER"]: onProcessResponse,
+    topics["PROCESS_CONTROLLER_ID"]: onProcessReceiveId,
     topics["SWITCH_CONTROLLER_EXEC"]: onSwitchExecutionThread,
     topics["CONTROLLER_DELETE"]: onDelete,
     topics["SWITCH_EXEC_PENDING"]: onSwitchToPending,

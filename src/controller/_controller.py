@@ -7,6 +7,7 @@ class Controller:
         self.currentExecThreadTag = None
         self.sorting  = False
         self.sortedBoxes = []
+        self.sortedId = ""
 
     def addActionQueue(self, tag, actionQueue):
         if tag in self.actionQueues:
