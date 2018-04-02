@@ -73,7 +73,8 @@ export const receivedBoxes = data => ({
 export const receiveVisionBoxes = data => ({
   type: topics.APP_RECEIVE_VISION_BOXES,
   data: {
-    boxes: data
+    boxes: data.boxes,
+    id: data.id
   }
 })
 

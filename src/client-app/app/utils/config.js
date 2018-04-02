@@ -3,6 +3,7 @@ export const topics = {
     "START_CONTROLLER": "action/controller/start",
     "PROCESS_CONTROLLER": "action/controller/process",
     "PROCESS_RESPONSE_CONTROLLER": "action/controller/process/res",
+    "PROCESS_CONTROLLER_ID": "action/controller/process/add/id",
     "CONTROLLER_DELETE": "action/controller/delete/exec/action",
 
     "STOP_CONTROLLER": "action/controller/stop/ev3",

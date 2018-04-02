@@ -6,6 +6,7 @@ import * as actions from '../../actions'
 import {Button, FloatingButtons} from '../../styled/components'
 import {Section} from '../../styled/section'
 import {MQTT_IP, topics} from '../../utils/config'
+import {adaptBoxCoords} from '../../utils/simulation'
 import SimulationRenderer from '../Simulations/SimulationRenderer'
 import SortingHistory from './SortingHistory'
 import Controls from './Controls'
@@ -75,7 +76,7 @@ class Dashboard extends Component {
           )}
         {this.props.vision.sorting
           && this.props.meta.connected && this.props.meta.ev3Connected ? (
-            <SimulationRenderer boxes={this.props.vision.boxes} />
+            <SimulationRenderer boxes={adaptBoxCoords(this.props.vision.boxes)} />
           ) : (
             null
           )}

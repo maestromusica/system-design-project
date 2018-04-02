@@ -2,6 +2,9 @@ import React from 'react'
 import {connect} from 'react-redux'
 import {bindActionCreators} from 'redux'
 import SimulationRenderer from '../Simulations/SimulationRenderer'
+import {adaptBoxCoords} from '../../utils/simulation'
+
+import * as actions from '../../actions'
 
 import {
   Section,
@@ -18,15 +21,17 @@ const calculateRecursiveLength = arr => {
   return length
 }
 
-const SortingHistory = ({vision}) => {
-  const history = vision.history.map((el, key) => {
-    return {
-      key: key + 1,
+const SortingHistory = ({vision, actions}) => {
+  let history = []
+  for(const id in vision.history) {
+    const el = vision.history[id]
+    history.push({
+      key: el.id,
       date: (new Date(el.dateCompleted)).toDateString(),
       boxes: calculateRecursiveLength(el.boxes),
       originalBoxes: el.boxes
-    }
-  })
+    })
+  }
 
   const columns = [{
     title: "#",
@@ -40,6 +45,16 @@ const SortingHistory = ({vision}) => {
     title: "# of boxes",
     dataIndex: "boxes",
     key: "boxes"
+  }, {
+    title: 'Opeartion',
+    render: (text, record) => (
+      <span>
+        <a onClick={ev => {
+          actions.processSendId(record.key)
+          actions.processRequest()
+        }}>Use pallet</a>
+      </span>
+    )
   }]
 
   return (
@@ -49,7 +64,7 @@ const SortingHistory = ({vision}) => {
         dataSource={history}
         columns={columns}
         expandedRowRender={record => (
-          <SimulationRenderer boxes={record.originalBoxes} />
+          <SimulationRenderer boxes={adaptBoxCoords(record.originalBoxes)} />
         )}
         size="small"
         bordered
@@ -62,4 +77,8 @@ const mapStateToProps = state => ({
   vision: state.vision
 })
 
-export default connect(mapStateToProps)(SortingHistory)
+const mapDispatchToAction = dispatch => ({
+  actions: bindActionCreators(actions, dispatch)
+})
+
+export default connect(mapStateToProps, mapDispatchToAction)(SortingHistory)

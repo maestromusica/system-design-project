@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Switch, Route} from 'react-router';
+import {Switch, Route, withRouter} from 'react-router';
 import styled, {keyframes} from 'styled-components'
 import LogoSvg from './components/AppBar/logo-sortx.svg'
 
@@ -43,13 +43,14 @@ const Animated = styled(Main)`
 const dev = withConnection(Development)
 const sims = withConnection(Simulations)
 
-export default class App extends Component {
+class App extends Component {
   state = {
     renderedLogo: true,
     shouldRender: false
   }
 
   componentDidMount() {
+    this.props.history.push("/dashboard")
     setTimeout(() => {
       this.setState({
         renderedLogo: false
@@ -75,10 +76,10 @@ export default class App extends Component {
             <Menu />
             <Content>
               <Switch>
-                <Route exact path="/dashboard" component={Dashboard} />
-                <Route exact path="/development" component={dev} />
-                <Route exact path="/simulations" component={sims} />
-                <Route exact path="/settings" component={Settings} />
+                <Route exact path="/dashboard" default component={Dashboard} />
+                <Route path="/development" component={dev} />
+                <Route path="/simulations" component={sims} />
+                <Route path="/settings" component={Settings} />
               </Switch>
             </Content>
           </Animated>
@@ -89,3 +90,5 @@ export default class App extends Component {
     )
   }
 }
+
+export default withRouter(App)

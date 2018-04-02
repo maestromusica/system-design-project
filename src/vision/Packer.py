@@ -1,156 +1,69 @@
 from Containers import Bin
-from Parameters import offset
 import logging
 import numpy as np
+from rectpack import float2dec, newPacker, MaxRectsBaf, MaxRectsBl, MaxRectsBssf, MaxRectsBlsf, SkylineBl, SkylineBlWm, SkylineMwf, SkylineMwfl, SkylineMwfWm, SkylineMwflWm
+from PIL import Image
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import uuid
 
-class BPOF(object):
+class SimpleGreedy(object):
 
     def __init__(self, boxes, binSize):
         self.binSize = binSize
-        #list of bin objects
-        self.boxes = sorted(boxes, key=lambda box: (box.length,box.width))
-        self.boxes.reverse()
-        logging.debug("Contents of sorted boxes: {}".format([(box.colour, box.length, box.centrefrom) for box in self.boxes]))
+        self.error = {'Free Space':{0:0},'Bins Expected':0,'Density':{0:0},'Bins Used':0}
         self.bins = []
-        L = self.compute_L()
-        self.error = {"Bins Expected:":L}
+
+
+    def sort(self, boxes):
+
+        boxes = sorted(boxes, reverse=True, key=lambda box: (box.length,box.width))
+
+
+        #compute L, the number of expected bins
+        L = self.compute_L([box.area for box in sorted_boxes])
+
+        #create the bins to be packed into
         while L > 0:
             self.bins.append(Bin(self.binSize))
             L -= 1
 
+        self.error.update({"Bins Expected":len(self.bins)})
 
-    def get_xy(self):
-        coord_sets = []
-        for b in self.bins:
-            coords = []
-            for box in b.boxes_packed:
-                coords.append((box.centrefrom,box.centreto))
-            coord_sets.append(coords)
-        return coord_sets
+        for box in sorted_boxes:
+            b = 0
+            while not box.packed:
+                try:
+                    self.pack(self.bins[b],box)
+                    b += 1
+                except IndexError:
+                    self.bins.append(Bin(self.binSize))
 
-    def sort(self):
-        #PHASE ONE
-        n_packed = 0
-        bxs = len(self.boxes)
         bns = len(self.bins)
         rtl = False
-        logging.debug("PHASE ONE:")
-        for box in self.boxes:
-            i = 0
-            while i < bns:
-                logging.debug("######Packing to bin {}#######".format(i))
-                if self.pack(self.bins[i],box,rtl):
-                    n_packed += 1
-                    i = bns
-                else: i += 1
 
-        #PHASE TWO
-        logging.debug("PHASE TWO:")
-        i = 0
-        n_prev = n_packed
-        while n_packed < bxs:
-            try:
-                logging.debug("n_packed: {}".format(n_packed))
-                n_fail = 0
-                rtl=True
-                while n_fail < 2:
-                    for box in [box for box in self.boxes if not box.packed]:
-                        logging.debug("in second while loop, about to pack into bin {}, nfail={}, rtl={}".format(i,n_fail,rtl))
-                        if self.pack(self.bins[i], box, rtl):
-                            n_packed += 1
-                    if n_packed == n_prev:
-                        n_fail += 1
-                        logging.debug("added 1 to nfail: {}".format(n_fail))
-                    n_prev = n_packed
-                    logging.debug("change directions rtl:{} to not rtl:{}".format(rtl,not rtl))
-                    rtl = not rtl
-                i+=1
-                logging.debug("now on bin {}".format(i))
-            except IndexError:
-                self.bins.append(Bin(self.binSize))
-                logging.debug("ADDED NEW BIN!!!!!!!!!!!!!!!!!!!!")
+        for box in sorted_boxes:
+            b = 0
+            while not box.packed:
+                try:
+                    self.pack(self.bins[b],box)
+                    b += 1
+                except IndexError:
+                    self.bins.append(Bin(self.binSize))
 
-    def compute_L(self):
-        total_area = np.float32(0)
-        bin_area = np.float32(self.binSize[0]*self.binSize[1])
-        logging.debug("Type check total_area: {}, bin_area: {}".format(total_area.__class__, bin_area.__class__))
-        for box in self.boxes:
-            total_area += box.area
+
+
+    def compute_L(self, boxes):
+        total_area = sum(boxes)
+        bin_area = self.binSize[0]*self.binSize[1]
+        for b in self.bins:
+                total_area -= b.freeArea
         L = np.int8(np.ceil(total_area/bin_area))
-        logging.debug("Type check L: {}".format(L.__class__))
         return L
 
 
     def pack(self, con, box, rtl):
-        '''
-        #STUPID CODE
 
-        logging.debug("Packing Box:: Colour: {}, Centre: {}, Length: {}, Width, {}".format(box.colour,box.centrefrom,box.length,box.width))
-        cols = list(range(0,np.int8(con.width-box.width+1-offset)))
-        logging.debug("Cols Range Before Reverse: {}".format(cols))
-        if rtl: cols.reverse()
-        logging.debug("Cols Range After Reverse: {}".format(cols))
-        for i in range(0,np.int8(con.length-box.length+1-offset)):
-            for j in cols:
-                logging.debug("Packing from corner: {},{} with rtl: {}".format(j,i,rtl))
-                if np.all(con.area[i:np.int8(i+box.length)+offset + 1,j:np.int8(j+box.width)+offset + 1]):
-                    logging.debug("Packing in area: \n{}".format(con.area[i:np.int8(i+box.length+offset),j:np.int8(j+box.width+offset)]))
-                    con.area[i:np.int8(i+box.length)+offset + 1,j:np.int8(j+box.width)+offset + 1] = False
-                    vec = np.float32([box.width/2,box.length/2])
-                    logging.debug("Box Vector: {}".format(vec))
-                    box.centreto = np.array(([j+offset/2+vec[0],i+offset/2+vec[1]]),dtype=np.float32)# + vec
-                    logging.debug("Centre Point: {}".format(box.centreto))
-                    con.boxes_packed.append(box)
-                    box.packed = True
-                    return box.packed
-
-        '''
-
-        '''
-        #TRIVIL
-
-        vec = np.float32([box.width/2,box.length/2])
-
-        boxes_packed = con.boxes_packed
-        l = 0
-
-        for b in boxes_packed:
-            l = l + b.width
-        box.centreto = np.array(([l+vec[0],vec[1]]),dtype=np.float32)
-        con.boxes_packed.append(box)
-        box.packed = True
-        '''
-
-        '''
-        BETTER ALGORITHM
-        for x in con.corners:
-            w = x[0]
-            l = x[1]
-            b_w = box.width
-            b_l = box.length
-            ## inside bin and bot overlap
-            inside = con.inside(box,x)
-            overlap = False
-            c_w = w + b_w/2
-            c_l = l + b_l/2
-            for y in con.boxes_packed :
-                c0 = y.centreto[0]
-                c1 = y.centreto[1]
-                if y.width + b_w > 2*( np.abs( c0 - c_w) + 0.001 ) and y.length + b_l > 2*( np.abs( c1 - c_l) + 0.001 ) :
-                    overlap = True
-                    break
-            if inside and not overlap:
-                box.centreto = np.array(([ c_w ,c_l ]))
-                con.corners.append([w + b_w ,l + b_l] )
-                con.corners.append([w ,l + b_l] )
-                con.corners.append([w + b_w ,l] )
-                con.corners.sort(key=lambda x: x[0] + x[1])
-                con.boxes_packed.append(box)
-                box.packed = True
-                break
-        '''
-
-        offset = 0.3
         for w in con.ws:
             t = False
             for l in con.ls:
@@ -165,14 +78,14 @@ class BPOF(object):
                 for y in con.boxes_packed :
                     c0 = y.centreto[0]
                     c1 = y.centreto[1]
-                    if y.width + b_w + offset > 2*( np.abs( c0 - c_w) + 0.001 ) and y.length + b_l + offset > 2*( np.abs( c1 - c_l) + 0.001 ) :
+                    if y.width + b_w > 2*( np.abs( c0 - c_w) + 0.001 ) and y.length + b_l > 2*( np.abs( c1 - c_l) + 0.001 ) :
                         overlap = True
                         break
                 if inside and not overlap:
                     print(con.ws)
-                    box.centreto = np.array(([ c_w + offset/2 ,c_l + offset/2 ]))
-                    con.ws.append(w + b_w + offset )
-                    con.ls.append(l + b_l + offset )
+                    box.centreto = np.array(([ c_w ,c_l]))
+                    con.ws.append(w + b_w)
+                    con.ls.append(l + b_l)
                     con.ws.sort()
                     con.ls.sort()
                     con.boxes_packed.append(box)
@@ -184,206 +97,467 @@ class BPOF(object):
         return box.packed
 
 
-
     def get_error(self):
         self.error.update({"Bins Used":len(self.bins)})
-        self.calculate_waste()
+        bin_area = self.binSize[0]*self.binSize[1]
+        for i, b in enumerate(self.bins):
+            self.error['Free Space'][i] = b.freeArea
+            self.error['Density'][i] = sum([box.area for box in b.boxes_packed])/bin_area
+
         return self.error
 
-    def calculate_waste(self):
-        total_area_available = np.float32(0)
-        total_area_packed = np.float32(0)
-        for b in self.bins:
-            total_area_available += b.length*b.width
-            for pb in b.boxes_packed:
-                total_area_packed += pb.area
-        self.error.update({"Calculated Area Wastage":np.abs(total_area_available - total_area_packed)})
-        tot = 0
-        for b in self.bins:
-            tot += np.sum(b.area)
-        self.error.update({"Measured Area Wastage": tot})
 
 
 
 class BPRF(object):
-    def __init__(self, boxes, binSize):
+
+    def __init__(self, binSize, sort_t):
         self.binSize = binSize
-        self.boxes = sorted(boxes, key=lambda box: (box.area,max(box.width,box.length)))
-        self.boxes.reverse()
-        logging.debug("Contents of sorted boxes: {}".format([(box.colour, box.length, box.centrefrom) for box in self.boxes]))
         self.bins = []
-        L = self.compute_L()
-        self.error = {"Bins Expected:":L}
+        self.error = {'Free Space':{0:0},'Bins Expected':0,'Density':{0:0},'Bins Used':0}
+        self.sort_t = sort_t or 'AREA'
+
+
+    def sort(self, boxes):
+        #Sort the Boxes to be packed by nonincreasing area
+        sorted_boxes = sorted(boxes, reverse=True, key=lambda box: (box.area,max(box.width,box.length)))
+
+        #compute L, the number of expected bins
+        L = self.compute_L([box.area for box in sorted_boxes])
+        #create the bins to be packed into
         while L > 0:
             self.bins.append(Bin(self.binSize))
             L -= 1
 
+        self.error.update({"Bins Expected":len(self.bins)})
 
+        for box in sorted_boxes:
+            b = 0
+            while not box.packed:
+                try:
+                    self.pack(self.bins[b],box)
+                    b += 1
+                except IndexError:
+                    self.bins.append(Bin(self.binSize))
 
-    def sort(self):
-        for box in self.boxes:
-            logging.debug("packing box colour: {}, centre: {}".format(box.colour,box.centrefrom))
-            score = 0
-            packto = (len(self.bins), (0,0), False, score)
-            logging.debug("packto: {}".format(packto))
-            for i in range(0,len(self.bins)):
-                logging.debug("for bin {}".format(i))
-                logging.debug("nonrotated")
-                poslist = self.getPositions(np.int8(box.width), np.int8(box.length), i)
-                if len(poslist) > 0:
-                    for pos in poslist:
-                        newscore = self.score(pos,np.int8(box.width+offset),np.int8(box.length+offset),i)
-                        if  newscore > score:
-                            packto=(i, pos, False, newscore)
-                            score = newscore
-                        logging.debug("packto: {}".format(packto))
-                    logging.debug("rotated")
-                poslist = self.getPositions(np.int8(box.length),np.int8(box.width),i)
-                if len(poslist)>0:
-                    for pos in poslist:
-                        newscore = self.score(pos,np.int8(box.length+offset),np.int8(box.width+offset),i)
-                        if newscore > score:
-                            packto=(i, pos, True,newscore)
-                            score = newscore
-                        logging.debug("packto: {}".format(packto))
-            try:
-                self.pack(packto[0],packto[1],packto[2], box)
-            except IndexError:
-                self.bins.append(Bin(self.binSize))
-                self.pack(packto[0],packto[1],packto[2], box)
-
-    def pack(self, bn, cor, rot, box):
-        #bn is the bin object, cor is tuple bottom left corner, rot is bool rotated or not, box is the box object
-        (cw,cl) = cor
-        if rot:
-            bw = np.int8(box.length+offset)
-            bl = np.int8(box.width+offset)
-            box.rotateto = rot
-        else:
-            bw = np.int8(box.width+offset)
-            bl = np.int8(box.length+offset)
-
-        self.bins[bn].area[cw:cw+bw,cl:cl+bl] = False
-        box.centreto = (cw+bw/2,cl+bl/2)
-        self.bins[bn].boxes_packed.append(box)
-
-    #returns a list of coordinates centroid from, to, and whether it needs to be rotated on the way
-    def get_xy(self):
-        coord_sets = []
-        logging.debug("getting box coordinates")
+    def compute_L(self, boxes):
+        total_area = sum(boxes)
+        bin_area = self.binSize[0]*self.binSize[1]
         for b in self.bins:
-            coords = []
-            for box in b.boxes_packed:
-                coords.append((box.centrefrom,box.centreto,box.rotateto))
-            coord_sets.append(coords)
-            logging.debug("box coordinates: {}".format(coord_sets))
-        return coord_sets
-
-    #score assumes that the boxdims include the offset
-    def score(self, corner , w, l, bid):
-        logging.debug("Calculating score for bin {}".format(bid))
-        (blw,bll) = corner
-        logging.debug("Bin Area: \n{}".format(self.bins[bid].area))
-        total = 0
-        #add up bottom width
-        logging.debug("about to add up bottom width")
-        if blw == 0:
-            total += l
-            logging.debug("blw is 0, added entire length")
-        else:
-            logging.debug("blw is not 0")
-            for i in range(0,l):
-                logging.debug("checking point ({},{})".format(blw-1,bll+i))
-                if not self.bins[bid].area[blw-1][bll+i]:
-                    logging.debug("adding 1")
-                    total += 1
-        #add up left length
-        logging.debug("about to add up left length")
-        if bll == 0:
-            total += w
-            logging.debug("bll is 0, added entire width")
-        else:
-            logging.debug("bll is not 0")
-            for i in range(0,w):
-                logging.debug("checking point ({},{})".format(blw+i,bll-1))
-                if not self.bins[bid].area[blw+i][bll-1]:
-                    logging.debug("adding 1")
-                    total += 1
-        #change (blw,bll) to top right corner
-        blw += w; bll += l
-        logging.debug("top right corner dims {},{}".format(blw,bll))
-        #add up top width
-        if blw == self.binSize[0]-1:
-            total += l
-            logging.debug("blw is binsize [{}], added entire length".format(blw))
-        else:
-            for i in range(0,l):
-                logging.debug("checking point ({},{})".format(blw+1,bll-i))
-                if not self.bins[bid].area[blw+1][bll-i]:
-                    total += 1
-        #add up right length
-        if bll == self.binSize[1]-1:
-            total += w
-            logging.debug("bll is binsize [{}] added entire width".format(bll))
-        else:
-            for i in range(0,w):
-                logging.debug("checking point ({},{})".format(blw-i,bll+1))
-                if not self.bins[bid].area[blw-i][bll+1]:
-                    total += 1
-        #get float thing
-        score = np.float32(total/(2*(w+l)))
-        logging.debug("score: {}".format(score))
-        return score
-
-    def getPositions(self, w, l, bid):
-        #list of tuples: positions by bottom left corner
-        poslist = []
-        logging.debug("whats in the box? {}".format(self.bins[bid].boxes_packed))
-        if len(self.bins[bid].boxes_packed)>0:
-            for box in self.bins[bid].boxes_packed:
-                (cw,cl) = box.centreto
-                bw = box.width+offset
-                bl = box.length+offset
-                topleft = (np.int8(cw-bw/2),np.int8(cl+bl/2))
-                btmright = (np.int8(cw+bw/2),np.int8(cl-bl/2))
-                corners = [topleft,btmright]
-                logging.debug("corners possible: {}".format(corners))
-                #add the corner if it is a suitable position
-                for cor in corners:
-                    if not self.binSize[0]-1 < cor[0]+w+offset and not self.binSize[1]-1 < cor[1]+l+offset:
-                        if np.all(self.bins[bid].area[cor[0]:cor[0]+w+offset,cor[1]:cor[1]+l+offset]):
-                            poslist.append(cor)
-
-        else:
-            poslist.append((0,0))
-        logging.debug("poslist: {}".format(poslist))
-        return poslist
-
-
-    def compute_L(self):
-        total_area = np.float32(0)
-        bin_area = np.float32(self.binSize[0]*self.binSize[1])
-        logging.debug("Type check total_area: {}, bin_area: {}".format(total_area.__class__, bin_area.__class__))
-        for box in self.boxes:
-            total_area += box.area
+                total_area -= b.freeArea
         L = np.int8(np.ceil(total_area/bin_area))
-        logging.debug("Type check L: {}".format(L.__class__))
         return L
+
+    def pack(self, con, box):
+
+        smax = -1
+        rotate = False
+        cto_w = 0
+        cto_l = 0
+        w_new = 0
+        l_new = 0
+
+        for w in con.ws:
+            for l in con.ls:
+                x = [w,l]
+                b_w = box.width
+                b_l = box.length
+                ## inside bin and bot overlap
+                inside = con.inside(box,x)
+                inside_R = con.inside_R(box,x)
+                score = 0
+                score_R = 0
+                overlap = False
+                c_w = w + b_w/2
+                c_l = l + b_l/2
+                con_w = con.width
+                con_l = con.length
+                overlap_R = False
+                c_w_R = w + b_l/2
+                c_l_R = l + b_w/2
+
+                for y in con.boxes_packed :
+                    c0 = y.centreto[0]
+                    c1 = y.centreto[1]
+
+                    if y.width + b_w > 2*( np.abs( c0 - c_w) + 0.001 ) and y.length + b_l > 2*( np.abs( c1 - c_l) + 0.001 ) :
+                        overlap = True
+                        break
+
+                    if np.abs( y.width + b_w - 2*( np.abs( c0 - c_w) ) ) < 0.01:
+                        score = score + np.maximum( 0 , ( (y.length + b_l)*0.5 - np.abs( c1 - c_l) ) )
+                    if np.abs( y.length + b_l - 2*( np.abs( c1 - c_l) ) ) < 0.01:
+                        score = score + np.maximum( 0 , (y.width + b_w)*0.5 - np.abs( c0 - c_w) )
+
+                if l == 0 :
+                    score = score + b_w
+                if w == 0 :
+                    score = score + b_l
+                if np.abs(con_w - w - b_w ) < 0.1:
+                    score = score + b_l
+                if np.abs(con_l - l - b_l ) < 0.1:
+                    score = score + b_w
+
+                if l == 0 :
+                    score_R = score_R + b_l
+                if w == 0 :
+                    score_R = score_R + b_w
+                if np.abs(con_w - w - b_l ) < 0.1:
+                    score_R = score_R + b_l
+                if np.abs(con_l - l - b_w ) < 0.1:
+                    score_R = score_R + b_w
+
+                for y in con.boxes_packed :
+                    c0 = y.centreto[0]
+                    c1 = y.centreto[1]
+                    if y.width + b_l > 2*( np.abs( c0 - c_w_R) + 0.001 ) and y.length + b_w > 2*( np.abs( c1 - c_l_R) + 0.001 ) :
+                        overlap_R = True
+                        break
+                    if np.abs( y.width + b_w - 2*( np.abs( c0 - c_w_R) ) ) < 0.01:
+                        score_R = score_R + np.maximum( 0 , ( (y.length + b_w)*0.5 - np.abs( c1 - c_l_R) ) )
+                    if np.abs( y.length + b_l - 2*( np.abs( c1 - c_l_R) ) ) < 0.01:
+                        score_R = score_R + np.maximum( 0 , (y.width + b_l)*0.5 - np.abs( c0 - c_w_R) )
+
+
+
+                if inside and not overlap:
+                    box.packed = True
+                    if score > smax :
+                        smax = score
+                        rotate = False
+                        cto_w = c_w
+                        cto_l = c_l
+                        w_new = w + b_w
+                        l_new = l + b_l
+
+
+
+                elif inside_R and not overlap_R:
+                    box.packed = True
+                    if score_R > smax :
+                        smax = score_R
+                        rotate = True
+                        cto_w = c_w_R
+                        cto_l = c_l_R
+                        w_new = w + b_l
+                        l_new = l + b_w
+
+
+
+        if box.packed:
+            if rotate:
+                box.rotateto = 90.00
+                box.vec = np.array([box.length,box.width])
+            else: box.rotateto = 0.00
+            box.centreto = np.array(([ cto_w, cto_l ]))
+            con.boxes_packed.append(box)
+            con.freeArea -= box.area
+            con.ws.append( w_new )
+            con.ls.append( l_new )
+            con.ws.sort()
+            con.ls.sort()
+        print(box.packed)
+        print(con.ls)
+        print(smax)
+        return box.packed
+
 
     def get_error(self):
         self.error.update({"Bins Used":len(self.bins)})
-        self.calculate_waste()
+        bin_area = self.binSize[0]*self.binSize[1]
+        for i, b in enumerate(self.bins):
+            self.error['Free Space'][i] = b.freeArea
+            self.error['Density'][i] = sum([box.area for box in b.boxes_packed])/bin_area
+
         return self.error
 
-    def calculate_waste(self):
-        total_area_available = np.float32(0)
-        total_area_packed = np.float32(0)
+
+
+class RectPacker(object):
+    def __init__(self, binSize, ba, pa, st):
+        self.binSize = binSize
+        self.bins = []
+        self.error = {'Free Space':{0:0},'Bins Expected':0,'Density':{0:0},'Bins Used':0}
+        #to use GB made mode 1, but it moves boxes around on the pallet
+        self.packer = newPacker(mode = 0,bin_algo = ba ,pack_algo=pa, rotation=True)
+        self.packer.add_bin(self.binSize[0],self.binSize[1],float('inf'))
+        self.sort_t = st or 'WEIGHT'
+
+
+    def boxSort(self, boxes):
+        if self.sort_t == 'WEIGHT':
+            sorted_boxes = sorted(boxes, reverse=True, key=lambda box: box.weight) #sort by weight
+        elif self.sort_t =='AREA':
+            sorted_boxes = sorted(boxes, reverse=True, key=lambda box: box.area) #sort by area
+        elif self.sort_t == 'LENGTH':
+            sorted_boxes = sorted(boxes, reverse=True, key=lambda box: box.length) #sort by length
+        elif self.sort_t == 'SSIDE':
+            sorted_boxes = sorted(boxes, reverse=True, key=lambda box: (min(box.width,box.length), max(box.width,box.length))) #sort by short side
+        elif self.sort_t == 'LSIDE':
+            sorted_boxes = sorted(boxes, reverse=True, key=lambda box: (max(box.width,box.length), min(box.width,box.length))) #sort by long side
+        elif self.sort_t == 'PERI':
+            sorted_boxes = sorted(boxes, reverse=True, key=lambda box: box.length+box.width) # Sort by perimeter
+        elif self.sort_t == 'DIFF':
+            sorted_boxes = sorted(boxes, reverse=True, key=lambda box: abs(box.length-box.width)) # Sort by Diff
+        elif self.sort_t == 'RATIO':
+            sorted_boxes = sorted(boxes, reverse=True, key=lambda box: box.length/box.width) # Sort by side ratio
+        else:
+            sorted_boxes = boxes
+        return sorted_boxes
+
+    def sort(self, boxes):
+
+        self.error['Bins Expected'] += self.compute_L([box.area for box in boxes])
+
+        sorted_boxes = self.boxSort(boxes)
+
+        packed_boxes = {}
+        for box in sorted_boxes:
+            rid = uuid.uuid4().hex
+            self.packer.add_rect(box.width,box.length,rid)
+            box.newBox = True
+            packed_boxes[rid] = box
+        #uncomment to use offline packing
+        #self.packer.pack()
+
+        L = len(self.packer) - len(self.bins)
+        while L > 0:
+            self.bins.append(Bin(self.binSize))
+            L -=1
+
+        for (b,x,y,w,l,rid) in self.packer.rect_list():
+            try:
+                box = packed_boxes[rid]
+                self.pack(box,self.bins[b],x,y,w,l)
+            except KeyError:
+                #box already packed
+                pass
+
+
+
+    def showRectList(self):
+        levels = []
+        for i in range(len(self.packer)):
+            levels.append({})
+        for (b,x,y,w,l,rid) in self.packer.rect_list():
+            levels[b][str(x)+str(y)+rid] = {'cor1':y*100,'cor2':x*100,'dim1':l*100,'dim2':w*100}
+        for l in levels:
+            im = np.array(Image.open('Container2.png'), dtype=np.uint8)
+            fig,ax = plt.subplots(1)
+            ax.imshow(im)
+            for k, b in l.items():
+                rect = patches.Rectangle((b['cor1'],b['cor2']),b['dim1'],b['dim2'],linewidth=1,edgecolor='black')
+                ax.add_patch(rect)
+        plt.show()
+
+    def pack(self,box,b,x,y,w,l):
+        #box object, bin object, x and y of bl corner, w and l of packed rectangle (possibly rotated)
+        corner = np.array([x,y])
+
+        if box.width == w and box.length == l:
+            box.rotateto = 0.00
+        elif box.width == l and box.length == w:
+            box.rotateto = 90.00
+            box.vec = np.array([box.length,box.width])
+        else:
+            print('LENGTH WIDTH MISTAKE')
+            print(box.centrefrom,box.width,w,box.length,l,box.colour)
+
+        box.centreto = corner+box.vec/2
+        box.packed = True
+
+        b.boxes_packed.append(box)
+        b.freeArea -= box.area
+
+
+    def compute_L(self, boxes):
+        total_area = sum(boxes)
+        bin_area = self.binSize[0]*self.binSize[1]
         for b in self.bins:
-            total_area_available += b.length*b.width
-            for pb in b.boxes_packed:
-                total_area_packed += pb.area
-        self.error.update({"Calculated Area Wastage":np.abs(total_area_available - total_area_packed)})
-        tot = 0
-        for b in self.bins:
-            tot += np.sum(b.area)
-        self.error.update({"Measured Area Wastage": tot})
+                total_area -= b.freeArea
+        L = np.int8(np.ceil(total_area/bin_area))
+        return L
+
+    #maybe need to mod this
+    def get_error(self):
+        self.error.update({"Bins Used":len(self.bins)})
+        bin_area = self.binSize[0]*self.binSize[1]
+        for i, b in enumerate(self.bins):
+            self.error['Free Space'][i] = b.freeArea
+            self.error['Density'][i] = sum([box.area for box in b.boxes_packed])/bin_area
+
+        return self.error
+
+
+
+class MaxRectsBaf_NF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 0, MaxRectsBaf, sort_t)
+
+
+class MaxRectsBaf_FF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 1, MaxRectsBaf, sort_t)
+
+
+class MaxRectsBaf_BF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 2, MaxRectsBaf, sort_t)
+
+class MaxRectsBaf_GB(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 3, MaxRectsBaf, sort_t)
+
+class MaxRectsBl_NF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 0, MaxRectsBl, sort_t)
+
+
+class MaxRectsBl_FF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 1, MaxRectsBl, sort_t)
+
+
+class MaxRectsBl_BF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 2, MaxRectsBl, sort_t)
+
+class MaxRectsBl_GB(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 3, MaxRectsBl, sort_t)
+
+
+class MaxRectsBssf_NF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 0, MaxRectsBssf, sort_t)
+
+
+class MaxRectsBssf_FF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 1, MaxRectsBssf, sort_t)
+
+
+class MaxRectsBssf_BF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 2, MaxRectsBssf, sort_t)
+
+class MaxRectsBssf_GB(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 3, MaxRectsBssf, sort_t)
+
+
+class MaxRectsBlsf_NF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 0, MaxRectsBlsf, sort_t)
+
+
+class MaxRectsBlsf_FF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 1, MaxRectsBlsf, sort_t)
+
+
+class MaxRectsBlsf_BF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 2, MaxRectsBlsf, sort_t)
+
+class MaxRectsBlsf_GB(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 3, MaxRectsBlsf, sort_t)
+
+
+class SkylineBlWm_BF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 2, SkylineBlWm, sort_t)
+
+class SkylineBl_BF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 2, SkylineBl, sort_t)
+
+class SkylineMwf_BF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 2, SkylineMwf, sort_t)
+
+class SkylineMwfl_BF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 2, SkylineMwfl, sort_t)
+
+class SkylineMwflWm_BF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 2, SkylineMwflWm, sort_t)
+
+class SkylineMwfWm_BF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 2, SkylineMwfWm, sort_t)
+
+class SkylineBlWm_NF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 0, SkylineBlWm, sort_t)
+
+class SkylineBl_NF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 0, SkylineBl, sort_t)
+
+class SkylineMwf_NF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 0, SkylineMwf, sort_t)
+
+class SkylineMwfl_NF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 0, SkylineMwfl, sort_t)
+
+class SkylineMwflWm_NF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 0, SkylineMwflWm, sort_t)
+
+class SkylineMwfWm_NF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 0, SkylineMwfWm, sort_t)
+
+class SkylineBlWm_FF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 1, SkylineBlWm, sort_t)
+
+class SkylineBl_FF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 1, SkylineBl, sort_t)
+
+class SkylineMwf_FF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 1, SkylineMwf, sort_t)
+
+class SkylineMwfl_FF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 1, SkylineMwfl, sort_t)
+
+class SkylineMwflWm_FF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 1, SkylineMwflWm, sort_t)
+
+class SkylineMwfWm_FF(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 1, SkylineMwfWm, sort_t)
+
+
+class SkylineBlWm_GB(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 3, SkylineBlWm, sort_t)
+
+class SkylineBl_GB(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 3, SkylineBl, sort_t)
+
+class SkylineMwf_GB(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 3, SkylineMwf, sort_t)
+
+class SkylineMwfl_GB(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 3, SkylineMwfl, sort_t)
+
+class SkylineMwflWm_GB(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 3, SkylineMwflWm, sort_t)
+
+class SkylineMwfWm_GB(RectPacker):
+    def __init__(self, binSize, sort_t=None):
+        super().__init__(binSize, 3, SkylineMwfWm, sort_t)

@@ -37,6 +37,10 @@ def onProcess(client, ev3, msg, controller):
     sendData("vision", client, controller, ev3)
     sendData("visionBoxes", client, controller, ev3)
 
+def onProcessReceiveId(client, ev3, msg, controller):
+    print(">>> Pallet id received: ", msg.payload.decode())
+    controller.sortedId = msg.payload.decode()
+
 def onProcessResponse(client, ev3, msg, controller):
     if msg.payload.decode() == "True":
         #visionActionQueue = controller.actionQueues[visionTag]
@@ -44,16 +48,22 @@ def onProcessResponse(client, ev3, msg, controller):
 
         # Populate the queue.
         global va
-        bins = va.execute()
+        if controller.sortedId == "":
+            id = None
+        else:
+            id = controller.sortedId
+        id, bins = va.execute(controller.sortedId)
         sortedBoxes = adaptPackingBoxes(bins)
         controller.sortedBoxes = sortedBoxes
         controller.sorting = True
+        controller.sortedId = id
 
         sendData("visionBoxes", client, controller, ev3)
         sendData("vision", client, controller, ev3)
         sendData("actions", client, controller, ev3)
         print(controller.actionQueues[visionTag])
         print("> Accepted")
+        controller.sortedId = ""
     elif msg.payload.decode() == "False":
         controller.sorting = False
         controller.sortedBoxes = []
@@ -171,7 +181,6 @@ def onNext(client, ev3, msg, controller):
     print("> Next action should be sent to ev3.")
 
 def sendData(whatToSend, client, controller, ev3):
-    print("Should see this: ", whatToSend)
     currentExecThread = controller.currentExecutionThread()
     if whatToSend == "thread":
         client.publish(topics["APP_RECEIVE_THREAD"], controller.currentExecThreadTag)
@@ -189,7 +198,13 @@ def sendData(whatToSend, client, controller, ev3):
     elif whatToSend == "vision":
         client.publish(topics["APP_RECEIVE_VISION_STATE"], json.dumps(controller.sorting))
     elif whatToSend == "visionBoxes":
-        client.publish(topics["APP_RECEIVE_VISION_BOXES"], json.dumps(controller.sortedBoxes))
+        client.publish(
+            topics["APP_RECEIVE_VISION_BOXES"],
+            json.dumps({
+                "boxes": controller.sortedBoxes,
+                "id": controller.sortedId
+            })
+        )
     elif whatToSend == "executionQueue":
         sendData("thread", client, controller, ev3)
         sendData("locked", client, controller, ev3)
@@ -267,11 +282,12 @@ def onAppConn(client, ev3, msg, controller):
 
 def onAppRequestBoxes(client, ev3, msg, controller):
     boxes = generateRandBoxes()
-    sa = StackingAlgorithm(boxes,(20,20),'BPOF')
+    sa = StackingAlgorithm((20,20), 'MaxRectsBl_BF','PERI')
+    id, bins = sa.pack(boxes)
     # have to adapt the sorted boxes
     # into something parseable by JSON
     # now send the app the sortedBoxes
-    sortedBoxes = adaptPackingBoxes(sa.packer.bins)
+    sortedBoxes = adaptPackingBoxes(bins)
     client.publish(topics["APP_RECEIVE_BOXES"], json.dumps(sortedBoxes))
 
 def adaptPackingBoxes(bins):
@@ -281,21 +297,19 @@ def adaptPackingBoxes(bins):
         sortedBin = []
         lvl += 1
         for box in bin.boxes_packed:
+            print("Box: ", box.colour)
             # we need color, length, width, height, and centreTo
             # invert if we rotate the box
             length = box.length
             width = box.width
 
             sBox = {
-                "height": 4,
-                "width": box.width * 2,
-                "depth": box.length * 2,
-                "color": box.colour,
-                "x": (box.centreto[0] - (box.width / 2)) * 2,
-                "y": lvl * 4,
-                "z": (box.centreto[1] - (box.length / 2)) * 2
+                "width": box.width,
+                "length": box.length,
+                "colour": box.colour,
+                "rotateto": box.rotateto,
+                "centreto": box.centreto.tolist()
             }
-            print(sBox)
             sortedBin.append(sBox)
         sortedBoxes.append(sortedBin)
     return sortedBoxes

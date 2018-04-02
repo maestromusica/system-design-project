@@ -133,6 +133,12 @@ export const processRequest = () => ({
   topic: topics.PROCESS_CONTROLLER
 })
 
+export const processSendId = id => ({
+  type: topics.PROCESS_CONTROLLER_ID,
+  topic: topics.PROCESS_CONTROLLER_ID,
+  data: id
+})
+
 export const requestImg = () => ({
   type: topics.APP_REQUEST_IMG,
   topic: topics.APP_REQUEST_IMG
