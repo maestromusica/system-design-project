@@ -136,7 +136,7 @@ def onEV3Message(client, userdata, msg):
 def onEV3Disconnect(client, userdata, rc):
     print(">>> EV3 disconneted")
     ev3.setDisconnected("all")
-    send("connection", controllerClient, controller, ev3)
+    sendData("connection", controllerClient, controller, ev3)
 
 controllerClient.on_connect = onConnect
 controllerClient.on_message = onMessage
