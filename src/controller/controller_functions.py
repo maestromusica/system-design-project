@@ -44,7 +44,7 @@ def onProcessResponse(client, ev3, msg, controller):
 
         # Populate the queue.
         global va
-        bins = va.execute()
+        id, bins = va.execute()
         sortedBoxes = adaptPackingBoxes(bins)
         controller.sortedBoxes = sortedBoxes
         controller.sorting = True
@@ -266,11 +266,12 @@ def onAppConn(client, ev3, msg, controller):
 
 def onAppRequestBoxes(client, ev3, msg, controller):
     boxes = generateRandBoxes()
-    sa = StackingAlgorithm(boxes,(20,20),'BPOF')
+    sa = StackingAlgorithm((20,20), 'MaxRectsBl_BF','PERI')
+    id, bins = sa.pack(boxes)
     # have to adapt the sorted boxes
     # into something parseable by JSON
     # now send the app the sortedBoxes
-    sortedBoxes = adaptPackingBoxes(sa.packer.bins)
+    sortedBoxes = adaptPackingBoxes(bins)
     client.publish(topics["APP_RECEIVE_BOXES"], json.dumps(sortedBoxes))
 
 def adaptPackingBoxes(bins):
@@ -290,6 +291,7 @@ def adaptPackingBoxes(bins):
                 "width": box.width,
                 "length": box.length,
                 "colour": box.colour,
+                "rotateto": box.rotateto,
                 "centreto": box.centreto.tolist()
             }
             sortedBin.append(sBox)

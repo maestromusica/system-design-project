@@ -6,9 +6,9 @@ export const adaptCoordinates = (
 ) => {
   // the 0, 0, 0 position is in fact the center of the box
   const obj = {
-    x: x + width/2 -xCamera/2 ,
+    x: x -xCamera/2 ,
     y: y + height/2 - yCamera/2,
-    z: z + depth/2 - zCamera/2,
+    z: z - zCamera/2,
     width,
     height,
     depth,
@@ -20,15 +20,16 @@ export const adaptCoordinates = (
 export const adaptBoxCoords = (bins) => {
   bins = bins.map((bin, level) => {
     return bin.map((box, idx) => {
-      console.log(box)
+      const width = box.rotateto == 90 ? box.length : box.width
+      const length = box.rotateto == 90 ? box.width : box.length
       return {
         height: 4,
-        width: box.width * 2,
-        depth: box.length * 2,
+        width: width * 2,
+        depth: length * 2,
         color: box.colour,
-        x: (box.centreto[0] - (box.width / 2)) * 2,
+        x: (box.centreto[0]) * 2,
         y: level * 4,
-        z: (box.centreto[1] - box.length / 2) * 2
+        z: (box.centreto[1]) * 2
       }
     })
   })

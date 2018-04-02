@@ -8,6 +8,7 @@ import matplotlib.patches as patches
 from PIL import Image
 import uuid
 import pickle
+import os
 
 #logging debug stuff
 LOGLEVEL = logging.DEBUG
@@ -27,9 +28,9 @@ class StackingAlgorithm(object):
         self.currentPallet = Pallet(uuid.uuid4().hex,self.binSize,self.algorithm,self.box_sort)
         exec('self.packer = '+self.currentPallet.string)
         self.stats = {self.algorithm:{'Runtime for Boxes':[],'Max Density': 0},self.currentPallet.pid:{'Algorithm':self.algorithm,'Box Sort Method':self.box_sort,'Boxes Packed':0,'Box Width Error':0,'Box Length Error':0}}
-        
-        
-        
+
+
+
     def showLevels(self):
         for sbin in self.packer.bins:
             im = np.array(Image.open('Container2.png'), dtype=np.uint8)
@@ -63,13 +64,19 @@ class StackingAlgorithm(object):
         box_error, new_boxes = self.getTrueBoxes(boxes)
         self.currentPallet.add_sweep(new_boxes)
         self.packer.sort(new_boxes)
-        self.savePallet()
         self.log_error(timestamp, box_error, len(new_boxes))
+        for bin in self.packer.bins:
+            for box in bin.boxes_packed:
+                box.newBox = False
+        for box in self.currentPallet.sweeps[-1]:
+            box.newBox = True
+        self.savePallet()
         return (self.currentPallet.pid, self.packer.bins)
 
     def savePallet(self):
         self.currentPallet.stats = self.stats[self.currentPallet.pid]
-        f = open('pallets/'+self.currentPallet.pid,'wb+')
+        palletPath = os.path.join(os.path.dirname(__file__), './pallets', self.currentPallet.pid)
+        f = open(palletPath,'wb+')
         pickle.dump(self.currentPallet, f)
         f.close()
 
@@ -86,15 +93,16 @@ class StackingAlgorithm(object):
             self.box_sort = box_sort
         self.currentPallet = Pallet(uuid.uuid4().hex,self.binSize,self.algorithm,self.box_sort)
         exec('self.packer = '+self.currentPallet.string)
-        
+
         self.stats[self.currentPallet.pid] = {'Algorithm':self.algorithm, 'Box Sort Method':self.box_sort, 'Boxes Packed':0,'Box Width Error':0,'Box Length Error':0}
-        
-        
+
+
     def switchToPallet(self,p):
         #switches to a different pallet
         #CHANGE THIS NEXT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         try:
-            f = open('pallets/'+p,'rb')
+            palletPath = os.path.join(os.path.dirname(__file__), './pallets', p)
+            f = open(palletPath,'rb')
             self.currentPallet = pickle.load(f)
             f.close()
             self.algorithm = self.currentPallet.alg
@@ -108,7 +116,7 @@ class StackingAlgorithm(object):
                 self.stats[self.currentPallet.pid] = self.currentPallet.stats
         except FileNotFoundError:
             print('No Such Pallet')
-            
+
     ##for recording error and such like
 
     def log_error(self, timestamp, box_error, num_boxes):
@@ -116,7 +124,7 @@ class StackingAlgorithm(object):
         self.stats[self.algorithm]['Runtime for Boxes'].append((time()-timestamp, num_boxes))
         packer_error = self.packer.get_error()
         self.stats[self.algorithm]['Max Density'] = max(self.stats[self.algorithm]['Max Density'], max([v for k,v in packer_error['Density'].items()]))
-        
+
         self.stats[self.currentPallet.pid]['Boxes Packed'] += num_boxes
         self.stats[self.currentPallet.pid]['Box Width Error'] += box_error[0]
         self.stats[self.currentPallet.pid]['Box Length Error'] += box_error[1]
@@ -124,8 +132,8 @@ class StackingAlgorithm(object):
         self.stats[self.currentPallet.pid]['Bins Used'] = packer_error['Bins Used']
         self.stats[self.currentPallet.pid]['Density'] = packer_error['Density']
         self.stats[self.currentPallet.pid]['Free Space'] = packer_error['Free Space']
-        
-        
+
+
     def displayStats(self):
         best_density = (0.0,[])
         best_runtime = (float('inf'),'None', (0,0))
@@ -139,7 +147,7 @@ class StackingAlgorithm(object):
                 print('    Total Runtime: {}s over {} boxes'.format(runtime,total_boxes))
                 print('    Average Time Per Box: {}s'.format(runtime/total_boxes))
                 print('    Maximum Density Achieved: {}% packed'.format(v['Max Density']))
-                
+
             elif len(k) == 32:
                 print('Pallet {}: Packed by {} and sorted by {}'.format(k,v['Algorithm'],v['Box Sort Method']))
                 b = v['Boxes Packed']
@@ -154,10 +162,8 @@ class StackingAlgorithm(object):
                     elif v['Density'][i] == best_density[0]:
                         best_density[1].append(v['Algorithm']+' with '+v['Box Sort Method']+' on Pallet '+str(k)+' Level '+str(i))
                     print('        Free Space: {} sq units'.format(v['Free Space'][i]))
-                    
+
         print('Best Runtime Per Box: {}s by {} for a total of {}s over {} boxes'.format(best_runtime[0],best_runtime[1],best_runtime[2], best_runtime[3]))
         print('Best Density: {} by the following -'.format(best_density[0]))
         for bd in best_density[1]:
             print('    {}'.format(bd))
-                
-

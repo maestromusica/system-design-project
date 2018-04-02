@@ -13,23 +13,23 @@ class SimpleGreedy(object):
         self.binSize = binSize
         self.error = {'Free Space':{0:0},'Bins Expected':0,'Density':{0:0},'Bins Used':0}
         self.bins = []
-        
+
 
     def sort(self, boxes):
-        
+
         boxes = sorted(boxes, reverse=True, key=lambda box: (box.length,box.width))
-        
-        
+
+
         #compute L, the number of expected bins
         L = self.compute_L([box.area for box in sorted_boxes])
-        
+
         #create the bins to be packed into
         while L > 0:
             self.bins.append(Bin(self.binSize))
             L -= 1
-        
+
         self.error.update({"Bins Expected":len(self.bins)})
-        
+
         for box in sorted_boxes:
             b = 0
             while not box.packed:
@@ -38,10 +38,10 @@ class SimpleGreedy(object):
                     b += 1
                 except IndexError:
                     self.bins.append(Bin(self.binSize))
-                    
+
         bns = len(self.bins)
         rtl = False
-        
+
         for box in sorted_boxes:
             b = 0
             while not box.packed:
@@ -50,9 +50,9 @@ class SimpleGreedy(object):
                     b += 1
                 except IndexError:
                     self.bins.append(Bin(self.binSize))
-                    
-                    
-                    
+
+
+
     def compute_L(self, boxes):
         total_area = sum(boxes)
         bin_area = self.binSize[0]*self.binSize[1]
@@ -103,11 +103,11 @@ class SimpleGreedy(object):
         for i, b in enumerate(self.bins):
             self.error['Free Space'][i] = b.freeArea
             self.error['Density'][i] = sum([box.area for box in b.boxes_packed])/bin_area
-        
+
         return self.error
 
-        
-        
+
+
 
 class BPRF(object):
 
@@ -121,16 +121,16 @@ class BPRF(object):
     def sort(self, boxes):
         #Sort the Boxes to be packed by nonincreasing area
         sorted_boxes = sorted(boxes, reverse=True, key=lambda box: (box.area,max(box.width,box.length)))
-        
+
         #compute L, the number of expected bins
         L = self.compute_L([box.area for box in sorted_boxes])
         #create the bins to be packed into
         while L > 0:
             self.bins.append(Bin(self.binSize))
             L -= 1
-        
+
         self.error.update({"Bins Expected":len(self.bins)})
-        
+
         for box in sorted_boxes:
             b = 0
             while not box.packed:
@@ -149,7 +149,7 @@ class BPRF(object):
         return L
 
     def pack(self, con, box):
-        
+
         smax = -1
         rotate = False
         cto_w = 0
@@ -241,7 +241,7 @@ class BPRF(object):
                         cto_l = c_l_R
                         w_new = w + b_l
                         l_new = l + b_w
-                        
+
 
 
         if box.packed:
@@ -268,7 +268,7 @@ class BPRF(object):
         for i, b in enumerate(self.bins):
             self.error['Free Space'][i] = b.freeArea
             self.error['Density'][i] = sum([box.area for box in b.boxes_packed])/bin_area
-        
+
         return self.error
 
 
@@ -306,24 +306,25 @@ class RectPacker(object):
         return sorted_boxes
 
     def sort(self, boxes):
-        
+
         self.error['Bins Expected'] += self.compute_L([box.area for box in boxes])
-        
+
         sorted_boxes = self.boxSort(boxes)
-        
+
         packed_boxes = {}
         for box in sorted_boxes:
             rid = uuid.uuid4().hex
             self.packer.add_rect(box.width,box.length,rid)
+            box.newBox = True
             packed_boxes[rid] = box
         #uncomment to use offline packing
         #self.packer.pack()
-        
+
         L = len(self.packer) - len(self.bins)
         while L > 0:
             self.bins.append(Bin(self.binSize))
             L -=1
-        
+
         for (b,x,y,w,l,rid) in self.packer.rect_list():
             try:
                 box = packed_boxes[rid]
@@ -331,9 +332,9 @@ class RectPacker(object):
             except KeyError:
                 #box already packed
                 pass
-        
-        
-        
+
+
+
     def showRectList(self):
         levels = []
         for i in range(len(self.packer)):
@@ -348,11 +349,11 @@ class RectPacker(object):
                 rect = patches.Rectangle((b['cor1'],b['cor2']),b['dim1'],b['dim2'],linewidth=1,edgecolor='black')
                 ax.add_patch(rect)
         plt.show()
-        
+
     def pack(self,box,b,x,y,w,l):
         #box object, bin object, x and y of bl corner, w and l of packed rectangle (possibly rotated)
         corner = np.array([x,y])
-        
+
         if box.width == w and box.length == l:
             box.rotateto = 0.00
         elif box.width == l and box.length == w:
@@ -361,14 +362,14 @@ class RectPacker(object):
         else:
             print('LENGTH WIDTH MISTAKE')
             print(box.centrefrom,box.width,w,box.length,l,box.colour)
-        
+
         box.centreto = corner+box.vec/2
         box.packed = True
-        
+
         b.boxes_packed.append(box)
         b.freeArea -= box.area
-        
-        
+
+
     def compute_L(self, boxes):
         total_area = sum(boxes)
         bin_area = self.binSize[0]*self.binSize[1]
@@ -376,7 +377,7 @@ class RectPacker(object):
                 total_area -= b.freeArea
         L = np.int8(np.ceil(total_area/bin_area))
         return L
-        
+
     #maybe need to mod this
     def get_error(self):
         self.error.update({"Bins Used":len(self.bins)})
@@ -384,39 +385,39 @@ class RectPacker(object):
         for i, b in enumerate(self.bins):
             self.error['Free Space'][i] = b.freeArea
             self.error['Density'][i] = sum([box.area for box in b.boxes_packed])/bin_area
-        
+
         return self.error
-        
-        
-        
+
+
+
 class MaxRectsBaf_NF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 0, MaxRectsBaf, sort_t)
-        
-        
+
+
 class MaxRectsBaf_FF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 1, MaxRectsBaf, sort_t)
-        
-        
+
+
 class MaxRectsBaf_BF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 2, MaxRectsBaf, sort_t)
-        
+
 class MaxRectsBaf_GB(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 3, MaxRectsBaf, sort_t)
-        
+
 class MaxRectsBl_NF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 0, MaxRectsBl, sort_t)
-        
-        
+
+
 class MaxRectsBl_FF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 1, MaxRectsBl, sort_t)
-        
-        
+
+
 class MaxRectsBl_BF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 2, MaxRectsBl, sort_t)
@@ -424,18 +425,18 @@ class MaxRectsBl_BF(RectPacker):
 class MaxRectsBl_GB(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 3, MaxRectsBl, sort_t)
-        
-        
+
+
 class MaxRectsBssf_NF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 0, MaxRectsBssf, sort_t)
-        
-        
+
+
 class MaxRectsBssf_FF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 1, MaxRectsBssf, sort_t)
-        
-        
+
+
 class MaxRectsBssf_BF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 2, MaxRectsBssf, sort_t)
@@ -443,18 +444,18 @@ class MaxRectsBssf_BF(RectPacker):
 class MaxRectsBssf_GB(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 3, MaxRectsBssf, sort_t)
-        
-        
+
+
 class MaxRectsBlsf_NF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 0, MaxRectsBlsf, sort_t)
-        
-        
+
+
 class MaxRectsBlsf_FF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 1, MaxRectsBlsf, sort_t)
 
-        
+
 class MaxRectsBlsf_BF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 2, MaxRectsBlsf, sort_t)
@@ -463,75 +464,75 @@ class MaxRectsBlsf_GB(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 3, MaxRectsBlsf, sort_t)
 
-        
+
 class SkylineBlWm_BF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 2, SkylineBlWm, sort_t)
-        
+
 class SkylineBl_BF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 2, SkylineBl, sort_t)
-        
+
 class SkylineMwf_BF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 2, SkylineMwf, sort_t)
-        
+
 class SkylineMwfl_BF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 2, SkylineMwfl, sort_t)
-        
+
 class SkylineMwflWm_BF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 2, SkylineMwflWm, sort_t)
-        
+
 class SkylineMwfWm_BF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 2, SkylineMwfWm, sort_t)
-        
+
 class SkylineBlWm_NF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 0, SkylineBlWm, sort_t)
-        
+
 class SkylineBl_NF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 0, SkylineBl, sort_t)
-        
+
 class SkylineMwf_NF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 0, SkylineMwf, sort_t)
-        
+
 class SkylineMwfl_NF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 0, SkylineMwfl, sort_t)
-        
+
 class SkylineMwflWm_NF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 0, SkylineMwflWm, sort_t)
-        
+
 class SkylineMwfWm_NF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 0, SkylineMwfWm, sort_t)
-       
+
 class SkylineBlWm_FF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 1, SkylineBlWm, sort_t)
-        
+
 class SkylineBl_FF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 1, SkylineBl, sort_t)
-        
+
 class SkylineMwf_FF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 1, SkylineMwf, sort_t)
-        
+
 class SkylineMwfl_FF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 1, SkylineMwfl, sort_t)
-        
+
 class SkylineMwflWm_FF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 1, SkylineMwflWm, sort_t)
-        
+
 class SkylineMwfWm_FF(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 1, SkylineMwfWm, sort_t)
@@ -540,25 +541,23 @@ class SkylineMwfWm_FF(RectPacker):
 class SkylineBlWm_GB(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 3, SkylineBlWm, sort_t)
-        
+
 class SkylineBl_GB(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 3, SkylineBl, sort_t)
-        
+
 class SkylineMwf_GB(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 3, SkylineMwf, sort_t)
-        
+
 class SkylineMwfl_GB(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 3, SkylineMwfl, sort_t)
-        
+
 class SkylineMwflWm_GB(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 3, SkylineMwflWm, sort_t)
-        
+
 class SkylineMwfWm_GB(RectPacker):
     def __init__(self, binSize, sort_t=None):
         super().__init__(binSize, 3, SkylineMwfWm, sort_t)
-
-

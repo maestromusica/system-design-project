@@ -80,7 +80,7 @@ class VisionAdaptor:
             "action": topics["EV3_ROTATE"],
             "payload": payload
         }
-        
+
     def grab(self,colour):
         self.actionQueue.put(self.addReleaseAction(grabVals[colour]['pickrelease']))
         self.actionQueue.put(self.addZAction(self.down))
@@ -101,12 +101,12 @@ class VisionAdaptor:
         self.controller.do_moveY(200)
         return
     '''
-    
+
     def createPickRoutine(self,box):
         #self.gotoStart()
         self.actionQueue.put(self.addZAction(self.up))
         print('Heading to package at : {}'.format(box.centrefrom))
-        if box.rotation == 90.00:
+        if box.rotateto == 90.00:
             self.actionQueue.put(self.addXAction(int(box.centrefrom[0])-75))
             self.actionQueue.put(self.addYAction(int(box.centrefrom[1])-20))
             self.actionQueue.put(self.addRotateAction(0))
@@ -131,10 +131,13 @@ class VisionAdaptor:
     def getFrame(self):
         self.image, self.boxes = self.vision.go()
         return self.image
-    
-    def execute(self):
+
+    def execute(self, id=None):
         # Sending list of boxes to algorithm for stacking.
-        bins = StackingAlgorithm(self.boxes,(10,7),'BPOF').pack()
+        sa = StackingAlgorithm((10,7), 'MaxRectsBl_BF', 'PERI')
+        if id:
+            sa.switchToPallet(id)
+        id, bins = sa.pack(self.boxes)
         x = bins.copy()
         # Send these bins to Adaptor and transform pick and drop points.
         layers = self.adaptor.transform(x)
@@ -145,12 +148,12 @@ class VisionAdaptor:
                 #if b[4] == True:
                 #    self.createPickRoutine(b[0],b[1],b[2],0.0)
                 #else:
-                    self.createPickRoutine(b)
+                    if b.newBox:
+                        self.createPickRoutine(b)
                     b.centreto=b.centreto/100
-        
-        return bins
+
+        return id, bins
 
 def main():
     va = VisionAdaptor()
     va.execute()
-

@@ -11,10 +11,10 @@ class Pallet(object):
         self.string = 'Packer.'+alg+'('+str(binSize)+',"'+box_sort+'")'
         self.stats = None
         self.sweeps = []
-        
+
     def add_sweep(self, boxes):
         self.sweeps.append(boxes)
-        
+
 
 
 class Bin(object):
@@ -36,8 +36,8 @@ class Bin(object):
         center_in = c0 <= self.width and c1 <= self.length
         corner_in =  w <= self.width and l <= self.length
         return center_in and corner_in
-        
-    
+
+
     def inside_R(self, box, center):
         c0 = center[0]
         c1 = center[1]
@@ -64,10 +64,11 @@ class Box(object):
         self.rotateto = None
         self.centreto = None
         self.packed = False
+        self.newBox = False
         self.sweep = None
         self.vec = np.array([self.width,self.length])
-        
-        
+
+
     def corner(self, c):
         if self.packed:
             v = self.vec/2
@@ -77,4 +78,3 @@ class Box(object):
                 v[0] = v[0]*-1
             return self.centreto + v
         else: return None
-        
