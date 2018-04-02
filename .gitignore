@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 *.py~
 *.py#
+src/vision/pallets/*
+
 # C extensions
 *.so
 
