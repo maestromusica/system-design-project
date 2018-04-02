@@ -50,7 +50,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.props.history.push("/development")
+    this.props.history.push("/dashboard")
     setTimeout(() => {
       this.setState({
         renderedLogo: false
@@ -76,7 +76,7 @@ class App extends Component {
             <Menu />
             <Content>
               <Switch>
-                <Route exact path="/development" default component={Dashboard} />
+                <Route exact path="/dashboard" default component={Dashboard} />
                 <Route path="/development" component={dev} />
                 <Route path="/simulations" component={sims} />
                 <Route path="/settings" component={Settings} />

@@ -30,7 +30,7 @@ export default class Menu extends Component {
           )}
         </div>
         <MenuList>
-          <MenuItem to="/development">
+          <MenuItem to="/dashboard">
             <MdDashboard />
             Dashboard
           </MenuItem>
