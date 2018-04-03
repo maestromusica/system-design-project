@@ -130,7 +130,7 @@ class VisionAdaptor:
 
     def getFrame(self):
         self.image, self.boxes = self.vision.go()
-        return self.image
+        return self.image, self.boxes
     def execute(self, id=None):
         # Sending list of boxes to algorithm for stacking.
         sa = StackingAlgorithm((10,7), 'MaxRectsBl_BF', 'PERI')

@@ -50,12 +50,17 @@ class GlobalParams(object):
         camParams = {'optmtx':optimal_matrix,'mtx':matrix,'distcoeffs':dist}
         return camParams
 
-    def getWorkSpace(self,filename):
+    
+    def getWorkSpace(self,filename,workspace= None):
         if filename is None:
-            filename = self.workspace
-        f = open(filename,'rb')
-        workspace = pkl.load(f)
-        f.close()
+            if workspace is None:
+                filename = self.workspace
+                f = open(filename,'rb')
+                workspace = pkl.load(f)
+                f.close()
+            else:
+                wokspace = workspace
+        
         for k in workspace.keys():
             workspace[k] = [workspace[k],self.findCorners(k)]
             print(workspace[k])

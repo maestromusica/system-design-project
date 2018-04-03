@@ -111,9 +111,9 @@ class ImageProcessor(object):
     def __init__(self,camParams,workspace,maskVals,quality=0.5):
 
         self.camParams = camParams
-        self.wsFinder = fs.wsFinder(camParams,workspace)
-        self.maskFinder = fs.maskFinder(maskVals)
-        self.boxFinder = fs.boxFinder(quality)
+        self.wsFinder = fs.WorkspaceFinder(camParams,workspace)
+        self.maskFinder = fs.MaskFinder(maskVals)
+        self.boxFinder = fs.BoxFinder(quality)
 
     #returns dict of boxes {colorName:[boxObject]}
     def process(self, img):
@@ -126,15 +126,4 @@ class ImageProcessor(object):
         #finds the boxes in the workspace
         #boxes :: {'colorname':[box]} dict of lists of boxes (box object type) by name of color (string)
         return self.boxFinder.find(wsImg,masks)
-        #unpack the boxes to return in a more universal format
-        #unpacked_boxes = self.unpack(boxes)
-        #return image, boxes
-    '''
-    def unpack(self,boxes):
-        unpacked_boxes = []
-        for c, boxlist in boxes.items():
-            for box in boxlist:
-                unpacked_boxes.append(box.getDetails())
-        
-        return unpacked_boxes
-    '''
+

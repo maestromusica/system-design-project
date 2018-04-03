@@ -85,6 +85,7 @@ def main(arg):
        _ , frame = cap.read()
        frame = ws.find(frame)
        dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+
        #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
        #res = cv2.aruco.detectMarkers(gray,dictionary)
 
