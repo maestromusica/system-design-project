@@ -38,7 +38,7 @@ def test_algo(boxes, binsize, msa=None, bna=None, sta=None):
                 sa.pack(boxes)
                 
             
-    sa.displayStats()
+    analyseStats(sa.stats)
     sa.saveStats()
     return sa
     
@@ -73,5 +73,74 @@ def generate_boxes():
     rot = [90.00,0.00]
     boxes = []
     for i in range(randint(10,100)):
-        boxes.append({'colour':cls[randint(0,4)],'rotation':rot[randint(0,1)],'centroid':centroid,'length':randint(1,4),'width':randint(1,4)})
+        boxes.append({'colour':cls[randint(0,4)],'rotation':rot[randint(0,1)],'centroid':centroid})
     return boxes
+    
+
+def analyseStats(stats):
+    #density, [[alg,sort,pallet,level]]
+    best_density = (0.0,[])
+    best_runtime = (float('inf'),'None', (0,0))
+    for k, v in stats.items():
+        if len(k)<32:
+            runtime = sum([t for (t,_) in v['Runtime for Boxes']])
+            total_boxes = sum([b for (_,b) in v['Runtime for Boxes']])
+            if runtime/len(v['Runtime for Boxes']) < best_runtime[0]:
+                best_runtime = (runtime/len(v['Runtime for Boxes']),k, runtime, total_boxes)
+        if len(k) == 32:
+            for i in range(v['Bins Used']):
+                if v['Density'][i] > best_density[0]:
+                    best_density = (v['Density'][i], [(v['Algorithm'],v['Box Sort Method'],k,i)])
+                elif v['Density'][i] == best_density[0]:
+                    best_density[1].append((v['Algorithm'],v['Box Sort Method'],k,i))
+            
+            
+    print('Best Average Runtime: {}s by {} with a total of {}s over {} boxes'.format(best_runtime[0],best_runtime[1],best_runtime[2], best_runtime[3]))
+    print('Best Density:')
+    
+    pallets_at_max = [bd[2] for bd in best_density[1] if bd[3] == 0]
+    i = 1
+    final_best_pallets = set([])
+    while len(pallets_at_max)>0:
+        #print('going over level {}'.format(i))
+        for pid in pallets_at_max.copy():
+            if i >= stats[pid]['Bins Used']:
+                final_best_pallets.update({pid})
+                #print('updated final best pallets with {}'.format(pid))
+                pallets_at_max.remove(pid)
+                #print('removed {} from pallets at max'.format(pid))
+            #print('final best pallets after additions: {}'.format(final_best_pallets))
+            #print('pallets at max after removals:')
+            #print('   {} bins in {}'.format(stats[pid]['Bins Used'],pid))
+            #print('   {} densities'.format(stats[pid]['Density']))
+        if len(pallets_at_max)>0:
+            max_density = max([stats[pidm]['Density'][i] for pidm in pallets_at_max])
+            #print('max density: {}'.format(max_density))
+            pallets_at_max = [pid for pid in pallets_at_max if stats[pid]['Density'][i] == max_density]
+            #print('new pallets at max {}'.format(len(pallets_at_max)))
+        i += 1    
+    displayStats(stats, algs=[stats[pid]['Algorithm'] for pid in final_best_pallets], pals=final_best_pallets)
+    
+def displayStats(stats, algs=[], pals=[]):
+    
+    for k, v in stats.items():
+        if len(k)<32 and k in algs:
+            print('Algorithm: '+k)
+            runtime = sum([t for (t,_) in v['Runtime for Boxes']])
+            total_boxes = sum([b for (_,b) in v['Runtime for Boxes']])
+            print('    Total Runtime: {}s over {} boxes into {} pallets'.format(runtime,total_boxes,len(v['Runtime for Boxes'])))
+            print('    Average Time Per Pallet: {}s'.format(runtime/len(v['Runtime for Boxes'])))
+        elif len(k) == 32 and k in pals:
+            print('Pallet {}: Packed by {} and sorted by {}'.format(k,v['Algorithm'],v['Box Sort Method']))
+            b = v['Boxes Packed']
+            print('    {} boxes packed onto {} levels'.format(b,v['Bins Used']))
+            print('    {} levels expected'.format(v['Bins Expected']))
+            
+            for i in range(v['Bins Used']):
+                print('    Level {}:'.format(i))
+                print('        Density: {}% packed'.format(v['Density'][i]))
+                print('        Free Space: {} sq units'.format(v['Free Space'][i]))
+                
+                
+
+    
