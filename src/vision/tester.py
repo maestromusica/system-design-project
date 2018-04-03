@@ -5,8 +5,9 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
+from random import randint
 
-def run_test(which,bxs):
+def run_test(which,bxs=None):
     sa = None
     if which == 'test' and bxs == 'set':
         sa = test_algo(test_box_set,(5,5))
@@ -16,7 +17,9 @@ def run_test(which,bxs):
         offline_test(test_box_set)
     elif which == 'offline' and bxs == 'test':
         offline_test(test_boxes)
-        
+    elif which == 'gen':
+        bxs = generate_boxes()
+        sa = test_algo(bxs,(12,12))
     return sa
 
 
@@ -24,10 +27,10 @@ def test_algo(boxes, binsize, msa=None, bna=None, sta=None):
     maxsortalgs = msa or ['MaxRectsBaf', 'MaxRectsBl', 'MaxRectsBssf', 'MaxRectsBlsf', 'SkylineBl', 'SkylineBlWm', 'SkylineMwf', 'SkylineMwfl', 'SkylineMwfWm', 'SkylineMwflWm']
     binalgs = bna or ['NF','FF','BF']
     sortalgs = sta or ['WEIGHT','AREA','LENGTH','SSIDE','LSIDE','PERI','DIFF','RATIO','UNSORTED']
-
+    print('Test Packing {} Boxes into {}x{} Pallets'.format(len(boxes),binsize[0],binsize[1]))
     sa = StackingAlgorithm(binsize,'BPRF')
     sa.pack(boxes)
-
+    
     for alg in maxsortalgs:
         for b in binalgs:
             for s in sortalgs:
@@ -36,6 +39,7 @@ def test_algo(boxes, binsize, msa=None, bna=None, sta=None):
                 
             
     sa.displayStats()
+    sa.saveStats()
     return sa
     
 def offline_test(boxes):
@@ -62,4 +66,12 @@ def offline_test(boxes):
     print('about to show plot')
     plt.show()
     
-
+def generate_boxes():
+    #colour, centroid, rotation, length, width
+    cls = ['red','green','blue','purple','yellow']
+    centroid = np.array([0,0])
+    rot = [90.00,0.00]
+    boxes = []
+    for i in range(randint(10,100)):
+        boxes.append({'colour':cls[randint(0,4)],'rotation':rot[randint(0,1)],'centroid':centroid,'length':randint(1,4),'width':randint(1,4)})
+    return boxes

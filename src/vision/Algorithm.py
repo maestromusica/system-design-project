@@ -134,36 +134,46 @@ class StackingAlgorithm(object):
         self.stats[self.currentPallet.pid]['Free Space'] = packer_error['Free Space']
 
 
-    def displayStats(self):
+    def displayStats(self,algs=[], pals=[]):
         best_density = (0.0,[])
         best_runtime = (float('inf'),'None', (0,0))
         for k, v in self.stats.items():
             if len(k)<32:
-                print('Algorithm: '+k)
                 runtime = sum([t for (t,_) in v['Runtime for Boxes']])
                 total_boxes = sum([b for (_,b) in v['Runtime for Boxes']])
-                if runtime/total_boxes < best_runtime[0]:
-                    best_runtime = (runtime/total_boxes,k, runtime, total_boxes)
-                print('    Total Runtime: {}s over {} boxes'.format(runtime,total_boxes))
-                print('    Average Time Per Box: {}s'.format(runtime/total_boxes))
-                print('    Maximum Density Achieved: {}% packed'.format(v['Max Density']))
+                if runtime/len(v['Runtime for Boxes']) < best_runtime[0]:
+                    best_runtime = (runtime/len(v['Runtime for Boxes']),k, runtime, total_boxes)
+                if k in algs:
+                    print('Algorithm: '+k)
+                    print('    Total Runtime: {}s over {} boxes'.format(runtime,total_boxes))
+                    print('    Average Time Per Box: {}s'.format(runtime/total_boxes))
+                    print('    Maximum Density Achieved: {}% packed'.format(v['Max Density']))
 
             elif len(k) == 32:
-                print('Pallet {}: Packed by {} and sorted by {}'.format(k,v['Algorithm'],v['Box Sort Method']))
-                b = v['Boxes Packed']
-                print('    {} boxes packed onto {} levels'.format(b,v['Bins Used']))
-                print('    {} levels expected'.format(v['Bins Expected']))
-                print('    Average Box Width Error: {} units, Average Box Length Error {} units'.format(v['Box Width Error']/b, v['Box Length Error']/b))
+                if k in pals:
+                    print('Pallet {}: Packed by {} and sorted by {}'.format(k,v['Algorithm'],v['Box Sort Method']))
+                    b = v['Boxes Packed']
+                    print('    {} boxes packed onto {} levels'.format(b,v['Bins Used']))
+                    print('    {} levels expected'.format(v['Bins Expected']))
+                    print('    Average Box Width Error: {} units, Average Box Length Error {} units'.format(v['Box Width Error']/b, v['Box Length Error']/b))
                 for i in range(v['Bins Used']):
-                    print('    Level {}:'.format(i))
-                    print('        Density: {}% packed'.format(v['Density'][i]))
+                    if k in pals:
+                        print('    Level {}:'.format(i))
+                        print('        Density: {}% packed'.format(v['Density'][i]))
+                        print('        Free Space: {} sq units'.format(v['Free Space'][i]))
                     if v['Density'][i] > best_density[0]:
                         best_density = (v['Density'][i], [v['Algorithm']+' with '+v['Box Sort Method']+' on Pallet '+str(k)+' Level '+str(i)])
                     elif v['Density'][i] == best_density[0]:
                         best_density[1].append(v['Algorithm']+' with '+v['Box Sort Method']+' on Pallet '+str(k)+' Level '+str(i))
-                    print('        Free Space: {} sq units'.format(v['Free Space'][i]))
+                    
 
-        print('Best Runtime Per Box: {}s by {} for a total of {}s over {} boxes'.format(best_runtime[0],best_runtime[1],best_runtime[2], best_runtime[3]))
+        print('Best Average Runtime: {}s by {} with a total of {}s over {} boxes'.format(best_runtime[0],best_runtime[1],best_runtime[2], best_runtime[3]))
         print('Best Density: {} by the following -'.format(best_density[0]))
         for bd in best_density[1]:
             print('    {}'.format(bd))
+            
+    def saveStats(self):
+        statsPath = os.path.join(os.path.dirname(__file__), './algstats', str(time()))
+        f = open(statsPath,'wb+')
+        pickle.dump(self.stats, f)
+        f.close()

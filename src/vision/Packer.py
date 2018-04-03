@@ -82,7 +82,7 @@ class SimpleGreedy(object):
                         overlap = True
                         break
                 if inside and not overlap:
-                    print(con.ws)
+                    #print(con.ws)
                     box.centreto = np.array(([ c_w ,c_l]))
                     con.ws.append(w + b_w)
                     con.ls.append(l + b_l)
@@ -256,9 +256,9 @@ class BPRF(object):
             con.ls.append( l_new )
             con.ws.sort()
             con.ls.sort()
-        print(box.packed)
-        print(con.ls)
-        print(smax)
+        #print(box.packed)
+        #print(con.ls)
+        #print(smax)
         return box.packed
 
 
