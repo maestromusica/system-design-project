@@ -39,6 +39,7 @@ subscribedTopics = {
     topics["START_CONTROLLER"]: onStartController,
     topics["PROCESS_CONTROLLER"]: onProcess,
     topics["PROCESS_RESPONSE_CONTROLLER"]: onProcessResponse,
+    topics["PROCESS_CONTROLLER_ID"]: onProcessReceiveId,
     topics["SWITCH_CONTROLLER_EXEC"]: onSwitchExecutionThread,
     topics["CONTROLLER_DELETE"]: onDelete,
     topics["SWITCH_EXEC_PENDING"]: onSwitchToPending,
@@ -135,7 +136,7 @@ def onEV3Message(client, userdata, msg):
 def onEV3Disconnect(client, userdata, rc):
     print(">>> EV3 disconneted")
     ev3.setDisconnected("all")
-    send("connection", controllerClient, controller, ev3)
+    sendData("connection", controllerClient, controller, ev3)
 
 controllerClient.on_connect = onConnect
 controllerClient.on_message = onMessage

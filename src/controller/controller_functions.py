@@ -37,6 +37,10 @@ def onProcess(client, ev3, msg, controller):
     sendData("vision", client, controller, ev3)
     sendData("visionBoxes", client, controller, ev3)
 
+def onProcessReceiveId(client, ev3, msg, controller):
+    print(">>> Pallet id received: ", msg.payload.decode())
+    controller.sortedId = msg.payload.decode()
+
 def onProcessResponse(client, ev3, msg, controller):
     if msg.payload.decode() == "True":
         #visionActionQueue = controller.actionQueues[visionTag]
@@ -44,16 +48,22 @@ def onProcessResponse(client, ev3, msg, controller):
 
         # Populate the queue.
         global va
-        id, bins = va.execute()
+        if controller.sortedId == "":
+            id = None
+        else:
+            id = controller.sortedId
+        id, bins = va.execute(controller.sortedId)
         sortedBoxes = adaptPackingBoxes(bins)
         controller.sortedBoxes = sortedBoxes
         controller.sorting = True
+        controller.sortedId = id
 
         sendData("visionBoxes", client, controller, ev3)
         sendData("vision", client, controller, ev3)
         sendData("actions", client, controller, ev3)
         print(controller.actionQueues[visionTag])
         print("> Accepted")
+        controller.sortedId = ""
     elif msg.payload.decode() == "False":
         controller.sorting = False
         controller.sortedBoxes = []
@@ -188,7 +198,13 @@ def sendData(whatToSend, client, controller, ev3):
     elif whatToSend == "vision":
         client.publish(topics["APP_RECEIVE_VISION_STATE"], json.dumps(controller.sorting))
     elif whatToSend == "visionBoxes":
-        client.publish(topics["APP_RECEIVE_VISION_BOXES"], json.dumps(controller.sortedBoxes))
+        client.publish(
+            topics["APP_RECEIVE_VISION_BOXES"],
+            json.dumps({
+                "boxes": controller.sortedBoxes,
+                "id": controller.sortedId
+            })
+        )
     elif whatToSend == "executionQueue":
         sendData("thread", client, controller, ev3)
         sendData("locked", client, controller, ev3)

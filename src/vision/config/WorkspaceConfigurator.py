@@ -2,29 +2,27 @@
 import cv2
 import numpy as np
 import _pickle as pickle
+from ..GlobalParams import GlobalParams
+from ..Fairies import WorkspaceFinder
 
-global corners, modes, mode
+global corners, modes, mode, save, corners_dictionary
+corners_dictionary = None
 corners = []
 modes = ['TopLeft','TopRight','BottomLeft','BottomRight']
-show = ['(680,0)','(0,0)','(780,1700)','(0,1700)']
+show = ['(0,0)','(680,0)','(680,1700)','(0,1700)']
 mode = 0
+save = False
+
 
 def returnCoordinate(event,x,y,flags,param):
-    global corners, mode, modes
+    global corners, mode, modes, corners_dictionary
     if event == cv2.EVENT_LBUTTONDBLCLK:
         corners.append([x,y])
         print('{} set as : ({},{})'.format(modes[mode],x,y))
-        if mode<3:
+        if mode < 4:
             mode += 1
         elif mode == 3:
-            filename = input('Enter file name: ')
-            print('Saving corners to file : {}'.format(filename))
-            corners_dictionary = dict(zip(modes,corners))
-            print(corners_dictionary)
-            f = open(filename,'wb')
-            pickle.dump(corners_dictionary,f)
-            f.close()
-            exit
+            corners_dictionary = dict(zip(modes,corners))            
             
     if event == cv2.EVENT_RBUTTONDBLCLK:
         del corners[-1]
@@ -33,21 +31,44 @@ def returnCoordinate(event,x,y,flags,param):
             mode -= 1
             
 def main():
-    global modes, mode
+    global modes, mode, save, corners_dictionary, corners
     cap = cv2.VideoCapture(0)
     print(cap.isOpened())
     _ , frame = cap.read()
     cv2.imshow('frame',frame)
     cv2.setMouseCallback('frame',returnCoordinate)
+    gp = GlobalParams()
+    camparams = gp.getCamParams(None)
     while True:
         ret, frame = cap.read()
-        cv2.putText(frame,show[mode],(10,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+        if mode < 4:
+            cv2.putText(frame,show[mode],(10,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
-        cv2.imshow('frame',cv2.flip(frame,1))
+        flip = cv2.flip(frame,1)
+        cv2.imshow('frame',flip)
+
+        if mode == 4:
+            workspace = gp.getWorkSpace(None, corners_dictionary)
+            ws = WorkspaceFinder(camparams,workspace)
+            cv2.imshow('Transformerd Image',ws.find(flip))
+            k = cv2.waitKey(0)
+            if k == ord('s'):
+                filename = input('Enter file name: ')
+                print('Saving corners to file : {}'.format(filename))
+                print(corners_dictionary)
+                f = open(filename,'wb')
+                pickle.dump(corners_dictionary,f)
+                f.close()
+                exit
+            else:
+                cv2.destroyWindow('Transformed Image')
+                corners = []
+                mode = 0
+
         k = cv2.waitKey(10)
+        
         if k == 32:
               break
-
     cv2.destroyAllWindows()
 
 if __name__=='__main__':

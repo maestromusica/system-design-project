@@ -125,6 +125,7 @@ const visionInitialState = {
   waiting: false,
   processing: false,
   img: "",
+  id: "",
   processingDone: false,
   sorting: false,
   startBtnPressed: false
@@ -141,7 +142,8 @@ const vision = (state = visionInitialState, action) => {
     case topics.APP_RECEIVE_VISION_BOXES:
       return {
         ...state,
-        boxes: action.data.boxes
+        boxes: action.data.boxes,
+        id: action.data.id
       }
     case topics.APP_RECEIVE_VISION_STATE:
       return {
@@ -164,6 +166,7 @@ const vision = (state = visionInitialState, action) => {
         waiting: true,
         processingDone: false,
         boxes: [],
+        id: "",
         sorting: false,
         startBtnPressed: false
       }
@@ -176,13 +179,15 @@ const vision = (state = visionInitialState, action) => {
         processing: false,
         img: "",
         boxes: [],
-        history: [
-          ...state.history.slice(0, state.history.length),
-          {
+        id: "",
+        history: {
+          ...state.history,
+          [state.id]: {
             boxes: state.boxes,
+            id: state.id,
             dateCompleted: Date.now()
           }
-        ]
+        }
       }
     case topics.END_SORTING:
       return {
@@ -193,6 +198,7 @@ const vision = (state = visionInitialState, action) => {
         processing: false,
         img: "",
         boxes: [],
+        id: "",
         startBtnPressed: true
       }
     case topics.RESUME_SORTING:
