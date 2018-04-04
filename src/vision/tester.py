@@ -7,18 +7,41 @@ from random import randint, sample
 from time import time
 import os
 import pickle
+import sys
 
 def run_test(which):
-    sa = None
     bxs = generate_boxes()
     if which == 'offline':
         offline_test(bxs)
     elif which == 'gen':
-        sa = test_algo(bxs,(12,12))
-    return sa
+        orig_stdout = sys.stdout
+        f = open('out.txt', 'a+')
+        sys.stdout = f
+        best = test_algo(bxs,(12,12))
+        sys.stdout = orig_stdout
+        f.close()
+        return best
+    elif which == 'common':
+        mostCommon = []
+        all_algs = getAlgDict()
+        maxVal = 0
+        for i in range(50):
+            b = run_test('gen')
+            for k, v in b.items():
+                all_algs[v[0]][v[1]] += 1
+        for k, v in all_algs.items():
+            for k1, v1 in v.items():
+                if v1 > maxVal:
+                    maxVal = v1
+                    mostCommon = [k+'_'+k1]
+                elif v1 == maxVal:
+                    mostCommon.append(k+'_'+k1)
+        return mostCommon
+    return None
 
 
 def test_algo(boxes, binsize, msa=None, bna=None, sta=None):
+    t = str(time())
     maxsortalgs = msa or ['MaxRectsBaf', 'MaxRectsBl', 'MaxRectsBssf', 'MaxRectsBlsf', 'SkylineBl', 'SkylineBlWm', 'SkylineMwf', 'SkylineMwfl', 'SkylineMwfWm', 'SkylineMwflWm']
     binalgs = bna or ['NF','FF','BF']
     sortalgs = sta or ['WEIGHT','AREA','LENGTH','SSIDE','LSIDE','PERI','DIFF','RATIO','UNSORTED']
@@ -54,11 +77,13 @@ def test_algo(boxes, binsize, msa=None, bna=None, sta=None):
                     l = box.length
                 rect = patches.Rectangle(((box.centreto[1]-l/2)*100,(box.centreto[0]-w/2)*100),l*100,w*100,linewidth=bns+1-i,edgecolor=cls[i],fill=False)
                 ax.add_patch(rect)
-        plt.show()
-    sa.stats['Best Performing'] = best
-    saveStats(sa.stats)
+        #plt.show()
+        picpath = os.path.join(os.path.dirname(__file__), './algstats', t+'_'+pallet+'.png')
+        fig.savefig(picpath)
+        plt.close(fig)
+    saveStats(sa.stats, t)
     
-    return sa
+    return best
     
 def offline_test(boxes):
     sa = newPacker(mode=1, bin_algo=3,pack_algo=MaxRectsBl,sort_algo='SORT_AREA', rotation=True)
@@ -167,10 +192,27 @@ def displayStats(stats, algs=[], pals=[]):
 
                 
 
-def saveStats(stats):
-    t = str(time())
+def saveStats(stats,t):
     print('Saving Stats to File {}'.format(t))
     statsPath = os.path.join(os.path.dirname(__file__), './algstats', t)
     f = open(statsPath,'wb+')
     pickle.dump(stats, f)
     f.close()
+    
+def getAlgDict():    
+    all_algs = {}
+    maxsortalgs = ['MaxRectsBaf', 'MaxRectsBl', 'MaxRectsBssf', 'MaxRectsBlsf', 'SkylineBl', 'SkylineBlWm', 'SkylineMwf', 'SkylineMwfl', 'SkylineMwfWm', 'SkylineMwflWm']
+    binalgs = ['NF','FF','BF']
+    sortalgs = ['WEIGHT','AREA','LENGTH','SSIDE','LSIDE','PERI','DIFF','RATIO','UNSORTED']
+    for alg in maxsortalgs:
+        for fit in binalgs:
+            all_algs.update({alg+'_'+fit:{}})
+    for k, v in all_algs.items():
+        for s in sortalgs:
+            v.update({s:0})
+    all_algs.update({'BPRF':{'WEIGHT':0}})
+    return all_algs
+
+
+
+
