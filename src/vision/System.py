@@ -5,11 +5,11 @@ from ..config.index import topics
 from Vision import Vision
 import cv2
 
-grabVals = {'red':{'grab':0,'pickrelease':55,'droprelease':45},\
-            'yellow':{'grab':0,'pickrelease':45,'droprelease':35},\
-            'blue':{'grab':0,'pickrelease':45,'droprelease':45},\
-            'green':{'grab':35,'pickrelease':65,'droprelease':45},\
-            'purple':{'grab':0,'pickrelease':55,'droprelease':35}\
+grabVals = {'red':{'grab':30,'pickrelease':60,'droprelease':45},\
+            'yellow':{'grab':20,'pickrelease':50,'droprelease':35},\
+            'blue':{'grab':30,'pickrelease':70,'droprelease':55},\
+            'green':{'grab':60,'pickrelease':80,'droprelease':65},\
+            'pink':{'grab':30,'pickrelease':55,'droprelease':45}\
             }
 
 class VisionAdaptor:
@@ -18,8 +18,8 @@ class VisionAdaptor:
         self.vision = Vision()
         #self.stackAlg = StackingAlgorithm()
         self.actionQueue = actionQueue
-        self.up = 80
-        self.down = -195
+        self.up = 275
+        self.down = -20
         self.actionQueue.put(self.addResetAction('X'))
         self.actionQueue.put(self.addResetAction('Y'))
         #self.actionQueue.put(self.addResetAction('Z'))
@@ -27,12 +27,20 @@ class VisionAdaptor:
         self.actionQueue.put(self.addGrabAction(0))
 
     def addXAction(self,payload):
+        if payload > 1600:
+            payload = 1600
+        elif payload < 0:
+            payload = 0
         return {
             "action": topics["EV3_MOVE_X"],
             "payload": payload
         }
 
     def addYAction(self,payload):
+        if payload > 950:
+            payload = 950
+        elif payload < 0:
+            payload = 0
         return {
             "action": topics["EV3_MOVE_Y"],
             "payload": payload
@@ -106,23 +114,23 @@ class VisionAdaptor:
         #self.gotoStart()
         self.actionQueue.put(self.addZAction(self.up))
         print('Heading to package at : {}'.format(box.centrefrom))
-        if box.rotateto == 90.00:
-            self.actionQueue.put(self.addXAction(int(box.centrefrom[0])-75))
-            self.actionQueue.put(self.addYAction(int(box.centrefrom[1])-20))
-            self.actionQueue.put(self.addRotateAction(0))
+        if box.rotatefrom == 90.00:
+            self.actionQueue.put(self.addXAction(int(box.centrefrom[0])))
+            self.actionQueue.put(self.addYAction(int(box.centrefrom[1])))
+            self.actionQueue.put(self.addRotateAction(210))
         else:
-            self.actionQueue.put(self.addXAction(int(box.centrefrom[0])-75))
-            self.actionQueue.put(self.addYAction(int(box.centrefrom[1])-20))
-            self.actionQueue.put(self.addRotateAction(-220))
+            self.actionQueue.put(self.addXAction(int(box.centrefrom[0])))
+            self.actionQueue.put(self.addYAction(int(box.centrefrom[1])))
+            self.actionQueue.put(self.addRotateAction(-10))
         self.grab(box.colour)
         #self.actionQueue.put(self.addRotateAction(-220))
         #print('Package Recovered!')
-        if True:
-            self.actionQueue.put(self.addRotateAction(0))
+        if box.rotateto == 0.00:
+            self.actionQueue.put(self.addRotateAction(210))
             self.actionQueue.put(self.addXAction(int(box.centreto[1])))
             self.actionQueue.put(self.addYAction(int(box.centreto[0])))
         else:
-            self.actionQueue.put(self.addRotateAction(0))
+            self.actionQueue.put(self.addRotateAction(-10))
             self.actionQueue.put(self.addXAction(int(box.centreto[1])))
             self.actionQueue.put(self.addYAction(int(box.centreto[0])))
         self.drop(box.colour)
@@ -130,9 +138,11 @@ class VisionAdaptor:
 
     def getFrame(self):
         self.image, self.boxes = self.vision.go()
-        return self.image
-
+        return self.image#s, self.boxes
+    
     def execute(self, id=None):
+        for b in self.boxes:
+            print(b)
         # Sending list of boxes to algorithm for stacking.
         sa = StackingAlgorithm((10,7), 'MaxRectsBl_BF', 'PERI')
         if id:
@@ -148,12 +158,12 @@ class VisionAdaptor:
                 #if b[4] == True:
                 #    self.createPickRoutine(b[0],b[1],b[2],0.0)
                 #else:
+                    print(b.rotatefrom)
                     if b.newBox:
                         self.createPickRoutine(b)
                     b.centreto=b.centreto/100
-
+                    
         return id, bins
-
 def main():
     va = VisionAdaptor()
     va.execute()

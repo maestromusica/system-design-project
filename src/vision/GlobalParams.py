@@ -14,11 +14,11 @@ class GlobalParams(object):
     def __init__(self):
         #should this be picklerick or demo?
         dir = path.dirname(path.abspath(__file__))
-        self.mask = path.join(dir,'config/demo3_mask_values.pkl')
+        self.mask = path.join(dir,'config/MaskData.pkl')
         self.cam = path.join(dir,'data/camera_intrinsic_params3.pkl')
         self.boardSize = (9,6)
         #coords go [col,row] ffs
-        self.workspace = path.join(dir,'config/workspace.pkl')
+        self.workspace = path.join(dir,'config/workspace_final_week.pkl')
 
     def findCorners(self,k):
         if k == 'TopLeft':
@@ -26,10 +26,10 @@ class GlobalParams(object):
         if k == 'BottomLeft':
             return [0,800]
         if k == 'TopRight':
-            return [340,0]
+            return [475,0]
 
         if k == 'BottomRight':
-            return [340,800]
+            return [475,800]
 
     def getMaskVals(self,filename):
         if filename is None:
@@ -50,12 +50,15 @@ class GlobalParams(object):
         camParams = {'optmtx':optimal_matrix,'mtx':matrix,'distcoeffs':dist}
         return camParams
 
-    def getWorkSpace(self,filename):
-        if filename is None:
-            filename = self.workspace
-        f = open(filename,'rb')
-        workspace = pkl.load(f)
-        f.close()
+    
+    def getWorkSpace(self,filename,workspace= None):
+        if not filename:
+            if workspace is None:
+                filename = self.workspace
+                print('reading from file: {}'.format(filename))                
+                f = open(filename,'rb')
+                workspace = pkl.load(f)
+                f.close()
         for k in workspace.keys():
             workspace[k] = [workspace[k],self.findCorners(k)]
             print(workspace[k])

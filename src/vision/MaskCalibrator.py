@@ -20,7 +20,7 @@ from __future__ import print_function
 import cv2
 import numpy as np
 import _pickle as pickle
-from Fairies import wsFinder
+from Fairies import WorkspaceFinder
 from GlobalParams import GlobalParams
 
 # Declaring Global variables
