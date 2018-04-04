@@ -282,7 +282,7 @@ def onAppConn(client, ev3, msg, controller):
 
 def onAppRequestBoxes(client, ev3, msg, controller):
     boxes = generateRandBoxes()
-    sa = StackingAlgorithm((20,20), 'MaxRectsBl_BF','PERI')
+    sa = StackingAlgorithm((20,20), 'SkylineMwfWm_FF', 'SSIDE')
     id, bins = sa.pack(boxes)
     # have to adapt the sorted boxes
     # into something parseable by JSON

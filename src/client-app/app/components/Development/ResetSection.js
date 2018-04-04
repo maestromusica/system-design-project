@@ -27,11 +27,11 @@ const ResetSection = ({actions}) => (
       }}>
         Reset Y
       </SectionOptionButton>
-      <SectionOptionButton onClick={ev => {
+      {/* <SectionOptionButton onClick={ev => {
         actions.resetZ()
-      }}>
+        }}>
         Reset Z
-      </SectionOptionButton>
+      </SectionOptionButton> */}
     </SectionOption>
   </Section>
 )

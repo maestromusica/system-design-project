@@ -16,7 +16,7 @@ class Dashboard extends Component {
 
   _sendRequestImg = (props) => {
     if(props.vision.processing && !props.vision.processingDone) {
-      this.props.actions.requestImg()
+      // this.props.actions.requestImg()
     }
   }
 

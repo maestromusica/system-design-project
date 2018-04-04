@@ -8,6 +8,11 @@ import {
   SectionOptionButton
 } from '../../styled/section'
 
+const isFloat = n => {
+  n = parseInt(n)
+  return Number(n) === n;
+}
+
 export default class AxisSection extends Component {
   state = {
     moveX: undefined,
@@ -53,11 +58,11 @@ export default class AxisSection extends Component {
   }
 
   render() {
-    const disabledX = !this.state.moveX
-    const disabledY = !this.state.moveY
-    const disabledZ = !this.state.moveZ
-    const disabledGrabber = !this.state.moveGrabber
-    const disabledRotate = !this.state.moveRotate
+    const disabledX = !this.state.moveX || !isFloat(this.state.moveX)
+    const disabledY = !this.state.moveY || !isFloat(this.state.moveY)
+    const disabledZ = !this.state.moveZ || !isFloat(this.state.moveZ)
+    const disabledGrabber = !this.state.moveGrabber || !isFlaot(this.state.moveGrabber)
+    const disabledRotate = !this.state.moveRotate || !isFloat(this.state.moveRotate)
 
     return (
       <Section>
