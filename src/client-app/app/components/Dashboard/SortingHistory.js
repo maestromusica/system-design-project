@@ -25,12 +25,15 @@ const SortingHistory = ({vision, actions}) => {
   let history = []
   for(const id in vision.history) {
     const el = vision.history[id]
-    history.push({
-      key: el.id,
-      date: (new Date(el.dateCompleted)).toDateString(),
-      boxes: calculateRecursiveLength(el.boxes),
-      originalBoxes: el.boxes
-    })
+    let numOfBoxes = calculateRecursiveLength(el.boxes)
+    if(numOfBoxes !== 0) {
+      history.push({
+        key: el.id,
+        date: (new Date(el.dateCompleted)).toDateString(),
+        boxes: calculateRecursiveLength(el.boxes),
+        originalBoxes: el.boxes
+      })
+    }
   }
 
   const columns = [{

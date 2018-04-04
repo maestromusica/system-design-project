@@ -49,6 +49,8 @@ export const adaptColor = color => {
       return 0xe082c4
     case "yellow":
       return  0xefb12b
+    case "orange":
+      return 0xf47e24
     default:
       return 0x666666 // black-ish color
   }
