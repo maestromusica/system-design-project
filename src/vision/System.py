@@ -139,12 +139,12 @@ class VisionAdaptor:
     def getFrame(self):
         self.image, self.boxes = self.vision.go()
         return self.image#s, self.boxes
-    
+
     def execute(self, id=None):
         for b in self.boxes:
             print(b)
         # Sending list of boxes to algorithm for stacking.
-        sa = StackingAlgorithm((10,7), 'MaxRectsBl_BF', 'PERI')
+        sa = StackingAlgorithm((10,7), 'SkylineMwfWm_FF', 'SSIDE')
         if id:
             sa.switchToPallet(id)
         id, bins = sa.pack(self.boxes)
@@ -162,7 +162,7 @@ class VisionAdaptor:
                     if b.newBox:
                         self.createPickRoutine(b)
                     b.centreto=b.centreto/100
-                    
+
         return id, bins
 def main():
     va = VisionAdaptor()

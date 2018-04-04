@@ -38,7 +38,6 @@ class Vision(object):
         #self.cap = cv2.VideoCapture(1)
         self.camParams = gp.getCamParams(cam)
         self.workspace = gp.getWorkSpace(None)
-        print('something')
         self.maskVals = gp.getMaskVals(maskv)
         self.processor = Gods.ImageProcessor(self.camParams,self.workspace,self.maskVals)
         self.camcal = Gods.CamCalibrator(gp.boardSize)
