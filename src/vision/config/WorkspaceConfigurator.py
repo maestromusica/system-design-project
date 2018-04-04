@@ -40,7 +40,7 @@ def returnCoordinate(event,x,y,flags,param):
             
 def main():
     global modes, mode, save, corners_dictionary, corners
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     print(cap.isOpened())
     _ , frame = cap.read()
     cv2.imshow('frame',frame)

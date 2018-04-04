@@ -9,19 +9,21 @@ from sklearn.linear_model import LinearRegression
 global offset
 offset = 0.5
 class Adaptor(object):
-    def __init__(self,modelfile = 'data/AdapterModels.pkl'):
+    def __init__(self,modelfile = 'data/AdapterModels1.pkl'):
         dir = path.dirname(path.abspath(__file__))
-        self.AdapterX, self.AdapterY ,self.AdapterXX, self.AdapterYY= self.loadModels(path.join(dir,modelfile))
+        #self.AdapterX, self.AdapterY ,self.AdapterXX, self.AdapterYY= self.loadModels(path.join(dir,modelfile))
+        self.AdapterX, self.AdapterY = self.loadModels(path.join(dir,modelfile))
         self.thresholdY = 100
 
     def loadModels(self,filename):
         f = open(filename,'rb')
         modelX = pickle.load(f)
         modelY = pickle.load(f)
-        modelXX = pickle.load(f)
-        modelYY = pickle.load(f)
+        #modelXX = pickle.load(f)
+        #modelYY = pickle.load(f)
+
         f.close()
-        return modelX,modelY,modelXX,modelYY
+        return modelX,modelY#,modelXX,modelYY
 
     def calcOffset(self,current,prev):
         offset = 0
@@ -36,9 +38,9 @@ class Adaptor(object):
         x = self.AdapterX.predict(centroid[1])
         y = self.AdapterY.predict(centroid[0])
         centroid = np.array([list(centroid)],np.int0)
-        yy = self.AdapterYY.predict(centroid)
-        xx = self.AdapterXX.predict(centroid)
-        print('centroid : {} -- >x : {} , y : {} , xx : {} , yy : {}'.format(centroid,x,y,xx,yy))
+        #yy = self.AdapterYY.predict(centroid)
+        #xx = self.AdapterXX.predict(centroid)
+       # print('centroid : {} -- >x : {} , y : {} , xx : {} , yy : {}'.format(centroid,x,y,xx,yy))
         return [x.flatten()[0],y.flatten()[0]]
     
     def findPickOffsets(self,b):
@@ -56,6 +58,25 @@ class Adaptor(object):
         for i,b in enumerate(boxes):
             print("OriginalValues : from : {}\t to {}".format(b.centrefrom,b.centreto))
             b.centrefrom = self.adaptPoints(b.centrefrom)
+
+            # Box Adaption at 1060 assume perfect
+            # Box Adaption > 1060 add additional offset for X?
+
+            if b.centrefrom[0] > 1200:
+                b.centrefrom[0] -= 15
+            
+            if b.rotatefrom == 90.00: # vertical grabbing
+                b.centrefrom[1] -= b.width*15
+                b.centrefrom[0] -= 50
+            else:                     # horizontal grabbing
+                b.centrefrom[0] -= b.width*40
+                b.centrefrom[1] -= 55
+
+            
+                
+            
+
+            
             #b.centrefrom[0] += self.findPickOffsets(b)
             #b.centreto = self.adaptPoints(b.centreto)
             #b['centroid'] = self.adaptPoints(b['centroid']

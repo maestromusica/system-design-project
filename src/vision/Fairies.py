@@ -5,12 +5,11 @@ from collections import Counter
 
 global data
 data = {
-    6:{'type':'green','destination':'Edinburgh','weight':1},\
     1:{'type':'blue','destination':'Edinburgh','weight':1},\
-    2:{'type':'pink','destination':'Edinburgh','weight':1},\
+    2:{'type':'yellow','destination':'Edinburgh','weight':1},\
     3:{'type':'pink','destination':'Edinburgh','weight':1},\
     4:{'type':'red','destination':'Edinburgh','weight':1},\
-    5:{'type':'pink','destination':'Edinburgh','weight':1}}
+    6:{'type':'green','destination':'Edinburgh','weight':1}}
 
 
 
@@ -275,18 +274,19 @@ class BoxFinder(object):
 
                 # get spatial_info(corners,centres in the image)
                 spatial_info = aruco_codes[k]
-
+                
                 # calculate orientations
                 orientation = findOrientationAruco(spatial_info['corners'])
 
+                if spatial_info['centroid'][1] > 400:
                 # form box dictionary
-                boxes.append(self.createDict(spatial_info['centroid'],\
+                    boxes.append(self.createDict(spatial_info['centroid'],\
                                          metadata['type'],orientation,\
                                          metadata['destination']))
             
-                # book keeping
-                count[metadata['type']] += 1;
-                orientations[metadata['type']] = orientation
+                    # book keeping
+                    count[metadata['type']] += 1;
+                    orientations[metadata['type']] = orientation
 
             # Draw data on the frame.
             for k in list(count.keys()):

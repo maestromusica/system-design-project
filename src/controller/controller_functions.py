@@ -318,7 +318,7 @@ def generateRandBoxes():
     numOfBoxes = randrange(20, 100)
     numOfBoxesForColor = numOfBoxes / 5
     boxes = []
-    colours = ['red', 'blue', 'green', 'yellow', 'purple']
+    colours = ['red', 'blue', 'green', 'yellow', 'pink']
     for iteration in range(5):
         for i in range(int(numOfBoxesForColor)):
             boxes.append({
