@@ -66,11 +66,16 @@ class Adaptor(object):
                 b.centrefrom[0] -= 15
             
             if b.rotatefrom == 90.00: # vertical grabbing
-                b.centrefrom[1] -= b.width*15
+                b.centrefrom[1] -= b.width*25
                 b.centrefrom[0] -= 50
             else:                     # horizontal grabbing
-                b.centrefrom[0] -= b.width*40
-                b.centrefrom[1] -= 55
+                if box.width > 2.3:
+                    b.centrefrom[0] -= b.width*30
+                else:
+                    b.centrefrom[0] = b.width*50
+                    b.centrefrom[1] -= 55
+                    
+                    
 
             
                 

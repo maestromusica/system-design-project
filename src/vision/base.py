@@ -270,6 +270,9 @@ class Drawer(object):
         elif colour == 'blue':
             cv2.putText(frame,colour + ' : {}    {}'.format(val,ort),(10,140),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
+        elif colour == 'orange':
+            cv2.putText(frame,colour + ' : {}    {}'.format(val,ort),(10,170),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+                        (200,200,200),1)
         return frame
 
 

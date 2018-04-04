@@ -9,7 +9,7 @@ data = {
     2:{'type':'yellow','destination':'Edinburgh','weight':1},\
     3:{'type':'pink','destination':'Edinburgh','weight':1},\
     4:{'type':'red','destination':'Edinburgh','weight':1},\
-    5:{'type':'orange','destination':'edinburgh','weight':1},
+    5:{'type':'orange','destination':'edinburgh','weight':1},\
     6:{'type':'green','destination':'Edinburgh','weight':1}}
 
 
@@ -279,7 +279,7 @@ class BoxFinder(object):
                 # calculate orientations
                 orientation = findOrientationAruco(spatial_info['corners'])
 
-                if spatial_info['centroid'][1] > 400:
+                if spatial_info['centroid'][1] > 330:
                 # form box dictionary
                     boxes.append(self.createDict(spatial_info['centroid'],\
                                          metadata['type'],orientation,\
