@@ -27,7 +27,7 @@ class StackingAlgorithm(object):
         self.box_sort = box_sort or 'WEIGHT'
         self.currentPallet = Pallet(uuid.uuid4().hex,self.binSize,self.algorithm,self.box_sort)
         exec('self.packer = '+self.currentPallet.string)
-        self.stats = {self.algorithm:{'Runtime for Boxes':[],'Max Density': 0},self.currentPallet.pid:{'Algorithm':self.algorithm,'Box Sort Method':self.box_sort,'Boxes Packed':0,'Box Width Error':0,'Box Length Error':0}}
+        self.stats = {self.algorithm:{'Runtime for Boxes':[],'Max Density': 0},self.currentPallet.pid:{'Algorithm':self.algorithm,'Box Sort Method':self.box_sort,'Boxes Packed':0}}
 
 
 
@@ -49,22 +49,18 @@ class StackingAlgorithm(object):
 
     def getTrueBoxes(self, boxes):
         new_boxes = []
-        w_off = 0.0
-        l_off = 0.0
         for b in boxes:
             box = Box(b)
-            #w_off += np.abs(b['width'] - box.width)
-            #l_off += np.abs(b['length'] - box.length)
             new_boxes.append(box)
-        return (w_off, l_off), new_boxes
+        return new_boxes
 
 
     def pack(self, boxes):
         timestamp = time()
-        box_error, new_boxes = self.getTrueBoxes(boxes)
+        new_boxes = self.getTrueBoxes(boxes)
         self.currentPallet.add_sweep(new_boxes)
         self.packer.sort(new_boxes)
-        self.log_error(timestamp, box_error, len(new_boxes))
+        self.log_error(timestamp, len(new_boxes))
         for bin in self.packer.bins:
             for box in bin.boxes_packed:
                 box.newBox = False
@@ -94,7 +90,7 @@ class StackingAlgorithm(object):
         self.currentPallet = Pallet(uuid.uuid4().hex,self.binSize,self.algorithm,self.box_sort)
         exec('self.packer = '+self.currentPallet.string)
 
-        self.stats[self.currentPallet.pid] = {'Algorithm':self.algorithm, 'Box Sort Method':self.box_sort, 'Boxes Packed':0,'Box Width Error':0,'Box Length Error':0}
+        self.stats[self.currentPallet.pid] = {'Algorithm':self.algorithm, 'Box Sort Method':self.box_sort, 'Boxes Packed':0}
 
 
     def switchToPallet(self,p):
@@ -119,51 +115,23 @@ class StackingAlgorithm(object):
 
     ##for recording error and such like
 
-    def log_error(self, timestamp, box_error, num_boxes):
+    def log_error(self, timestamp, num_boxes):
         #time alg started, total box error, number of boxes sorted
         self.stats[self.algorithm]['Runtime for Boxes'].append((time()-timestamp, num_boxes))
         packer_error = self.packer.get_error()
         self.stats[self.algorithm]['Max Density'] = max(self.stats[self.algorithm]['Max Density'], max([v for k,v in packer_error['Density'].items()]))
 
         self.stats[self.currentPallet.pid]['Boxes Packed'] += num_boxes
-        self.stats[self.currentPallet.pid]['Box Width Error'] += box_error[0]
-        self.stats[self.currentPallet.pid]['Box Length Error'] += box_error[1]
         self.stats[self.currentPallet.pid]['Bins Expected'] = packer_error['Bins Expected']
         self.stats[self.currentPallet.pid]['Bins Used'] = packer_error['Bins Used']
         self.stats[self.currentPallet.pid]['Density'] = packer_error['Density']
         self.stats[self.currentPallet.pid]['Free Space'] = packer_error['Free Space']
 
 
-    def displayStats(self):
-        best_density = (0.0,[])
-        best_runtime = (float('inf'),'None', (0,0))
-        for k, v in self.stats.items():
-            if len(k)<32:
-                print('Algorithm: '+k)
-                runtime = sum([t for (t,_) in v['Runtime for Boxes']])
-                total_boxes = sum([b for (_,b) in v['Runtime for Boxes']])
-                if runtime/total_boxes < best_runtime[0]:
-                    best_runtime = (runtime/total_boxes,k, runtime, total_boxes)
-                print('    Total Runtime: {}s over {} boxes'.format(runtime,total_boxes))
-                print('    Average Time Per Box: {}s'.format(runtime/total_boxes))
-                print('    Maximum Density Achieved: {}% packed'.format(v['Max Density']))
 
-            elif len(k) == 32:
-                print('Pallet {}: Packed by {} and sorted by {}'.format(k,v['Algorithm'],v['Box Sort Method']))
-                b = v['Boxes Packed']
-                print('    {} boxes packed onto {} levels'.format(b,v['Bins Used']))
-                print('    {} levels expected'.format(v['Bins Expected']))
-                print('    Average Box Width Error: {} units, Average Box Length Error {} units'.format(v['Box Width Error']/b, v['Box Length Error']/b))
-                for i in range(v['Bins Used']):
-                    print('    Level {}:'.format(i))
-                    print('        Density: {}% packed'.format(v['Density'][i]))
-                    if v['Density'][i] > best_density[0]:
-                        best_density = (v['Density'][i], [v['Algorithm']+' with '+v['Box Sort Method']+' on Pallet '+str(k)+' Level '+str(i)])
-                    elif v['Density'][i] == best_density[0]:
-                        best_density[1].append(v['Algorithm']+' with '+v['Box Sort Method']+' on Pallet '+str(k)+' Level '+str(i))
-                    print('        Free Space: {} sq units'.format(v['Free Space'][i]))
-
-        print('Best Runtime Per Box: {}s by {} for a total of {}s over {} boxes'.format(best_runtime[0],best_runtime[1],best_runtime[2], best_runtime[3]))
-        print('Best Density: {} by the following -'.format(best_density[0]))
-        for bd in best_density[1]:
-            print('    {}'.format(bd))
+            
+    def saveStats(self):
+        statsPath = os.path.join(os.path.dirname(__file__), './algstats', str(time()))
+        f = open(statsPath,'wb+')
+        pickle.dump(self.stats, f)
+        f.close()
