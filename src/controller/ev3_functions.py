@@ -127,7 +127,7 @@ class EV3Client():
         self.client31 = mqtt.Client()
         self.controllerClient = controllerClient
         self.client11Connected = False
-        self.client31Connected = True
+        self.client31Connected = False
         self.connected = False
 
     def restart(self):
@@ -140,7 +140,7 @@ class EV3Client():
 
     def connect(self):
         self.connect11()
-        # self.connect31()
+        self.connect31()
 
     def connect11(self):
         config = json.load(open(configPath))
@@ -165,35 +165,34 @@ class EV3Client():
             self.connected = False
 
     def publish(self, topic, message=None):
-        print("{0} Snort {1}".format(topic, message))
         if topic == topics["EV3_REQUEST_NEXT"]:
             self.client11.publish(topic, message)
         elif topic == topics["EV3_CONN"]:
             self.client11.publish(topic, "11")
-            # self.client31.publish(topic, "31")
+            self.client31.publish(topic, "31")
         else:
             self.client11.publish(topic, message)
-            # self.client31.publish(topic, message)
+            self.client31.publish(topic, message)
 
     def subscribe(self, topic):
         self.client11.subscribe(topic)
-        # self.client31.subscribe(topic)
+        self.client31.subscribe(topic)
 
     def loop_start(self):
         self.client11.loop_start()
-        # self.client31.loop_start()
+        self.client31.loop_start()
 
     def on_connect(self, function):
         self.client11.on_connect = function
-        # self.client31.on_connect = function
+        self.client31.on_connect = function
 
     def on_message(self, function):
         self.client11.on_message = function
-        # self.client31.on_message = function
+        self.client31.on_message = function
 
     def on_disconnect(self, function):
         self.client11.on_disconnect = function
-        # self.client31.on_message = function
+        self.client31.on_disconnect = function
 
     def setConnected(self, tag):
         if tag == "11":
@@ -201,7 +200,7 @@ class EV3Client():
         elif tag == "31":
             self.client31Connected = True
 
-        if self.client11Connected is True and self.client31Connected is True:
+        if self.client11Connected and self.client31Connected:
             self.connected = True
 
     def setDisconnected(self, tag):

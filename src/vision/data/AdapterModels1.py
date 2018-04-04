@@ -5,11 +5,11 @@ import pandas as pd
 
 if __name__ == '__main__':
     
-    PixelX = np.array([45.75,112.75,177.25,243.5,310.5,376.25,510.5,577.5,645.25,712]).reshape(-1,1)
-    PixelY = np.array([59.875,106,152.375,198.625,245.5]).reshape(-1,1)
+    RobotX = np.array([80,220,360,500,640,780,920,1060,1200,1340,1480])
+    RobotY = np.array([60,200,340,480,620,760,915])
 
-    RobotX = np.array([55,200,335,480,615])
-    RobotY = np.array([55,195,325,465,605,750,890,1030,1180,1320])
+    PixelX = np.array([81,134,188,241,295,348,402]).reshape(-1,1)
+    PixelY = np.array([47,112,179,247,315,384,452,523,591,661,730]).reshape(-1,1)
 
     lrX = LinearRegression()
     lrX.fit(PixelY,RobotX.reshape(-1,1))

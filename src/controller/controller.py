@@ -135,6 +135,8 @@ def onEV3Message(client, userdata, msg):
 
 def onEV3Disconnect(client, userdata, rc):
     print(">>> EV3 disconneted")
+    print(ev3.client11Connected)
+    print(ev3.client31Connected)
     ev3.setDisconnected("all")
     sendData("connection", controllerClient, controller, ev3)
 
