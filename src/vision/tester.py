@@ -1,24 +1,16 @@
 from Algorithm import StackingAlgorithm
-from Parameters import test_boxes, test_box_set
 from rectpack import newPacker, MaxRectsBl
 from PIL import Image
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
+from matplotlib import pyplot as plt, patches, colors
 import numpy as np
-from random import randint
+from random import randint, sample
 
-def run_test(which,bxs=None):
+def run_test(which):
     sa = None
-    if which == 'test' and bxs == 'set':
-        sa = test_algo(test_box_set,(5,5))
-    elif which == 'test' and bxs == 'test':
-        sa = test_algo(test_boxes,(10,10))
-    elif which == 'offline' and bxs == 'set':
-        offline_test(test_box_set)
-    elif which == 'offline' and bxs == 'test':
-        offline_test(test_boxes)
+    bxs = generate_boxes()
+    if which == 'offline':
+        offline_test(bxs)
     elif which == 'gen':
-        bxs = generate_boxes()
         sa = test_algo(bxs,(12,12))
     return sa
 
@@ -38,8 +30,31 @@ def test_algo(boxes, binsize, msa=None, bna=None, sta=None):
                 sa.pack(boxes)
                 
             
-    analyseStats(sa.stats)
+    best = analyseStats(sa.stats)
+    for pallet, method in best.items():
+        sa.switchToPallet(pallet)
+        im = np.array(Image.open('Container2.png'), dtype=np.uint8)
+        fig,ax = plt.subplots(1)
+        plt.title(method[0]+' with '+method[1])
+        ax.imshow(im)
+        rect = patches.Rectangle((0,0),1200,1200,linewidth=1,edgecolor='black',fill=False)
+        ax.add_patch(rect)
+        bns = len(sa.packer.bins)
+        cls = sample(list(colors.get_named_colors_mapping().values()),bns)
+        for i, b in enumerate(sa.packer.bins):
+            for box in b.boxes_packed:
+                if box.rotateto:
+                    w = box.length
+                    l = box.width
+                else:
+                    w = box.width
+                    l = box.length
+                rect = patches.Rectangle(((box.centreto[1]-l/2)*100,(box.centreto[0]-w/2)*100),l*100,w*100,linewidth=bns+1-i,edgecolor=cls[i],fill=False)
+                ax.add_patch(rect)
+        plt.show()
+    sa.stats['Best Performing'] = best
     sa.saveStats()
+    
     return sa
     
 def offline_test(boxes):
@@ -119,7 +134,11 @@ def analyseStats(stats):
             pallets_at_max = [pid for pid in pallets_at_max if stats[pid]['Density'][i] == max_density]
             #print('new pallets at max {}'.format(len(pallets_at_max)))
         i += 1    
-    displayStats(stats, algs=[stats[pid]['Algorithm'] for pid in final_best_pallets], pals=final_best_pallets)
+    best_performing = {}
+    for tup in [{pid:(stats[pid]['Algorithm'],stats[pid]['Box Sort Method'])} for pid in final_best_pallets]:
+        best_performing.update(tup)
+    displayStats(stats, algs=[tup[0] for tup in list(best_performing.values())] , pals=final_best_pallets)
+    return best_performing
     
 def displayStats(stats, algs=[], pals=[]):
     
@@ -140,7 +159,7 @@ def displayStats(stats, algs=[], pals=[]):
                 print('    Level {}:'.format(i))
                 print('        Density: {}% packed'.format(v['Density'][i]))
                 print('        Free Space: {} sq units'.format(v['Free Space'][i]))
-                
+
                 
 
     
