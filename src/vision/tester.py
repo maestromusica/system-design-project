@@ -53,7 +53,7 @@ def test_algo(boxes, binsize, msa=None, bna=None, sta=None):
                 ax.add_patch(rect)
         plt.show()
     sa.stats['Best Performing'] = best
-    sa.saveStats()
+    saveStats(sa.stats)
     
     return sa
     
@@ -162,4 +162,10 @@ def displayStats(stats, algs=[], pals=[]):
 
                 
 
-    
+def saveStats(stats):
+    t = str(time())
+    print('Saving Stats to File {}'.format(t))
+    statsPath = os.path.join(os.path.dirname(__file__), './algstats', t)
+    f = open(statsPath,'wb+')
+    pickle.dump(stats, f)
+    f.close()
