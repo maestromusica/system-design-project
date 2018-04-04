@@ -14,7 +14,7 @@ class GlobalParams(object):
     def __init__(self):
         #should this be picklerick or demo?
         dir = path.dirname(path.abspath(__file__))
-        self.mask = path.join(dir,'config/MaskData.pkl')
+        self.mask = path.join(dir,'config/AllBoxesMask.pkl')
         self.cam = path.join(dir,'data/camera_intrinsic_params3.pkl')
         self.boardSize = (9,6)
         #coords go [col,row] ffs

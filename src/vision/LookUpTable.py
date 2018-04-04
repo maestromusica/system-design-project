@@ -29,7 +29,8 @@ if __name__=='__main__':
         _ , frame = cap.read()
         show = pt.find(cv2.flip(frame,1))
         for (x,y) in YPoints:
-            cv2.circle(show,(x,y),2,(255,0,0),2)
+            cv2.circle(show,(x,y),12,(255,0,0),4)
+            cv2.circle(show,(x,y),2,(0,0,255),2)
         cv2.imshow('frame',show)
         k = cv2.waitKey(10)
         if k == 32:
@@ -41,6 +42,6 @@ if __name__=='__main__':
 
         if k == ord('c'):
             print('Saving Capture to AdapterCalibration.jpg')
-            cv2.imwrite('AdapterCalibration.jpg',show)
+            cv2.imwrite('AdapterCalibrationBackground.jpg',show)
             
     cv2.destroyAllWindows()

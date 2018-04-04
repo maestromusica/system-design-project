@@ -7,6 +7,7 @@ from ..vision.System import VisionAdaptor
 from ..vision.Algorithm import StackingAlgorithm
 from ..config.index import boxes
 from random import randrange
+import time
 
 visionTag = "vision"
 controllerTag = "controller"
@@ -63,6 +64,7 @@ def onProcessResponse(client, ev3, msg, controller):
         sendData("actions", client, controller, ev3)
         print(controller.actionQueues[visionTag])
         print("> Accepted")
+        controller.sortedId = ""
     elif msg.payload.decode() == "False":
         controller.sorting = False
         controller.sortedBoxes = []

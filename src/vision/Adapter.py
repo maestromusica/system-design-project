@@ -69,11 +69,11 @@ class Adaptor(object):
                 b.centrefrom[1] -= b.width*25
                 b.centrefrom[0] -= 50
             else:                     # horizontal grabbing
-                if box.width > 2.3:
-                    b.centrefrom[0] -= b.width*30
+                if b.width > 2.3:
+                    b.centrefrom[0] -= b.width*30 -15
                 else:
-                    b.centrefrom[0] = b.width*50
-                    b.centrefrom[1] -= 55
+                    b.centrefrom[0] -= b.width*40
+                b.centrefrom[1] -= 55
                     
                     
 
