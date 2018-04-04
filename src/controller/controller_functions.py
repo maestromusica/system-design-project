@@ -63,7 +63,6 @@ def onProcessResponse(client, ev3, msg, controller):
         sendData("actions", client, controller, ev3)
         print(controller.actionQueues[visionTag])
         print("> Accepted")
-        controller.sortedId = ""
     elif msg.payload.decode() == "False":
         controller.sorting = False
         controller.sortedBoxes = []
