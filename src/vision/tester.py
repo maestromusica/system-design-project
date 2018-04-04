@@ -4,6 +4,9 @@ from PIL import Image
 from matplotlib import pyplot as plt, patches, colors
 import numpy as np
 from random import randint, sample
+from time import time
+import os
+import pickle
 
 def run_test(which):
     sa = None
@@ -97,12 +100,14 @@ def analyseStats(stats):
     best_density = (0.0,[])
     best_runtime = (float('inf'),'None', (0,0))
     for k, v in stats.items():
-        if len(k)<32:
+        if k == 'Best Performing':
+            print('Best Performing: {}'.format(v))
+        elif len(k)<32:
             runtime = sum([t for (t,_) in v['Runtime for Boxes']])
             total_boxes = sum([b for (_,b) in v['Runtime for Boxes']])
             if runtime/len(v['Runtime for Boxes']) < best_runtime[0]:
                 best_runtime = (runtime/len(v['Runtime for Boxes']),k, runtime, total_boxes)
-        if len(k) == 32:
+        elif len(k) == 32:
             for i in range(v['Bins Used']):
                 if v['Density'][i] > best_density[0]:
                     best_density = (v['Density'][i], [(v['Algorithm'],v['Box Sort Method'],k,i)])
