@@ -45,7 +45,7 @@ export const adaptColor = color => {
       return 0xbf3e1e
     case "blue":
       return 0x39c3e5
-    case "purple":
+    case "pink":
       return 0xe082c4
     case "yellow":
       return  0xefb12b
