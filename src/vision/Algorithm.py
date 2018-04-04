@@ -130,8 +130,4 @@ class StackingAlgorithm(object):
 
 
             
-    def saveStats(self):
-        statsPath = os.path.join(os.path.dirname(__file__), './algstats', str(time()))
-        f = open(statsPath,'wb+')
-        pickle.dump(self.stats, f)
-        f.close()
+
