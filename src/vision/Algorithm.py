@@ -53,8 +53,8 @@ class StackingAlgorithm(object):
         l_off = 0.0
         for b in boxes:
             box = Box(b)
-            w_off += np.abs(b['width'] - box.width)
-            l_off += np.abs(b['length'] - box.length)
+            #w_off += np.abs(b['width'] - box.width)
+            #l_off += np.abs(b['length'] - box.length)
             new_boxes.append(box)
         return (w_off, l_off), new_boxes
 
@@ -75,7 +75,7 @@ class StackingAlgorithm(object):
 
     def savePallet(self):
         self.currentPallet.stats = self.stats[self.currentPallet.pid]
-        palletPath = os.path.join(os.path.dirname(__file__), './pallets', self.currentPallet.pid)
+        palletPath = os.path.join(os.path.dirname(__file__), 'pallets', self.currentPallet.pid)
         f = open(palletPath,'wb+')
         pickle.dump(self.currentPallet, f)
         f.close()
@@ -101,7 +101,7 @@ class StackingAlgorithm(object):
         #switches to a different pallet
         #CHANGE THIS NEXT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         try:
-            palletPath = os.path.join(os.path.dirname(__file__), './pallets', p)
+            palletPath = os.path.join(os.path.dirname(__file__), 'pallets', p)
             f = open(palletPath,'rb')
             self.currentPallet = pickle.load(f)
             f.close()

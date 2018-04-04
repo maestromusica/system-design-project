@@ -32,7 +32,7 @@ def returnCoordinate(event,x,y,flags,param):
             
 def main():
     global modes, mode, save, corners_dictionary, corners
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     print(cap.isOpened())
     _ , frame = cap.read()
     cv2.imshow('frame',frame)
@@ -50,7 +50,7 @@ def main():
         if mode == 4:
             workspace = gp.getWorkSpace(None, corners_dictionary)
             ws = WorkspaceFinder(camparams,workspace)
-            cv2.imshow('Transformerd Image',ws.find(flip))
+            cv2.imshow('Transformed Image',ws.find(flip))
             k = cv2.waitKey(0)
             if k == ord('s'):
                 filename = input('Enter file name: ')

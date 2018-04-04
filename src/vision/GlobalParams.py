@@ -18,7 +18,7 @@ class GlobalParams(object):
         self.cam = path.join(dir,'data/camera_intrinsic_params3.pkl')
         self.boardSize = (9,6)
         #coords go [col,row] ffs
-        self.workspace = path.join(dir,'config/workspace_final_week.pkl')
+        self.workspace = path.join(dir,'config/workspace.pkl')
 
     def findCorners(self,k):
         if k == 'TopLeft':
@@ -26,10 +26,10 @@ class GlobalParams(object):
         if k == 'BottomLeft':
             return [0,800]
         if k == 'TopRight':
-            return [340,0]
+            return [425,0]
 
         if k == 'BottomRight':
-            return [340,800]
+            return [425,800]
 
     def getMaskVals(self,filename):
         if filename is None:
@@ -52,15 +52,13 @@ class GlobalParams(object):
 
     
     def getWorkSpace(self,filename,workspace= None):
-        if filename is None:
+        if not filename:
             if workspace is None:
                 filename = self.workspace
+                print('reading from file: {}'.format(filename))                
                 f = open(filename,'rb')
                 workspace = pkl.load(f)
                 f.close()
-            else:
-                wokspace = workspace
-        
         for k in workspace.keys():
             workspace[k] = [workspace[k],self.findCorners(k)]
             print(workspace[k])

@@ -125,5 +125,5 @@ class ImageProcessor(object):
         masks = self.maskFinder.find(wsImg)
         #finds the boxes in the workspace
         #boxes :: {'colorname':[box]} dict of lists of boxes (box object type) by name of color (string)
-        return self.boxFinder.find(wsImg,masks)
+        return self.boxFinder.findAruco(wsImg)#,masks)
 

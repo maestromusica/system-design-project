@@ -73,22 +73,19 @@ def findOrientationAruco(corners):
     x,y = corners[0]
     left = False
     top = False
-    print(corners,np.sort(corners[:,0]),np.sort(corners[:,1]))
     checkx = np.where(np.sort(corners[:,0]) == x)[0][0]
     checky = np.where(np.sort(corners[:,1]) == y)[0][0]
-    print('checkx : {}, checky: {}'.format(checkx,checky))
     
     if checkx < 2 :
         left = True
     if checky < 2:
         top = True
 
-    if (top and left) or (not(top) and not(left)):
-        print('vertical')
-        return 90.00
-    else:
-        print('horizontal')
+    if (top and left) or (not(top) and not(left)):       
         return 0.00
+    else:
+        return 90.00
+
 
 
 ########################## CLASSES ##########################################
@@ -116,7 +113,7 @@ class WorkspaceFinder(object):
         #get perspective transform matrix
         M = cv2.getPerspectiveTransform(self.ptsFrom,self.ptsTo)
         #crop image
-        cropped_img = cv2.warpPerspective(corrected_image,M,self.wsSize)
+        cropped_img = cv2.warpPerspective(img,M,self.wsSize)
         return cropped_img
 
 
@@ -268,30 +265,35 @@ class BoxFinder(object):
         boxes = []
         count = Counter()
         orientations = {}
-        
-        # keys are the aruco_ids of each box.
-        for k in list(aruco_codes.keys()):
 
-            # get data using the aruco_id
-            metadata = data[k]
+        if aruco_codes is not None:
+            # keys are the aruco_ids of each box.
+            for k in list(aruco_codes.keys()):
 
-            # get spatial_info(corners,centres in the image)
-            spatial_info = aruco_codes[k]
+                # get data using the aruco_id
+                metadata = data[k]
 
-            # calculate orientations
-            orientation = findOrientationAruco(spatial_info['corners'])
+                # get spatial_info(corners,centres in the image)
+                spatial_info = aruco_codes[k]
 
-            # form box dictionary
-            boxes.append(self.createDict(spatial_info['centroid'],\
+                # calculate orientations
+                orientation = findOrientationAruco(spatial_info['corners'])
+
+                # form box dictionary
+                boxes.append(self.createDict(spatial_info['centroid'],\
                                          metadata['type'],orientation,\
                                          metadata['destination']))
+            
+                # book keeping
+                count[metadata['type']] += 1;
+                orientations[metadata['type']] = orientation
 
-            # book keeping
-            count[metadata['type']] += 1;
-            orientations[metadata['type']] = orientation
+            # Draw data on the frame.
+            for k in list(count.keys()):
+                self.drawer.putText(image,k,count[k],orientations[k])
 
-        # Draw data on the frame.
-        for k in list(count.keys()):
-            self.drawer.putText(image,k,count[k],orientations[k])
 
-        return image, boxes
+            return image, boxes
+
+        else:
+            return image, None

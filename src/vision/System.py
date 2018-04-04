@@ -1,6 +1,6 @@
 import paho.mqtt.client as mqtt
 from Adapter import Adaptor
-#from Algorithm import StackingAlgorithm
+from Algorithm import StackingAlgorithm
 from ..config.index import topics
 from Vision import Vision
 import cv2
@@ -130,7 +130,8 @@ class VisionAdaptor:
 
     def getFrame(self):
         self.image, self.boxes = self.vision.go()
-        return self.image, self.boxes
+        return self.image#s, self.boxes
+    
     def execute(self, id=None):
         # Sending list of boxes to algorithm for stacking.
         sa = StackingAlgorithm((10,7), 'MaxRectsBl_BF', 'PERI')
