@@ -19,10 +19,18 @@ def returnCoordinate(event,x,y,flags,param):
     if event == cv2.EVENT_LBUTTONDBLCLK:
         corners.append([x,y])
         print('{} set as : ({},{})'.format(modes[mode],x,y))
-        if mode < 4:
+        if mode < 3:
             mode += 1
         elif mode == 3:
-            corners_dictionary = dict(zip(modes,corners))            
+            corners_dictionary = dict(zip(modes,corners))
+            filename = input('Enter file name: ')
+            print('Saving corners to file : {}'.format(filename))
+            print(corners_dictionary)
+            f = open(filename,'wb')
+            pickle.dump(corners_dictionary,f)
+            f.close()
+            exit
+
             
     if event == cv2.EVENT_RBUTTONDBLCLK:
         del corners[-1]
@@ -40,31 +48,11 @@ def main():
     gp = GlobalParams()
     camparams = gp.getCamParams(None)
     while True:
-        ret, frame = cap.read()
-        if mode < 4:
-            cv2.putText(frame,show[mode],(10,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
-                        (200,200,200),1)
+        ret, frame = cap.read()   
+        cv2.putText(frame,show[mode],(10,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+                    (200,200,200),1)
         flip = cv2.flip(frame,1)
         cv2.imshow('frame',flip)
-
-        if mode == 4:
-            workspace = gp.getWorkSpace(None, corners_dictionary)
-            ws = WorkspaceFinder(camparams,workspace)
-            cv2.imshow('Transformed Image',ws.find(flip))
-            k = cv2.waitKey(0)
-            if k == ord('s'):
-                filename = input('Enter file name: ')
-                print('Saving corners to file : {}'.format(filename))
-                print(corners_dictionary)
-                f = open(filename,'wb')
-                pickle.dump(corners_dictionary,f)
-                f.close()
-                exit
-            else:
-                cv2.destroyWindow('Transformed Image')
-                corners = []
-                mode = 0
-
         k = cv2.waitKey(10)
         
         if k == 32:

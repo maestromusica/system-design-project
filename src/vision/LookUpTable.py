@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 from GlobalParams import GlobalParams 
-from Fairies import wsFinder
+from Fairies import WorkspaceFinder
 import _pickle as pkl
 
 global YPoints
@@ -17,13 +17,13 @@ def printPoint(events,x,y,flags,params):
         del YPoints[-1]
 
 if __name__=='__main__':
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     ret , frame = cap.read()
     cv2.imshow('frame',cv2.flip(frame,1))
     cv2.setMouseCallback('frame',printPoint)
     camParams = GlobalParams().getCamParams(None)
     workspace = GlobalParams().getWorkSpace(None)
-    pt = wsFinder(camParams,workspace)
+    pt = WorkspaceFinder(camParams,workspace)
     
     while True:
         _ , frame = cap.read()
