@@ -280,9 +280,16 @@ def onAppConn(client, ev3, msg, controller):
     client.publish(topics["CONN_ACK"])
 
 def onAppRequestBoxes(client, ev3, msg, controller):
+    palletId = msg.payload.decode()
     boxes = generateRandBoxes()
     sa = StackingAlgorithm((20,20), 'SkylineMwfWm_FF', 'SSIDE')
-    id, bins = sa.pack(boxes)
+    if palletId == "":
+        boxes = generateRandBoxes()
+        id, bins = sa.pack(boxes)
+    else:
+        sa.switchToPallet(palletId)
+        bins = sa.packer.bins
+    # sa = StackingAlgorithm((20,20), 'MaxRectsBl_BF','PERI')
     # have to adapt the sorted boxes
     # into something parseable by JSON
     # now send the app the sortedBoxes
@@ -314,7 +321,7 @@ def adaptPackingBoxes(bins):
     return sortedBoxes
 
 def generateRandBoxes():
-    numOfBoxes = randrange(20, 100)
+    numOfBoxes = 5
     numOfBoxesForColor = numOfBoxes / 5
     boxes = []
     colours = ['red', 'blue', 'green', 'yellow', 'pink', 'orange']

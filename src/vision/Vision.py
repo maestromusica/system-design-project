@@ -45,7 +45,7 @@ class Vision(object):
 
 
     def go(self):
-        self.cap = cv2.VideoCapture(1)
+        self.cap = cv2.VideoCapture(0)
         ret, img = self.cap.read()
         img = cv2.flip(img,1)
         #cv2.imshow('img',img)
