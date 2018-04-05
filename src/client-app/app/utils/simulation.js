@@ -6,7 +6,7 @@ export const adaptCoordinates = (
 ) => {
   // the 0, 0, 0 position is in fact the center of the box
   const obj = {
-    x: x -xCamera/2 ,
+    x: -(x -xCamera/2) ,
     y: y + height/2 - yCamera/2,
     z: z - zCamera/2,
     width,

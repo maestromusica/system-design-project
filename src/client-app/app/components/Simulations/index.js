@@ -8,11 +8,19 @@ import {adaptBoxCoords} from '../../utils/simulation'
 
 import {Button} from '../../styled/components'
 import * as actions from '../../actions'
+import {
+  Section,
+  SectionTitle,
+  SectionOption,
+  SectionOptionInput,
+  SectionOptionButton
+} from '../../styled/section'
 
 class Simulations extends Component {
   state = {
     waiting: false,
-    boxes: boxes
+    boxes: boxes,
+    palletId: ""
   }
 
   componentWillReceiveProps(nextProps) {
@@ -33,12 +41,29 @@ class Simulations extends Component {
     return (
       <div>
         <SimulationRenderer boxes={adaptBoxCoords(this.state.boxes)} />
-        <Button onClick={ev => {
-          this.props.actions.requestBoxes()
-          this.setState({
-            waiting: true
-          })
-        }} loading={this.state.waiting}>Request boxes</Button>
+        <Section>
+          <SectionTitle>
+            Request boxes
+          </SectionTitle>
+          <SectionTitle></SectionTitle>
+          <SectionOption>
+            <SectionOptionInput
+              onChange={ev => {
+                this.setState({
+                  palletId: ev.target.value
+                })
+              }}
+              placeholder="Pallet ID"
+              value={this.state.palletId}
+            />
+            <SectionOptionButton onClick={ev => {
+              this.props.actions.requestBoxes(this.state.palletId)
+              this.setState({
+                waiting: true
+              })
+            }} loading={this.state.waiting}>Request boxes</SectionOptionButton>
+          </SectionOption>
+        </Section>
       </div>
     )
   }
