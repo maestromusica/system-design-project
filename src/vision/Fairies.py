@@ -5,11 +5,11 @@ from collections import Counter
 
 global data
 data = {
-    1:{'type':'blue','destination':'Edinburgh','weight':1},\
-    2:{'type':'yellow','destination':'Edinburgh','weight':1},\
-    3:{'type':'pink','destination':'Edinburgh','weight':1},\
-    4:{'type':'red','destination':'Edinburgh','weight':1},\
-    5:{'type':'orange','destination':'edinburgh','weight':1},
+    1:{'type':'blue','destination':'Edinburgh','weight':5},\
+    2:{'type':'yellow','destination':'London','weight':3},\
+    3:{'type':'pink','destination':'Edinburgh','weight':2},\
+    4:{'type':'red','destination':'Glasgow','weight':5},\
+    5:{'type':'orange','destination':'Glasgow','weight':1},\
     6:{'type':'green','destination':'Edinburgh','weight':1}}
 
 
@@ -217,25 +217,33 @@ class BoxFinder(object):
 
             # if Contours exist
             if len(contours) > 0:
-
+                valid = 0
                 # for each box candidate
                 for box, rect in contours:
-
+                    
                     # extracting roi for aruco detection
                     roi = findRoi(img,box)
-                    aruco_codes, roi = self.arucoFinder.findMarkers(roi,draw=True)
-                    cv2.imshow('roi',roi)
-                    cv2.waitKey(100)
+                    aruco_codes, roi = self.arucoFinder.findMarkers(roi,draw=False)
+#                    cv2.imshow('roi',roi)
+#                    cv2.waitKey(100)
                     # Note, Since we are finding codes for each box candidate
                     # we will only use the first aruco code we find.
+                    
                     if aruco_codes is not None:
                         if len(list(aruco_codes.keys()))>1:
                             print('Found more than one aruco codes. Please check the "conflict" window.')
                             cv2.imshow('conflict',roi)
                             cv2.waitKey(0)
                             cv2.destroyWindow('conflict')
-
+                        
                         aruco_code = list(aruco_codes.keys())[0]
+                        cv2.circle(draw,tuple(aruco_codes[aruco_code]['corners'][0]),2,(255,0,0),2)
+                        cv2.circle(draw,tuple(aruco_codes[aruco_code]['corners'][1]),2,(255,255,0),2)
+                        cv2.circle(draw,tuple(aruco_codes[aruco_code]['corners'][2]),2,(0,0,255),2)
+                        cv2.circle(draw,tuple(aruco_codes[aruco_code]['corners'][3]),2,(0,255,255),2)
+                        cv2.circle(draw,tuple(aruco_codes[aruco_code]['centroid']),2,(0,255,0),2)
+                        valid += 1
+                        
                     else:
                         
                         # if aruco marker not find. Detection is noise. skip to next box candidate.
@@ -251,7 +259,8 @@ class BoxFinder(object):
 
                     # Draw true positives with blue.
                     draw = self.drawer.drawBox(draw,box,np.array(rect[0]),'b')
-                    draw = self.drawer.putText(draw,k,len(contours),angle)
+                    valid +=1
+                draw = self.drawer.putText(draw,k,valid,angle,None)
                     
         return draw, boxes
 
@@ -261,11 +270,11 @@ class BoxFinder(object):
     def findAruco(self,image):
 
         # find all the aruco codes in the image.
-        aruco_codes , image= self.arucoFinder.findMarkers(image,draw=True)
+        aruco_codes , image= self.arucoFinder.findMarkers(image,draw=False)
         boxes = []
         count = Counter()
         orientations = {}
-
+        destinations = {}
         if aruco_codes is not None:
             # keys are the aruco_ids of each box.
             for k in list(aruco_codes.keys()):
@@ -279,7 +288,7 @@ class BoxFinder(object):
                 # calculate orientations
                 orientation = findOrientationAruco(spatial_info['corners'])
 
-                if spatial_info['centroid'][1] > 400:
+                if spatial_info['centroid'][1] > 330:
                 # form box dictionary
                     boxes.append(self.createDict(spatial_info['centroid'],\
                                          metadata['type'],orientation,\
@@ -288,10 +297,17 @@ class BoxFinder(object):
                     # book keeping
                     count[metadata['type']] += 1;
                     orientations[metadata['type']] = orientation
-
+                    destinations[metadata['type']] = metadata['destination']
+                    
+                    cv2.circle(image,tuple(spatial_info['corners'][0]),2,(255,0,0),2)
+                    cv2.circle(image,tuple(spatial_info['corners'][1]),2,(255,255,0),2)
+                    cv2.circle(image,tuple(spatial_info['corners'][2]),2,(0,0,255),2)
+                    cv2.circle(image,tuple(spatial_info['corners'][3]),2,(0,255,255),2)
+                    cv2.circle(image,tuple(spatial_info['centroid']),2,(0,255,0),2)
+                    
             # Draw data on the frame.
             for k in list(count.keys()):
-                self.drawer.putText(image,k,count[k],orientations[k])
+                self.drawer.putText(image,k,count[k],orientations[k],destinations[k])
 
 
             return image, boxes

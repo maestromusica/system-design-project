@@ -250,25 +250,31 @@ class Drawer(object):
 
         frame  = cv2.drawContours(frame,[np.array(corners)],0,self.colors[color],1)
         return frame
-    def putText(self,frame,colour,val, angle):
+    def putText(self,frame,colour,val, angle,dest):
         if angle == 90.00:
             ort = 'vertical'
         elif angle == 0.00:
             ort = 'horizontal'
         if colour == 'red':
-            cv2.putText(frame,colour + ' : {}    {}'.format(val,ort),(10,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
-                        (200,200,200),1)
+            cv2.putText(frame,colour + ' : {}    {}    {}'.format(val,ort,dest),(10,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+                        (200,200,200),2)
         elif colour == 'yellow':
-            cv2.putText(frame,colour + ' : {}    {}'.format(val,ort),(10,50),cv2.FONT_HERSHEY_COMPLEX,0.5,\
-                        (200,200,200),1)
+            cv2.putText(frame,colour + ' : {}    {}    {}'.format(val,ort,dest),(10,50),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+                        (200,200,200),2)
         elif colour == 'green':
-            cv2.putText(frame,colour + ' : {}    {}'.format(val,ort),(10,80),cv2.FONT_HERSHEY_COMPLEX,0.5,\
-                        (200,200,200),1)
+            cv2.putText(frame,colour + ' : {}    {}    {}'.format(val,ort,dest),(10,80),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+                        (200,200,200),2)
         elif colour == 'pink':
-            cv2.putText(frame,colour + ' : {}    {}'.format(val,ort),(10,110),cv2.FONT_HERSHEY_COMPLEX,0.5,\
-                        (200,200,200),1)
+            cv2.putText(frame,colour + ' : {}    {}    {}'.format(val,ort,dest),(10,110),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+                        (200,200,200),2)
         elif colour == 'blue':
-            cv2.putText(frame,colour + ' : {}    {}'.format(val,ort),(10,140),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+            cv2.putText(frame,colour + ' : {}    {}    {}'.format(val,ort,dest),(10,140),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+                        (200,200,200),2)
+        elif colour == 'orange':
+            cv2.putText(frame,colour + ' : {}    {}    {}'.format(val,ort,dest),(10,170),cv2.FONT_HERSHEY_COMPLEX,0.5,\
+                        (200,200,200),2)
+        elif colour == 'Boxes':
+            cv2.putText(frame,colour + ' : {}'.format(val),(10,20),cv2.FONT_HERSHEY_COMPLEX,0.5,\
                         (200,200,200),1)
         return frame
 

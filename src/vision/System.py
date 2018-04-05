@@ -5,11 +5,12 @@ from ..config.index import topics
 from Vision import Vision
 import cv2
 
-grabVals = {'red':{'grab':30,'pickrelease':60,'droprelease':45},\
-            'yellow':{'grab':20,'pickrelease':50,'droprelease':35},\
+grabVals = {'red':{'grab':30,'pickrelease':65,'droprelease':45},\
+            'yellow':{'grab':10,'pickrelease':55,'droprelease':35},\
             'blue':{'grab':30,'pickrelease':70,'droprelease':55},\
             'green':{'grab':35,'pickrelease':80,'droprelease':65},\
-            'pink':{'grab':30,'pickrelease':55,'droprelease':45}\
+            'pink':{'grab':30,'pickrelease':60,'droprelease':45},\
+            'orange':{'grab':35,'pickrelease':80,'droprelease':60}
             }
 
 class VisionAdaptor:

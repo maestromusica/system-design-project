@@ -135,7 +135,7 @@ def gamma_correct(img,gamma):
 def main():
     
     gp = GlobalParams()
-    pt = wsFinder(gp.getCamParams(None),gp.getWorkSpace(None))
+    pt = WorkspaceFinder(gp.getCamParams(None),gp.getWorkSpace(None))
     
     # Flag for return
     flag = False
@@ -151,7 +151,7 @@ def main():
     createTrackbars(params)
     params['gamma'] = 1;
     # creatin camera object
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
 
     # Creating kernel element for erosion/dilation
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))

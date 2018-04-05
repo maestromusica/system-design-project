@@ -111,7 +111,7 @@ def offline_test(boxes):
     
 def generate_boxes():
     #colour, centroid, rotation, length, width
-    cls = ['red','green','blue','purple','yellow']
+    cls = ['red','green','blue','purple','yellow','orange']
     centroid = np.array([0,0])
     rot = [90.00,0.00]
     boxes = []
