@@ -117,9 +117,10 @@ export const connectEV3 = () => ({
   topic: topics.APP_CONNECT_EV3
 })
 
-export const requestBoxes = () => ({
+export const requestBoxes = palletId => ({
   type: topics.APP_REQUEST_BOXES,
   topic: topics.APP_REQUEST_BOXES,
+  data: palletId
 })
 
 export const processResponse = verdict => ({

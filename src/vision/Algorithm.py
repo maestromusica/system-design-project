@@ -95,7 +95,6 @@ class StackingAlgorithm(object):
 
     def switchToPallet(self,p):
         #switches to a different pallet
-        #CHANGE THIS NEXT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         try:
             palletPath = os.path.join(os.path.dirname(__file__), 'pallets', p)
             f = open(palletPath,'rb')
@@ -106,6 +105,10 @@ class StackingAlgorithm(object):
             self.binSize = self.packer.binSize
             for boxes in self.currentPallet.sweeps:
                 self.packer.sort(boxes)
+            try:
+                bool(self.stats[self.currentPallet.alg])
+            except KeyError:
+                self.stats[self.currentPallet.alg] = {'Runtime for Boxes':[],'Max Density': 0}
             try:
                 bool(self.stats[self.currentPallet.pid])
             except KeyError:
