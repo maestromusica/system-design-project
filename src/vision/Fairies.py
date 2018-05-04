@@ -6,7 +6,7 @@ from collections import Counter
 global data
 data = {
     1:{'type':'blue','destination':'Edinburgh','weight':5},\
-    2:{'type':'yellow','destination':'London','weight':3},\
+    10:{'type':'yellow','destination':'London','weight':3},\
     3:{'type':'pink','destination':'Edinburgh','weight':2},\
     4:{'type':'red','destination':'Glasgow','weight':5},\
     5:{'type':'orange','destination':'Glasgow','weight':1},\

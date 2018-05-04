@@ -61,23 +61,26 @@ class Adaptor(object):
 
             # Box Adaption at 1060 assume perfect
             # Box Adaption > 1060 add additional offset for X?
-
+            
             if b.centrefrom[0] > 1200:
-                b.centrefrom[0] -= 15
+                b.centrefrom[0] -= 35
+                b.centrefrom[1] -= 20
             
             if b.rotatefrom == 90.00: # vertical grabbing
-                b.centrefrom[1] -= b.width*25
+                b.centrefrom[1] -= b.width*21 
                 b.centrefrom[0] -= 50
             else:                     # horizontal grabbing
                 if b.width > 2.3:
-                    b.centrefrom[0] -= b.width*30 -15
+                    b.centrefrom[0] -= b.width*30 -20
                 else:
                     b.centrefrom[0] -= b.width*40
-                b.centrefrom[1] -= 55
+                if b.centrefrom[1] >450:
+                    b.centrefrom[1] -= 35
+                
                     
-                    
+                
 
-            
+            #b.centreto[1] -= 100
                 
             
 

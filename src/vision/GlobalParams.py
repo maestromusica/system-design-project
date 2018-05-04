@@ -18,7 +18,7 @@ class GlobalParams(object):
         self.cam = path.join(dir,'data/camera_intrinsic_params3.pkl')
         self.boardSize = (9,6)
         #coords go [col,row] ffs
-        self.workspace = path.join(dir,'config/workspace_final_week.pkl')
+        self.workspace = path.join(dir,'config/workspace_industrial_config.pkl')
 
     def findCorners(self,k):
         if k == 'TopLeft':
